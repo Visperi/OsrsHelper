@@ -15,7 +15,7 @@ Code should work with newer versions of these modules if no major updates are no
 # Installation
 Unfortunately the bot is not currently guaranteed to work without downloading both finnish and english versions. This is something im going to work on (+ adding your own languages)
 
-1. Download everything and move files in data files into same directory with .py files
+1. Download everything in this repository. move **all** files into the same directory with all .py files
 2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files can safely be emptied without causing any differences in bot functionality:
    - Custom_commands.json
    - Item_keywords.json
@@ -25,6 +25,9 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
    - streamers.json
    
    You can safely modify the default settings in settings.ini if you know what you're doing.
+3. Install Python 3.6+ and every needed module
+4. Register the bot into discord api with your account and copy your token into file Credentials.json
+5. Run Main.py
 
 ## Licence
 MIT License
