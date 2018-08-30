@@ -1,7 +1,7 @@
 # OsrsHelper
 Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too.
 
-**Very spaghetti code btw** because this was my very first project in coding after an introduction university course. I apologize for no documentation and the code being in finnish. I'll be updating things to be more understandable as fast as I can.
+**Very spaghetti code btw** because this was my very first project in coding after an Python basics university course. I apologize for no documentation and the code being in finnish. I'll be updating things to be more understandable as fast as I can.
 
 # Source made with
 - Python 3.6
