@@ -13,9 +13,18 @@ Discord bot made mainly for Old school Runescape related commands, although nowa
 Code should work with newer versions of these modules if no major updates are not made. Only exception is discord.py which will **not** work if updated to rewrite.
 
 # Installation
+Unfortunately the bot is not currently guaranteed to work without downloading both finnish and english versions. This is something im going to work on (+ adding your own languages)
+
 1. Download everything and move files in data files into same directory with .py files
-2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files should not be emptied to ensure the best functionality:
-   - test
+2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files can safely be emptied without causing any differences in bot functionality:
+   - Custom_commands.json
+   - Item_keywords.json
+   - Tracked_players.json
+   - droprates.json
+   - statsdb.json
+   - streamers.json
+   
+   You can safely modify the default settings in settings.ini if you know what you're doing.
 
 ## Licence
 MIT License
