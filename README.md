@@ -15,7 +15,7 @@ Code should work with newer versions of these modules if no major updates are no
 # Installation
 1. Download everything and move files in data files into same directory with .py files
 2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files should not be emptied to ensure the best functionality:
-  - test
+   - test
 
 ## Licence
 MIT License
