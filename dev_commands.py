@@ -364,5 +364,5 @@ async def get_file(message, keywords, client):
 
 
 if __name__ == '__main__':
-    print("Please run the Main_menu.py to use any commands. They work only through Discord.")
+    print("Please run the Main.py to use any commands. They work only through Discord.")
     exit()
