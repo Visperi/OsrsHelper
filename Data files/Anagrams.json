@@ -1,0 +1,488 @@
+{
+    "dim tharn": {
+        "location": "Outside the Wilderness Resource Area",
+        "solution": "Mandrith",
+        "challenge_answer": "28 or Light box",
+        "puzzle": ""
+    },
+    "ladder memo guv": {
+        "location": "Bank west of Gnome Stronghold Agility Course",
+        "solution": "Guard Vemmeldo",
+        "challenge_answer": "3",
+        "puzzle": ""
+    },
+    "dragons lament": {
+        "location": "Gravedigger at the Barrows",
+        "solution": "Strange Old Man",
+        "challenge_answer": "40",
+        "puzzle": ""
+    },
+    "goblin kern": {
+        "location": "Tree Gnome Village, next to the Spirit Tree",
+        "solution": "King Bolren",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "at herg": {
+        "location": "Southeastern corner of Great Kourend's Arceuus House in Zeah, in the General Store",
+        "solution": "Regath",
+        "challenge_answer": "25",
+        "puzzle": ""
+    },
+    "bail trims": {
+        "location": "In the cave west of the Stronghold Slayer Cave entrance in the Tree Gnome Stronghold.",
+        "solution": "Brimstail",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "armchair the pelt": {
+        "location": "Next to the south entrance of Varrock",
+        "solution": "Charlie the Tramp",
+        "challenge_answer": "0",
+        "puzzle": ""
+    },
+    "duo plug": {
+        "location": "Graveyard on Ape Atoll, south of Awowogei's throne room",
+        "solution": "Dugopul",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "a bas": {
+        "location": "Found in the cave on the path towards the Death Plateau west of Burthorpe.",
+        "solution": "Saba",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "o birdz a zany en pc": {
+        "location": "Entrance of the Brimhaven Agility Arena",
+        "solution": "Cap'n Izzy no Beard",
+        "challenge_answer": "33",
+        "puzzle": ""
+    },
+    "low lag": {
+        "location": "Vinery in the Great Kourend",
+        "solution": "Gallow",
+        "challenge_answer": "12",
+        "puzzle": ""
+    },
+    "machete clam": {
+        "location": "Just outside the gates of the Duel Arena, Camulet not required",
+        "solution": "Cam the Camel",
+        "challenge_answer": "6",
+        "puzzle": ""
+    },
+    "arr! so i am a crust, and?": {
+        "location": "In the forge in Piscatoris Fishing Colony, requiring the quest Swan Song. (North from the fairy ring code AKQ).",
+        "solution": "Ramara du Croissant",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "i doom icon inn": {
+        "location": "Nightmare Zone",
+        "solution": "Dominic Onion",
+        "challenge_answer": "9,500",
+        "puzzle": ""
+    },
+    "peak reflex": {
+        "location": "Flax field south of Seers Village",
+        "solution": "Flax keeper",
+        "challenge_answer": "676",
+        "puzzle": ""
+    },
+    "a heart": {
+        "location": "Soul altar",
+        "solution": "Aretha",
+        "challenge_answer": "2",
+        "puzzle": ""
+    },
+    "c on game hoc": {
+        "location": "Walking around outside the Gnome Ball course, West of the Grand Tree",
+        "solution": "Gnome Coach",
+        "challenge_answer": "6",
+        "puzzle": ""
+    },
+    "mus kil reader": {
+        "location": "Legends' Guild",
+        "solution": "Radimus Erkle",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "do say more": {
+        "location": "East of Lumbridge Castle, near the Lumbridge Guide",
+        "solution": "Doomsayer",
+        "challenge_answer": "95",
+        "puzzle": ""
+    },
+    "cool nerd": {
+        "location": "East of the Slayer Tower",
+        "solution": "Old Crone",
+        "challenge_answer": "619",
+        "puzzle": ""
+    },
+    "an paint tonic": {
+        "location": "In the bar under White Wolf Mountain, requiring the quest Fishing Contest",
+        "solution": "Captain Ninto",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "dt run b": {
+        "location": "Rellekka, inside the main hall",
+        "solution": "Brundt the Chieftain",
+        "challenge_answer": "4",
+        "puzzle": ""
+    },
+    "pacinng a taie": {
+        "location": "Building east of Shayzien combat ring",
+        "solution": "Captain Ginea",
+        "challenge_answer": "113",
+        "puzzle": ""
+    },
+    "woo an egg kiwi": {
+        "location": "Ape Atoll",
+        "solution": "King Awowogei",
+        "challenge_answer": "24",
+        "puzzle": ""
+    },
+    "got a boy": {
+        "location": "Centre of Tai Bwo Wannai",
+        "solution": "Gabooty",
+        "challenge_answer": "11",
+        "puzzle": ""
+    },
+    "snakes so i sail": {
+        "location": "Neitiznot",
+        "solution": "Lisse Isaakson",
+        "challenge_answer": "2",
+        "puzzle": ""
+    },
+    "err cure it": {
+        "location": "West Ardougne centre square",
+        "solution": "Recruiter",
+        "challenge_answer": "20",
+        "puzzle": ""
+    },
+    "a baker": {
+        "location": "Varrock square (fur trader)",
+        "solution": "Baraek",
+        "challenge_answer": "5",
+        "puzzle": ""
+    },
+    "slam duster grail": {
+        "location": "Woodcutting guild in Zeah",
+        "solution": "Guildmaster Lars",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "nod med": {
+        "location": "Behind the most northwestern house in East Ardougne",
+        "solution": "Edmond",
+        "challenge_answer": "3",
+        "puzzle": ""
+    },
+    "eek zero op": {
+        "location": "Ardougne Zoo",
+        "solution": "Zookeeper",
+        "challenge_answer": "40",
+        "puzzle": ""
+    },
+    "veste": {
+        "location": "Up the stairs in the  Asgarnian Ice Dungeon wyvern area. If Monkey Madness II is completed, he can be found by the entrance to the Stronghold Slayer Cave.",
+        "solution": "Steve",
+        "challenge_answer": "2",
+        "puzzle": ""
+    },
+    "no owner": {
+        "location": "Lletya Seamstress shop in Lletya",
+        "solution": "Oronwen",
+        "challenge_answer": "20",
+        "puzzle": ""
+    },
+    "a basic anti pot": {
+        "location": "Port Sarim",
+        "solution": "Captain Tobias",
+        "challenge_answer": "6",
+        "puzzle": ""
+    },
+    "lark in dog": {
+        "location": "Ground floor of Varrock castle",
+        "solution": "King Roald",
+        "challenge_answer": "24",
+        "puzzle": ""
+    },
+    "me if": {
+        "location": "Just outside the gates of Tree Gnome Stronghold",
+        "solution": "Femi",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "ace match elm": {
+        "location": "North of the glider in Al Kharid, outside of the town. Camulet not required",
+        "solution": "Cam the Camel",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "arc o line": {
+        "location": "North Witchaven next to the row boat. After Sea Slug Quest is found wandering the coast.",
+        "solution": "Caroline",
+        "challenge_answer": "11",
+        "puzzle": ""
+    },
+    "dekagram": {
+        "location": "Centre of the inner ring of the Abyss",
+        "solution": "Dark Mage",
+        "challenge_answer": "13",
+        "puzzle": ""
+    },
+    "motherboard": {
+        "location": "Monastery south of Ardougne",
+        "solution": "Brother Omad",
+        "challenge_answer": "129",
+        "puzzle": ""
+    },
+    "veil veda": {
+        "location": "Down the trapdoor in the house directly west of Edgeville bank, where the evil rats are located for the Recipe for Disaster quest",
+        "solution": "Evil Dave",
+        "challenge_answer": "666",
+        "puzzle": ""
+    },
+    "ten wigs on": {
+        "location": "Between Nardah and the Agility Pyramid",
+        "solution": "Wingstone",
+        "challenge_answer": "Puzzle Box or Light box",
+        "puzzle": ""
+    },
+    "que sir": {
+        "location": "Falador Castle Courtyard",
+        "solution": "Squire",
+        "challenge_answer": "654",
+        "puzzle": ""
+    },
+    "blue grim guided": {
+        "location": "Just outside of Lumbridge Castle.",
+        "solution": "Lumbridge Guide",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "my mangle lal": {
+        "location": "Hosidius House spirit tree patch",
+        "solution": "Lammy Langle",
+        "challenge_answer": "Puzzle Box",
+        "puzzle": "http://i.imgur.com/eOtjKiL.png"
+    },
+    "el ow": {
+        "location": "Varrock archery store",
+        "solution": "Lowe",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "aha jar": {
+        "location": "The hospital of the Duel Arena",
+        "solution": "Jaraah",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "ded war": {
+        "location": "Inside Rogue's Castle",
+        "solution": "Edward",
+        "challenge_answer": "Light box or Puzzle box",
+        "puzzle": ""
+    },
+    "peaty pert": {
+        "location": "Falador Party Room",
+        "solution": "Party Pete",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "majors lava bads air": {
+        "location": "Northeast Dorgesh-Kaan, upper floor, just south of the house with the quest symbol. (You must complete Another Slice of H.A.M. before attempting).",
+        "solution": "Ambassador Alvijar",
+        "challenge_answer": "2,505",
+        "puzzle": ""
+    },
+    "im n zezim": {
+        "location": "The Imp inside Puro-Puro",
+        "solution": "Immenizz",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "r slicer": {
+        "location": "Arceuus essence mine",
+        "solution": "Clerris",
+        "challenge_answer": "738",
+        "puzzle": ""
+    },
+    "dr warden funk": {
+        "location": "In Keldagrim, east side in the house with broken glass.",
+        "solution": "Drunken Dwarf",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "yawns gy": {
+        "location": "Lletya",
+        "solution": "Ysgawyn",
+        "challenge_answer": "20",
+        "puzzle": ""
+    },
+    "unleash night mist": {
+        "location": "Rellekka",
+        "solution": "Sigli the Huntsman",
+        "challenge_answer": "302",
+        "puzzle": ""
+    },
+    "halt us": {
+        "location": "The owner of the banana plantation on Musa Point (Karamja).",
+        "solution": "Luthas",
+        "challenge_answer": "33 (or none)",
+        "puzzle": ""
+    },
+    "mal in tau": {
+        "location": "Near Burgh de Rott entrance",
+        "solution": "Luminata",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "mold la ran": {
+        "location": "Meiyerditch",
+        "solution": "Old Man Ral",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "sand nut": {
+        "location": "Anvil in northeastern Burthorpe",
+        "solution": "Dunstan",
+        "challenge_answer": "8",
+        "puzzle": ""
+    },
+    "rat mat within": {
+        "location": "Rogues' Den",
+        "solution": "Martin Thwait",
+        "challenge_answer": "2",
+        "puzzle": ""
+    },
+    "heoric": {
+        "location": "Burthorpe Castle, top floor",
+        "solution": "Eohric",
+        "challenge_answer": "36",
+        "puzzle": ""
+    },
+    "icy fe": {
+        "location": "Rantz's cave, southeast of Gu'Tanoth and far eastern portion of Feldip Hills (near the coast).",
+        "solution": "Fycie",
+        "challenge_answer": "None",
+        "puzzle": ""
+    },
+    "blue brim guided": {
+        "location": "Just outside of Lumbridge Castle.",
+        "solution": "Lumbridge Guide",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "tamed rocks": {
+        "location": "Piscarilius House on Great Kourend, building northeast of the General store",
+        "solution": "Dockmaster",
+        "challenge_answer": "5",
+        "puzzle": ""
+    },
+    "forlun": {
+        "location": "Miscellania and Etceteria Dungeon",
+        "solution": "Runolf",
+        "challenge_answer": "Light box or Puzzle box",
+        "puzzle": ""
+    },
+    "dr hitman": {
+        "location": "Outside the Wilderness Resource Area",
+        "solution": "Mandrith",
+        "challenge_answer": "28 or Light box",
+        "puzzle": ""
+    },
+    "quit horrible tyrant": {
+        "location": "Mos Le'Harmless or Harmony Island",
+        "solution": "Brother Tranquility",
+        "challenge_answer": "7",
+        "puzzle": ""
+    },
+    "by look": {
+        "location": "In the Tree Gnome Village general store",
+        "solution": "Bolkoy",
+        "challenge_answer": "13",
+        "puzzle": ""
+    },
+    "area chef trek": {
+        "location": "Found in the church in Lumbridge",
+        "solution": "Father Aereck",
+        "challenge_answer": "19",
+        "puzzle": ""
+    },
+    "car if ices": {
+        "location": "Zul-Andra, on the dock near Priestess Zul-Gwenwynig",
+        "solution": "Sacrifice",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "copper ore crypts": {
+        "location": "Motherlode Mine, a pickaxe is needed to reach him.",
+        "solution": "Prospector Percy",
+        "challenge_answer": "12",
+        "puzzle": ""
+    },
+    "are col": {
+        "location": "The peak of Ice Mountain West of Edgeville",
+        "solution": "Oracle",
+        "challenge_answer": "48",
+        "puzzle": ""
+    },
+    "baker climb": {
+        "location": "Located on Trollweiss mountain",
+        "solution": "Brambickle",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "our own needs": {
+        "location": "Shayzien House infirmary, north of Xeric's Look out",
+        "solution": "Nurse Wooned",
+        "challenge_answer": "19",
+        "puzzle": ""
+    },
+    "slide woman": {
+        "location": "Draynor Village",
+        "solution": "Wise Old Man",
+        "challenge_answer": "28",
+        "puzzle": ""
+    },
+    "twenty cure iron": {
+        "location": "Shayzien House's Graveyard in Great Kourend.",
+        "solution": "New recruit Tony",
+        "challenge_answer": "Light box or puzzle box",
+        "puzzle": ""
+    },
+    "career in moon": {
+        "location": "Astral altar on Lunar Isle",
+        "solution": "Oneiromancer",
+        "challenge_answer": "25",
+        "puzzle": ""
+    },
+    "his phor": {
+        "location": "Zeah, Arceuus House Library",
+        "solution": "Horphis",
+        "challenge_answer": "1",
+        "puzzle": ""
+    },
+    "a zen she": {
+        "location": "The Platebody shop on the Southern edge of Ardougne centre square",
+        "solution": "Zenesha",
+        "challenge_answer": "Puzzle box",
+        "puzzle": ""
+    },
+    "i am sir": {
+        "location": "Marisi is a farmer along the south coast of Great Kourend, in the allotment patch located within the Hosidius House.",
+        "solution": "Marisi",
+        "challenge_answer": "5",
+        "puzzle": ""
+    },
+    "thickno": {
+        "location": "Hickton's Archery Emporium in Catherby. Second house east of the bank.",
+        "solution": "Hickton",
+        "challenge_answer": "2",
+        "puzzle": ""
+    }
+}
