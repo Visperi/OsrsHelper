@@ -13,7 +13,7 @@ Discord bot made mainly for Old school Runescape related commands, although nowa
 Code should work with newer versions of these modules if no major updates are not made. Only exception is discord.py which will **not** work if updated to rewrite.
 
 # Installation
-Unfortunately the bot is not currently guaranteed to work without downloading both finnish and english versions. This is something I will be working on (+ adding your own languages)
+Unfortunately the bot is not currently guaranteed to work without downloading both finnish and english versions. Also, timestamps are currently wrong if you live outside of gmt +2. These are the first things I will be working on as much as I have time.
 
 1. Download everything in this repository. move **all** files into the same directory with all .py files
 2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files can safely be emptied without causing any differences in bot functionality:
