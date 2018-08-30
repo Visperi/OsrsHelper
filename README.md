@@ -27,7 +27,7 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
    You can safely modify the default settings in settings.ini if you know what you're doing.
 3. Install Python 3.6+ and every needed module
 4. Register the bot into discord api with your account and copy your token into file Credentials.json
-5. Run Main.py
+5. Add the bot into a server, run Main.py and get further help with command `!help`
 
 ## Licence
 MIT License
