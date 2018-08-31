@@ -1,4 +1,4 @@
-# OsrsHelper
+# OsrsHelper v6.0
 Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too.
 
 **Very spaghetti code btw** because this was my very first project in coding after a Python basics university course. I apologize that there is no documentation and the code is in finnish. I'll be updating things to be more understandable as fast as I can. However, the bot works and it has pretty straightforward help commands.
