@@ -29,7 +29,7 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
 4. Register the bot into discord api with your account and copy your token into file Credentials.json
 5. Add the bot into a server, run Main.py and get further help with command `!help`
 
-## Following permissions are needed for full functionality
+### Following permissions are needed for full functionality
 
 - Manage roles
 - Read text channels & See voice channels
