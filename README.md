@@ -1,5 +1,5 @@
 # OsrsHelper v6.0
-Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too.
+Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too. It was started in october 2015 as a very small project just to check item prices in G.E. Things got bigger and now it has commands for clues, users stats and gains, custom item keywords and custom server commands. I thought long about publishing this code, but now I finally decided to do it.
 
 **Very spaghetti code btw** because this was my very first project in coding after a Python basics university course. I apologize that there is no documentation and the code is in finnish. I'll be updating things to be more understandable as fast as I can. However, the bot works and it has pretty straightforward help commands.
 
