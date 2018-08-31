@@ -31,11 +31,11 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
 
 #### Following permissions are needed for full functionality
 
-- Manage roles
+- Manage roles (Only role bot can manage is `Streams` for command `!streamers`)
 - Read text channels & See voice channels
 - Send messages
 - Read message history
-- Add reactions
+- Add reactions (Bot will only react when subscribing or unsuscribing role Streams or tracking a player)
 
 # Todo
 - Fix timestamps to work in any timezone
