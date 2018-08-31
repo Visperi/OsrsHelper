@@ -29,6 +29,13 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
 4. Register the bot into discord api with your account and copy your token into file Credentials.json
 5. Add the bot into a server, run Main.py and get further help with command `!help`
 
+# Todo
+- Fix timestamps to work in any timezone
+- Translate the code into english
+- Make the code work without downloading finnish version
+- Make the prefix customizable
+- Custom welcome messages
+
 ## Licence
 MIT License
 
