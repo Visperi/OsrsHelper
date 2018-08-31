@@ -1550,7 +1550,7 @@ async def bot_info(message, client, release_notes=False):
         bot_name = appinfo.name
         bot_owner = appinfo.owner
         last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(f"{path}Main.py")).strftime("%d/%m/%Y")
-        embed = discord.Embed(title=bot_name, description=f"Developer: {bot_owner.mention}\n"
+        embed = discord.Embed(title=bot_name, description=f"Administrator: {bot_owner.mention}\n"
                                                           f"Updated: {last_modified}\nSource code: Python 3.6 "
                                                           f"([Source](https://github.com/Visperi/OsrsHelper))")
         embed.add_field(name="Credits",
