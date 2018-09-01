@@ -1,0 +1,6 @@
+- Korjattiin bugi pricechangessa, joka aiheutti botin olemaan vastaamatta, jos itemiä ei ole vielä vaihdettu kertaakaan
+- §get komento korjattu
+- Lisätty ostossa ja myynnissä olevien itemien määrä komentoon !price
+- Lisätty komento !test eri apien yhteyksien testaamiseen
+- Lisätty !stats komentoon etuliite tournament
+- Korjattu komento !update
