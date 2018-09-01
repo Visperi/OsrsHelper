@@ -1274,7 +1274,7 @@ async def track_user(message, hakusanat, client):
             await client.add_reaction(bot_message, reaction)
         answer = await client.wait_for_reaction(emoji=reactions, message=bot_message, user=message.author, timeout=7)
         if not answer:
-            await client.send_message(message.channel, "Ei vastausta, toiminto peruutettu.")
+            await client.edit_message(bot_message, embed=discord.Embed(title="Ei vastausta, toiminto peruutettu."))
             return
         elif answer.reaction.emoji == reactions[-1]:
             await client.edit_message(bot_message, embed=discord.Embed(title="Toiminto peruutettu"))
