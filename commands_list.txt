@@ -1,0 +1,48 @@
+!wiki				|	Search oldschoolrunescape.wikia.com. A link is given if a page is found
+!stats				|	Get current stats, ranks and xp for an Osrs account
+!gains 				|	Get gains for an Osrs account since last time this command was used. NOTE: Given account must be tracked before this command can be used.
+!track 				|	Track a given Osrs account. The type of the account is asked with a reaction based system. This will ensure that rank gains are shown in correct highscores type.
+!ttm 				|	Get EHPs (Efficiency Hours Played) for an account to get till maxed.
+!xp					|	Get how much xp is needed for a level or for between two given levels. All possible levels are between 1-120.
+!ehp				|	Get xph list to gain EHPs for a given skill. There are separate lists for normal accounts, ironmen and skillers
+!nicks				|	Get previous nicks for a given player. More than one can be shown only for tracked players (if found any).
+!loot				|	Get a chance to get given loot
+
+!keys				|	Get keywords for a given item. Item prices can be easier to check if they have simplier or shorter keywords than their ingame name.
+!limit				|	Get four hours buy limit for a given item if found any. Supports keywords.
+!pricechange		|	Get a list how much a price has changed for an item in a month, in a week, in a day and in an hour. Supports keywords.
+!price				|	Get the current price for an item in G.E. Supports keywords
+
+!cipher				|	Get an answer for a cipher cluestep.
+!anagram			|	Get an answer for an anagram cluestep.
+!puzzle				|	Get an image of a solved puzzle for a puzzle cluestep.
+!cryptic			|	Get an answer for a cryptic cluestep.
+!maps				|	Get a link to an Osrs wikipage which has answers for a map cluesteps.
+
+!info				|	Get a basic information about the bot.
+!help				| 	Get help in using any command.
+!calc				|	A basic calculator command.
+!howlong			|	Get basic info about user and the time when user joined the server and the Discord account was made.
+!update				|	Get the latest updates related to Osrs.
+!namechange			|	Update the ingame name of a tracked player for gains command. It's recommended to use this everytime account name is changed. NOTE: Doesnt affect the real ingame name by any way.
+!server commands	|	Get a list of server specific custom commands.
+!sub streams		|	Get a role Sreams if it exists in the server.
+!unsub streams		|	Remove the role Streams.
+!streamers			|	Get a list of streamers. When they go online a mention is send to role Streams.
+!test				|	Test the current state of any of the apis bot uses.
+
+%addkey				|	Add one or multiple keywords for an item.
+%delkey				|	Remove one or multiple keywords from an item.
+%addcom				|	Add a custom command for the server.
+%delcom				|	Delete a custom command from the server.
+%editcom			|	Edit the message of a custom command.
+%addloot			|	Add droprates for a boss or anything in the loot list.
+%delloot			|	Delete a droprate from the loot list.
+
+&language			|	Switch an user specific language between finnish and english
+&settings			|	Get the current settings in the server
+&permit				|	Give a role a permission to add or delete custom commands and item keywords.
+&unpermit			|	Remove a permission from a role to add or delete custom commands and item keywords
+&add commands		|	Switch the %addcom command on and off.
+&forcelang			|	Force a bot language for the server, regardless what the user specific languages are.
+&defaultlang		|	Set a default language the users are given when they use the bot. Default setting is english.
