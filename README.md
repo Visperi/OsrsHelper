@@ -4,7 +4,7 @@ Discord bot made mainly for Old school Runescape related commands, although nowa
 **Very spaghetti code btw** because this was my very first project in coding after a Python basics university course. I apologize that there is no documentation and the code is in finnish. I'll be updating things to be more understandable as fast as I can. However, the bot works and it has pretty straightforward help commands.
 
 ### Main features
-- 43 hard coded commands (List coming)
+- 43 hard coded commands ([Full list](\commands_list.txt))
 - Compact but straightforward help messages for every command
 - Up to 200 server specific custom commands
 - Add keywords for tradeable items to check prices
