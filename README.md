@@ -11,7 +11,7 @@ Discord bot made mainly for Old school Runescape related commands, although nowa
 - Manage roles who can add or delete commands and keywords
 - Full Osrs clue support (excluding map and Falo steps)
 
-All my available time goes currently into the [todo list](https://github.com/Visperi/OsrsHelper#todo)https://github.com/Visperi/OsrsHelper#todo instead of making new features. An exception can be made if something very good comes into my mind.
+All my available time goes currently into the todo list things instead of making new features. An exception can be made if something very good comes into my mind.
 
 # Source made with
 - Python 3.6
