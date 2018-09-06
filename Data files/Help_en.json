@@ -396,5 +396,104 @@
         "description": "Tests the connection to given api.",
         "additional": "Give also the api you want to test. Current choices are rsbuddy, wiki, osrs and cml.",
         "example": "`!test rsbuddy`"
+    },
+    {
+        "function": [
+            "§id"
+        ],
+        "name": "§id",
+        "description": "Gives the id of the given item.",
+        "additional": "-",
+        "example": "`§id abyssal whip`"
+    },
+    {
+        "function": [
+            "§addpuzzle"
+        ],
+        "name": "§addpuzzle",
+        "description": "Adds a puzzle for given anagram answer.",
+        "additional": "Give the whole anagram and separate it from the puzzle name with a comma.",
+        "example": "`§addpuzzle at her, castle`"
+    },
+    {
+        "function": [
+            "§addobject"
+        ],
+        "name": "§addobject",
+        "description": "Adds an item into Tradeables.json",
+        "additional": "Separate the itemname and the id with a comma. This command doesn't accept high alch values!",
+        "example": "`§addobject itemname, 54612`"
+    },
+    {
+        "function": [
+            "§delobject"
+        ],
+        "name": "§delobject",
+        "description": "Deletes an item from Tradeables.json",
+        "additional": "Command needs only the itemname to delete it",
+        "example": "`§delobject itemname`"
+    },
+    {
+        "function": [
+            "§addstream"
+        ],
+        "name": "§addstream",
+        "description": "Adds a streamer into server's streamers list. Needs a link to the stream and the user id.",
+        "additional": "Give the link to a stream first and then the id.",
+        "example": "`§addstream <https://www.twitch.tv/visperi> 95532930620719104`"
+    },
+    {
+        "function": [
+            "§delstream"
+        ],
+        "name": "§delstream",
+        "description": "Deletes the given streamer from server's streamers list.",
+        "additional": "This command needs only the user id to proceed.",
+        "example": "`§delstream 95532930620719104`"
+    },
+    {
+        "function": [
+            "§addlim"
+        ],
+        "name": "§addlim",
+        "description": "Adds a four hours buylimit for an item.",
+        "additional": "Give only the itemname and buylimit, separated by comma.",
+        "example": "`§addlim rune scimitar, 5000`"
+    },
+    {
+        "function": [
+            "§dellim"
+        ],
+        "name": "§dellim",
+        "description": "Deletes a buylimit from an item.",
+        "additional": "Only the itemname is needed to proceed.",
+        "example": "`§dellim rune scimitar`"
+    },
+    {
+        "function": [
+            "§addobjects"
+        ],
+        "name": "§addobjects",
+        "description": "Add any amount of items into Tradeables.json at once.",
+        "additional": "The new items must be in format [\"Item1, id1\", \"Item2, id2\", ...]. The easiest way is to use script New_items.py which gives you the right format automatically.\n",
+        "example": "`§addobjects [\"Bryophyta's essence, 22372\", \"Slayer's respite(m4), 5921\", \"Bryophyta's staff (uncharged), 22368\"]`"
+    },
+    {
+        "function": [
+            "§check"
+        ],
+        "name": "§check",
+        "description": "Checks if there are any new tradeables to add to the Tradeables.json.",
+        "additional": "Send a file `names.json` and send a message `§check` along with it. This is the preferred way to check new tradeables.",
+        "example": "-"
+    },
+    {
+        "function": [
+            "§get"
+        ],
+        "name": "§get",
+        "description": "Get a bot file from the bot directory. **This is sent to the discord chat you use this command so use carefully!**",
+        "additional": "The file name and extension must be exactly same as in the file name.",
+        "example": "`§get Tradeables.json`"
     }
 ]

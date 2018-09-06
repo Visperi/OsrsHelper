@@ -317,7 +317,7 @@
         "name": "§addobject",
         "description": "Lisää annetun itemin Tradeables.json listaan. Erota nimi ja id pilkulla.",
         "additional": "Komentoon ei tarvitse syöttää high alch arvoa.",
-        "example": "`§addobject item, 54612`"
+        "example": "`§addobject itemname, 54612`"
     },
     {
         "function": [
@@ -335,7 +335,7 @@
         "name": "§delobject",
         "description": "Poistaa itemin Tradeables.json listalta.",
         "additional": "Pelkkä itemin nimi riittää komennon suorittamiseen.",
-        "example": "`§delobject item`"
+        "example": "`§delobject itemname`"
     },
     {
         "function": [
@@ -483,7 +483,7 @@
         ],
         "name": "§check",
         "description": "Tarkistaa, onko rsbuddyn G.E. apiin tullut uusia itemeitä.",
-        "additional": "Lähetä komennon lisäksi mukana tiedosto `names.json`.",
+        "additional": "Lähetä tiedosto `names.json` ja samalla viesti `§check`. Tämä on suositeltu tapa tarkistaa uudet itemit.",
         "example": "-"
     },
     {
@@ -491,7 +491,7 @@
             "§get"
         ],
         "name": "§get",
-        "description": "Lähettää discordiin pyydetyn botin tiedoston",
+        "description": "Lähettää pyydetyn tiedoston botin kansiosta. **Tiedosto lähetetään chattiin missä suoritat komennon, joten ole huolellinen komennon käytössä!**",
         "additional": "Tiedoston nimi täytyy antaa täsmälleen oikein päätteineen.",
         "example": "`§get Tradeables.json`"
     },
