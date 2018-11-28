@@ -1,4 +1,4 @@
-# OsrsHelper v6.0
+# OsrsHelper v6.1.3
 
 **I have now started rewriting this bot into newest discord.py (rewrite) and decided that no major changes will be updated into this one. I will upload the rewrite version as soon as its somewhat working and applicable enough.**
 
