@@ -1,6 +1,0 @@
-- Fixed a bug in pricechange, which caused bot to be silent if item has not been traded in G.E. yet
-- Fixed command §get
-- Added the amount of items in buying and selling for command !price
-- Added command !test for testing connections to different apis
-- Added an option to search tournament stats with a prefix tournament
-- Fixed the command !update
