@@ -1,0 +1,145 @@
+Attack:
+0 xp: 7,200 xp/h
+37,224 xp: 14,400 xp/h
+100,000 xp: 28,900 xp/h
+1,000,000 xp: 43,000 xp/h
+1,986,068 xp: 51,000 xp/h
+3,000,000 xp: 57,800 xp/h
+5,346,332 xp: 63,000 xp/h
+13,034,431 xp: 68,000 xp/h
+
+
+Defence:
+0 xp: 7,200 xp/h
+37,224 xp: 14,400 xp/h
+100,000 xp: 28,900 xp/h
+1,000,000 xp: 43,000 xp/h
+1,986,068 xp: 51,000 xp/h
+3,000,000 xp: 57,800 xp/h
+5,346,332 xp: 63,000 xp/h
+13,034,431 xp: 68,000 xp/h
+
+
+Strength:
+0 xp: 7,200 xp/h
+37,224 xp: 14,400 xp/h
+100,000 xp: 28,900 xp/h
+1,000,000 xp: 43,000 xp/h
+1,986,068 xp: 51,000 xp/h
+3,000,000 xp: 57,800 xp/h
+5,346,332 xp: 63,000 xp/h
+13,034,431 xp: 68,000 xp/h
+
+
+Hitpoints:
+None
+
+Ranged:
+0 xp: 7,000 xp/h
+37,224 xp: 14,000 xp/h
+100,000 xp: 28,000 xp/h
+1,000,000 xp: 42,500 xp/h
+1,986,068 xp: 49,000 xp/h
+3,000,000 xp: 56,500 xp/h
+5,346,332 xp: 61,200 xp/h
+13,034,431 xp: 66,000 xp/h
+
+
+Prayer:
+0 xp: 43,000 xp/h
+160,000,000 xp: 267,000 xp/h
+
+
+Magic:
+0 xp: 5,000 xp/h
+174 xp: 15,600 xp/h
+1,358 xp: 25,200 xp/h
+3,973 xp: 72,000 xp/h
+166,636 xp: 199,822,941 xp/h
+
+
+Cooking:
+0 xp: 40,000 xp/h
+7,842 xp: 130,000 xp/h
+37,224 xp: 175,000 xp/h
+737,627 xp: 480,000 xp/h
+
+
+Woodcutting:
+0 xp: 7,000 xp/h
+2,411 xp: 15,000 xp/h
+13,363 xp: 28,000 xp/h
+41,171 xp: 40,000 xp/h
+302,288 xp: 50,000 xp/h
+1,986,068 xp: 60,000 xp/h
+5,346,332 xp: 70,000 xp/h
+13,034,431 xp: 78,500 xp/h
+
+
+Fletching:
+None
+
+Fishing:
+0 xp: 14,000 xp/h
+4,470 xp: 28,000 xp/h
+13,363 xp: 35,000 xp/h
+273,742 xp: 45,000 xp/h
+737,627 xp: 55,000 xp/h
+2,500,000 xp: 65,000 xp/h
+6,000,000 xp: 70,000 xp/h
+13,034,431 xp: 78,500 xp/h
+
+
+Firemaking:
+0 xp: 45,000 xp/h
+13,363 xp: 130,500 xp/h
+61,512 xp: 195,750 xp/h
+273,742 xp: 293,625 xp/h
+
+
+Crafting:
+0 xp: 57,000 xp/h
+4,470 xp: 135,000 xp/h
+50,339 xp: 290,000 xp/h
+
+
+Smithing:
+0 xp: 40,000 xp/h
+37,224 xp: 103,000 xp/h
+605,032 xp: 220,000 xp/h
+4,385,776 xp: 275,000 xp/h
+170,000,000 xp: 30,000,000 xp/h
+
+
+Mining:
+0 xp: 4,000 xp/h
+14,833 xp: 12,000 xp/h
+41,171 xp: 25,000 xp/h
+111,945 xp: 57,000 xp/h
+737,627 xp: 65,000 xp/h
+
+
+Herblore:
+None
+
+Agility:
+None
+
+Thieving:
+None
+
+Slayer:
+None
+
+Farming:
+None
+
+Runecrafting:
+0 xp: 40,000 xp/h
+
+
+Hunter:
+None
+
+Construction:
+None

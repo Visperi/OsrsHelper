@@ -1,0 +1,500 @@
+[
+    {
+        "function": [
+            "price"
+        ],
+        "name": "!price",
+        "description": "Deprecated command",
+        "additional": "Maybe in the future again...",
+        "example": "-"
+    },
+    {
+        "function": [
+            "wiki"
+        ],
+        "name": "!wiki",
+        "description": "Searches wiki pages from <https://oldschool.runescape.wiki> with given keyword.",
+        "additional": "-",
+        "example": "`!wiki abyssal whip`"
+    },
+    {
+        "function": [
+            "cipher"
+        ],
+        "name": "!cipher",
+        "description": "Gives the solution for given cipher, including image of possible puzzle.",
+        "additional": "-",
+        "example": "`!cipher ovexon` or `!cipher hckta`"
+    },
+    {
+        "function": [
+            "puzzle"
+        ],
+        "name": "!puzzle",
+        "description": "Gives an image of corresponding solved puzzle",
+        "additional": "Available keywords are zulrah, snake, cerberus , gnome, gnome child, troll, tree and castle.",
+        "example": "`!puzzle castle`"
+    },
+    {
+        "function": [
+            "stats",
+            "ironstats",
+            "uimstats",
+            "dmmstats",
+            "seasonstats",
+            "hcstats",
+            "tournamentstats"
+        ],
+        "name": "!stats",
+        "description": "Gets user highscores from Old school Runesape website",
+        "additional": "Supports using prefixes iron, uim, dmm, season, tournament and hc to get dofferent highscore ranks",
+        "example": "`!stats might knigh` or `!ironstats might knight` or `!tournamentstats b0aty`"
+    },
+    {
+        "function": [
+            "ttm"
+        ],
+        "name": "!ttm",
+        "description": "Gets the needed amount of EHP (Efficient Hours Played) for given user from Crystalmathlabs",
+        "additional": "User needs to be tracked and updated at least once in CML",
+        "example": "`!ttm visperi`"
+    },
+    {
+        "function": [
+            "anagram"
+        ],
+        "name": "!anagram",
+        "description": "Gives the solution for given anagram",
+        "additional": "Also supports only partly written anagrams",
+        "example": "`!anagram at herg` or `!anagram do say`"
+    },
+    {
+        "function": [
+            "cryptic"
+        ],
+        "name": "!cryptic",
+        "description": "Gives the solution for given cryptic clue",
+        "additional": "Also supports only partly written searches",
+        "example": "`!cryptic speak to ellis`"
+    },
+    {
+        "function": [
+            "keys"
+        ],
+        "name": "!keys",
+        "description": "Gives all given keywords for an item. Search supports items original names only.",
+        "additional": "-",
+        "example": "`!keys rune scimitar`"
+    },
+    {
+        "function": [
+            "howlong"
+        ],
+        "name": "!howlong",
+        "description": "Gets the command user's Discord registering date, server joining date, and the highest role in the server",
+        "additional": "-",
+        "example": "`!howlong`"
+    },
+    {
+        "function": [
+            "xp",
+            "level"
+        ],
+        "name": "!xp",
+        "description": "Shows how much you need xp for given level",
+        "additional": "Also supports level gaps. Maximum level can be given as `max` instead of 120.",
+        "example": "`!xp 90` or `!xp 90-max`"
+    },
+    {
+        "function": [
+            "calc",
+            "laskin"
+        ],
+        "name": "!calc",
+        "description": "Basic pocket calculator which supports sum, subtraction, product and division",
+        "additional": "Does not support more than two factors, brackets, variables or trigonometric functions",
+        "example": "`!calc 5 * 8`"
+    },
+    {
+        "function": [
+            "ehp",
+            "ironehp",
+            "skillerehp",
+            "f2pehp"
+        ],
+        "name": "!ehp",
+        "description": "Gives a xp/h rate which corresponds one EHP in a hour. Supports skill's original names only.",
+        "additional": "Prefixes `iron`, `skiller` or `f2p` can be given to get different lists.",
+        "example": "`!ehp mining` or `!ironehp woodcutting`"
+    },
+    {
+        "function": [
+            "maps"
+        ],
+        "name": "!maps",
+        "description": "Gives a link into Osrs wiki clue maps site",
+        "additional": "-",
+        "example": "`!maps`"
+    },
+    {
+        "function": [
+            "limit"
+        ],
+        "name": "!limit",
+        "description": "Checks if there is any four hour buy limit for given item. Supports keywords.",
+        "additional": "-",
+        "example": "`!limit cannonballs`"
+    },
+    {
+        "function": [
+            "chatcommands",
+            "chat commands",
+            "servercommands",
+            "server commands",
+            "custom commands"
+        ],
+        "name": "!server commands",
+        "description": "Gives a list of all custom commands set for this server.",
+        "additional": "-",
+        "example": "`!server commands`"
+    },
+    {
+        "function": [
+            "addkey"
+        ],
+        "name": "%addkey",
+        "description": "Adds the given keywords for given item. Supports items original names only.",
+        "additional": "Supports adding multiple keywords at once. Separate the item name and all keywords with commas.",
+        "example": "`%addkey rune scimitar, key1, key2, key3`"
+    },
+    {
+        "function": [
+            "delkey"
+        ],
+        "name": "`%delkey`",
+        "description": "Deletes the given keywords from given item. Supports items original names only.",
+        "additional": "Supports deleting multiple keywords at once. Separate the item name and all keywords with commas.",
+        "example": "`%delkey rune scimitar, key1, key2, key3`"
+    },
+    {
+        "function": [
+            "addcom"
+        ],
+        "name": "%addcom",
+        "description": "Adds the given command for server. The message of command must be inside quotation marks.",
+        "additional": "Supports line breaks, which can be done with `\\n`",
+        "example": "`%addcom testikomento \"Example message\\nNew line starts here\"`"
+    },
+    {
+        "function": [
+            "delcom"
+        ],
+        "name": "%delcom",
+        "description": "Deletes the given command from server. Needs only the name of the command.",
+        "additional": "-",
+        "example": "`%delcom testikomento`"
+    },
+    {
+        "function": [
+            "gains"
+        ],
+        "name": "!gains",
+        "description": "Calculates the changes in user's highscores after the last check.",
+        "additional": "User needs to be tracked to operate the command",
+        "example": "`!gains visperi`"
+    },
+    {
+        "function": [
+            "pricechange"
+        ],
+        "name": "!pricechange",
+        "description": "Deprecated command",
+        "additional": "Maybe in the future again...",
+        "example": "-"
+    },
+    {
+        "function": [
+            "track"
+        ],
+        "name": "!track",
+        "description": "Sets the username to be tracked",
+        "additional": "Type of the user registers only after all the reactions are loaded.",
+        "example": "`!track visperi`"
+    },
+    {
+        "function": [
+            "commands"
+        ],
+        "name": "!commands",
+        "description": "Prints a list of all available commands.",
+        "additional": "-",
+        "example": "`!commands`"
+    },
+    {
+        "function": [
+            "language"
+        ],
+        "name": "&language",
+        "description": "Changes the language in which the bot answers for users commands. Only options are finnish and english.",
+        "additional": "Doesnt change any server settings. Changes language only for the user executing this command.",
+        "example": "`&lang fi`"
+    },
+    {
+        "function": [
+            "namechange"
+        ],
+        "name": "!namechange",
+        "description": "Changes the saved name of a tracked player to a new one. Use this every time you change your in game name.",
+        "additional": "Guarantees the !gains command to work properly, hence is important to use.",
+        "example": "`!namechange mahtiritari, visperi`"
+    },
+    {
+        "function": [
+            "permit"
+        ],
+        "name": "&permit",
+        "description": "Gives a role permission to use high permission commands. Only the server owner can use this command.",
+        "additional": "Does not touch any Discord server options. Only applies to bot commands.",
+        "example": "`&permit testrole`"
+    },
+    {
+        "function": [
+            "unpermit"
+        ],
+        "name": "&unpermit",
+        "description": "Removes a permission from role to use high permission commands. Only the server owner can use this command.",
+        "additional": "Does not touch any Discord server options. Only applies to bot commands.",
+        "example": "`&unpermit testrole`"
+    },
+    {
+        "function": [
+            "add commands"
+        ],
+        "name": "&add commands",
+        "description": "Sets the usage of %addcom on or off. Default setting is `on`.",
+        "additional": "Only the server owner can use this command",
+        "example": "`&add commands off`"
+    },
+    {
+        "function": [
+            "settings"
+        ],
+        "name": "&settings",
+        "description": "Gives all the current settings for this server.",
+        "additional": "-",
+        "example": "`&settings`"
+    },
+    {
+        "function": [
+            "update"
+        ],
+        "name": "!update",
+        "description": "Gives a link to the latest article in Old scool Runescape website",
+        "additional": "-",
+        "example": "`!update`"
+    },
+    {
+        "function": [
+            "editcom"
+        ],
+        "name": "%editcom",
+        "description": "Edits a command that already exists for this server. The new message has to be inside quotation marks.",
+        "additional": "Supports using line breaks with `\\n`",
+        "example": "`%editcom hello world \"This is the new message.\"`"
+    },
+    {
+        "function": [
+            "forcelang",
+            "force language",
+            "forcelanguage"
+        ],
+        "name": "&forcelang",
+        "description": "Sets a forced language in a server. When its set bot wont answer with any other language for people. The default setting is off.",
+        "additional": "Only the server owner can use this command.",
+        "example": "`&forcelang fin`"
+    },
+    {
+        "function": [
+            "defaultlang",
+            "default language",
+            "defaultlanguage"
+        ],
+        "name": "&defaultlang",
+        "description": "Sets a default language in which the bot answers for users in a server when they join. Users can change this later themselves. The default setting is off.",
+        "additional": "Onmly the server owner can use this command.",
+        "example": "`&defaultang en`"
+    },
+    {
+        "function": [
+            "sub streams"
+        ],
+        "name": "!sub streams",
+        "description": "Gives a role Streams for user (if it exists and bot can manage roles). All users with this role gets a mention when someone of streamers in streamers list goes online.",
+        "additional": "The streamer must have connected their Twitch account with discord. Streamer mode must also be visible for everyone so bot can detect this.",
+        "example": "`!sub streams`"
+    },
+    {
+        "function": [
+            "unsub streams"
+        ],
+        "name": "!unsub streams",
+        "description": "Deletes the role Streams from user (if the bot can manage roles). After this thge user wont get any mentions when streamers from streamers list go online..",
+        "additional": "-",
+        "example": "`!unsub streams`"
+    },
+    {
+        "function": [
+            "streamers"
+        ],
+        "name": "!streamers",
+        "description": "Gives a list of streamers added to this server. Bot gives a mention for Streams role when any of these streamers go online.",
+        "additional": "-",
+        "example": "`!streamers`"
+    },
+    {
+        "function": [
+            "help"
+        ],
+        "name": "!help",
+        "description": "Gives a short list of bots basic commands to get help and information.",
+        "additional": "Added this as a joke because some guys were spamming !help !help :joy:",
+        "example": "`!help !help`"
+    },
+    {
+        "function": [
+            "loot",
+            "drop"
+        ],
+        "name": "!loot",
+        "description": "Calculates a probability for getting an item with given droprate.",
+        "additional": "Droprate and the number of tries must be separated with comma. Also supports droprates saved in file, when the search must be in the form of `!loot target, itemname, tries`. Only the target is necessary parameter, others just makes it more specific.",
+        "example": "`!loot 1/5000, 120` **;** `!loot corporeal beast` **;** `!loot corporeal beast, 500` **;** `!loot corporeal beast, elysian sigil, 500`"
+    },
+    {
+        "function": [
+            "addloot"
+        ],
+        "name": "%addloot",
+        "description": "Saves a droprate for a given item into a file.",
+        "additional": "If the drop goes for a specific monster/thing, give the target name first and then the itemname. Separate the names and droprate with commas..",
+        "example": "`%addloot vorkath, vorki, 1/3000`."
+    },
+    {
+        "function": [
+            "delloot"
+        ],
+        "name": "%delloot",
+        "description": "Removes a given droprate from file.",
+        "additional": "If you want to remove a specific droprate, give the target name first and then the itemname. Separate these with commas.",
+        "example": "`%delloot vorkath, vorki`."
+    },
+    {
+        "function": [
+            "test",
+            "connection"
+        ],
+        "name": "!test",
+        "description": "Tests the connection to given api.",
+        "additional": "Give also the api you want to test. Current choices are wiki, osrs and cml.",
+        "example": "`!test rsbuddy`"
+    },
+    {
+        "function": [
+            "§id"
+        ],
+        "name": "§id",
+        "description": "Gives the id of the given item.",
+        "additional": "-",
+        "example": "`§id abyssal whip`"
+    },
+    {
+        "function": [
+            "§addpuzzle"
+        ],
+        "name": "§addpuzzle",
+        "description": "Adds a puzzle for given anagram answer.",
+        "additional": "Give the whole anagram and separate it from the puzzle name with a comma.",
+        "example": "`§addpuzzle at her, castle`"
+    },
+    {
+        "function": [
+            "§addobject"
+        ],
+        "name": "§addobject",
+        "description": "Adds an item into Tradeables.json",
+        "additional": "Separate the itemname and the id with a comma. This command doesn't accept high alch values!",
+        "example": "`§addobject itemname, 54612`"
+    },
+    {
+        "function": [
+            "§delobject"
+        ],
+        "name": "§delobject",
+        "description": "Deletes an item from Tradeables.json",
+        "additional": "Command needs only the itemname to delete it",
+        "example": "`§delobject itemname`"
+    },
+    {
+        "function": [
+            "§addstream"
+        ],
+        "name": "§addstream",
+        "description": "Adds a streamer into server's streamers list. Needs a link to the stream and the user id.",
+        "additional": "Give the link to a stream first and then the id.",
+        "example": "`§addstream <https://www.twitch.tv/visperi> 95532930620719104`"
+    },
+    {
+        "function": [
+            "§delstream"
+        ],
+        "name": "§delstream",
+        "description": "Deletes the given streamer from server's streamers list.",
+        "additional": "This command needs only the user id to proceed.",
+        "example": "`§delstream 95532930620719104`"
+    },
+    {
+        "function": [
+            "§addlim"
+        ],
+        "name": "§addlim",
+        "description": "Adds a four hours buylimit for an item.",
+        "additional": "Give only the itemname and buylimit, separated by comma.",
+        "example": "`§addlim rune scimitar, 5000`"
+    },
+    {
+        "function": [
+            "§dellim"
+        ],
+        "name": "§dellim",
+        "description": "Deletes a buylimit from an item.",
+        "additional": "Only the itemname is needed to proceed.",
+        "example": "`§dellim rune scimitar`"
+    },
+    {
+        "function": [
+            "§addobjects"
+        ],
+        "name": "§addobjects",
+        "description": "Add any amount of items into Tradeables.json at once.",
+        "additional": "The new items must be in format [\"Item1, id1\", \"Item2, id2\", ...]. The easiest way is to use script New_items.py which gives you the right format automatically.\n",
+        "example": "`§addobjects [\"Bryophyta's essence, 22372\", \"Slayer's respite(m4), 5921\", \"Bryophyta's staff (uncharged), 22368\"]`"
+    },
+    {
+        "function": [
+            "§check"
+        ],
+        "name": "§check",
+        "description": "Checks if there are any new tradeables to add to the Tradeables.json.",
+        "additional": "Send a file `names.json` and send a message `§check` along with it. This is the preferred way to check new tradeables.",
+        "example": "-"
+    },
+    {
+        "function": [
+            "§get"
+        ],
+        "name": "§get",
+        "description": "Get a bot file from the bot directory. **This is sent to the discord chat you use this command so use carefully!**",
+        "additional": "The file name and extension must be exactly same as in the file name.",
+        "example": "`§get Tradeables.json`"
+    }
+]

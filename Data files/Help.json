@@ -1,0 +1,509 @@
+[
+    {
+        "function": [
+            "price"
+        ],
+        "name": "!price",
+        "description": "Käytöstä poistunut komento",
+        "additional": "Ehkä tulevaisuudessa taas...",
+        "example": "-"
+    },
+    {
+        "function": [
+            "wiki"
+        ],
+        "name": "!wiki",
+        "description": "Hakee artikkeleita annetulla hakusanalla sivustolta <https://oldschool.runescape.wiki> .",
+        "additional": "-",
+        "example": "`!wiki abyssal whip`"
+    },
+    {
+        "function": [
+            "cipher"
+        ],
+        "name": "!cipher",
+        "description": "Hakee ratkaisun annettuun cipheriin, puzzlet mukaan lukien",
+        "additional": "Tukee myös vain osittain kirjoitettuja hakusanoja",
+        "example": "`!cipher ovexon` tai `!cipher hckta`"
+    },
+    {
+        "function": [
+            "puzzle"
+        ],
+        "name": "!puzzle",
+        "description": "Hakee kuvan puzzlesta annetun syötteen perusteella.",
+        "additional": "Tukee avainsanoja zulrah, snake, cerberus , gnome, gnome child, troll, tree ja castle.",
+        "example": "`!puzzle castle`"
+    },
+    {
+        "function": [
+            "stats",
+            "ironstats",
+            "uimstats",
+            "dmmstats",
+            "seasonstats",
+            "hcstats",
+            "tournamentstats"
+        ],
+        "name": "!stats",
+        "description": "Hakee annetun käyttäjänimen highscoret Old school runescapen sivuilta.",
+        "additional": "Tukee etuliitteitä iron, uim, dmm, season, tournament ja hc eri highscoretyyppien hakemiseen.",
+        "example": "`!stats might knigh` tai `!ironstats might knight` tai `!tournamentstats b0aty`"
+    },
+    {
+        "function": [
+            "ttm"
+        ],
+        "name": "!ttm",
+        "description": "Hakee Crystalmathlabsista pelaajan tarvittavan EHP:n (Efficient Hours Played) maksimileveliin.",
+        "additional": "Käyttäjän täytyy olla CML:n listoilla ja päivitetty vähintään kerran.",
+        "example": "`!ttm visperi`"
+    },
+    {
+        "function": [
+            "anagram"
+        ],
+        "name": "!anagram",
+        "description": "Hakee ratkaisun annettuun anagrammiin.",
+        "additional": "Tukee myös vain osittain kirjoitettuja hakuja",
+        "example": "`!anagram at herg` tai `!anagram do say`"
+    },
+    {
+        "function": [
+            "cryptic"
+        ],
+        "name": "!cryptic",
+        "description": "Hakee ratkaisun annettuun cryptic clueen.",
+        "additional": "Tukee myös vain osittain kirjoitettuja hakuja",
+        "example": "`!cryptic speak to ellis`"
+    },
+    {
+        "function": [
+            "keys"
+        ],
+        "name": "!keys",
+        "description": "Hakee kaikki itemille asetetut avainsanat. Tukee vai itemien alkuperäisiä nimiä.",
+        "additional": "-",
+        "example": "`!keys rune scimitar`"
+    },
+    {
+        "function": [
+            "howlong"
+        ],
+        "name": "!howlong",
+        "description": "Hakee komentoa käyttäneen käyttäjän liittymisajankohdat serverille ja itse sovellukseen sekä korkeimman roolin serverillä.",
+        "additional": "-",
+        "example": "`!howlong`"
+    },
+    {
+        "function": [
+            "xp",
+            "level"
+        ],
+        "name": "!xp",
+        "description": "Näyttää kuinka paljon xp:tä tarvitsee levelille.",
+        "additional": "Tukee myös hakua level väleille. Maksimilevelinä voi käyttää myös lyhennettä `max`",
+        "example": "`!xp 90` tai `!xp 90-max`"
+    },
+    {
+        "function": [
+            "calc",
+            "laskin"
+        ],
+        "name": "!calc",
+        "description": "Perinteinen nelilaskin, joka tukee summia, erotuksia, tuloja ja osamääriä.",
+        "additional": "Ei tue useampaa kuin kahta tekijää, sulkuja, muuttujia tai trigonometrisiä funktioita",
+        "example": "`!calc 5 * 8`"
+    },
+    {
+        "function": [
+            "ehp",
+            "ironehp",
+            "skillerehp",
+            "f2pehp"
+        ],
+        "name": "!ehp",
+        "description": "Hakee annetulle skillille xp/h raten, joka vastaa tunnin aikana EHP:ta. Tukee vain skillien alkuperäisiä nimiä.",
+        "additional": "Etuliitteenä voi käyttää `iron`, `skiller` tai `f2p` eri listojen hakemiseksi.",
+        "example": "`!ehp mining` tai `!ironehp woodcutting`"
+    },
+    {
+        "function": [
+            "maps"
+        ],
+        "name": "!maps",
+        "description": "Antaa linkin Osrs-wikin clue maps -sivulle.",
+        "additional": "-",
+        "example": "`!maps`"
+    },
+    {
+        "function": [
+            "limit"
+        ],
+        "name": "!limit",
+        "description": "Tarkistaa onko annetulle itemille neljän tunnin ostorajaa. Tukee avainsanoja.",
+        "additional": "-",
+        "example": "`!limit cannonballs`"
+    },
+    {
+        "function": [
+            "chatcommands",
+            "chat commands",
+            "servercommands",
+            "server commands",
+            "custom commands"
+        ],
+        "name": "!server commands",
+        "description": "Hakee kaikki tälle serverille asetetut omat komennot.",
+        "additional": "-",
+        "example": "`!server commands`"
+    },
+    {
+        "function": [
+            "addkey"
+        ],
+        "name": "%addkey",
+        "description": "Lisää annetulle itemille annetut avainsanat. Tukee vain itemien alkuperäisiä nimiä.",
+        "additional": "Tukee useamman avainsanan lisäämistä yhdellä kerralla. Erota itemin nimi ja kaikki avainsanat pilkulla.",
+        "example": "`%addkey rune scimitar, key1, key2, key3`"
+    },
+    {
+        "function": [
+            "delkey"
+        ],
+        "name": "`%delkey`",
+        "description": "Poistaa annetut avainsanat itemiltä. Tukee vain itemien alkuperäisiä nimiä.",
+        "additional": "Tukee useamman avainsanan lisäämistä yhdellä kerralla. Erota itemin nimi ja kaikki avainsanat pilkulla.",
+        "example": "`%delkey rune scimitar, key1, key2, key3`"
+    },
+    {
+        "function": [
+            "addcom"
+        ],
+        "name": "%addcom",
+        "description": "Lisää serverille annetun komennon. Komennon viestin tulee olla lainausmerkkien sisällä.",
+        "additional": "Tukee myös rivinvaihtoja, joita käytetään merkinnällä `\\n`",
+        "example": "`%addcom testikomento \"Erkki Esimerkki\\nTästä alkaa uusi rivi\"`"
+    },
+    {
+        "function": [
+            "delcom"
+        ],
+        "name": "%delcom",
+        "description": "Poistaa serverille asetetun komennon. Tarvitsee ainoastaan komennon nimen.",
+        "additional": "-",
+        "example": "`%delcom testikomento`"
+    },
+    {
+        "function": [
+            "gains"
+        ],
+        "name": "!gains",
+        "description": "Laskee highscoremuutokset annetulle käyttäjälle viimeisimmän tarkastuksen jälkeen. ",
+        "additional": "Käyttäjän täytyy olla seurannassa komennon toimimiseksi.",
+        "example": "`!gains visperi`"
+    },
+    {
+        "function": [
+            "pricechange"
+        ],
+        "name": "!pricechange",
+        "description": "Käytöstä poistunut komento",
+        "additional": "Ehkä tulevaisuudessa taas...",
+        "example": "-"
+    },
+    {
+        "function": [
+            "track"
+        ],
+        "name": "!track",
+        "description": "Laittaa annetun käyttäjän seurantaan.",
+        "additional": "Käyttäjän tyypin valinta rekisteröityy vasta kaikkien vaihtoehtojen latauduttua.",
+        "example": "`!track visperi`"
+    },
+    {
+        "function": [
+            "commands"
+        ],
+        "name": "!commands",
+        "description": "Antaa listan kaikista käytössä olevista komennoista.",
+        "additional": "-",
+        "example": "`!commands`"
+    },
+    {
+        "function": [
+            "language"
+        ],
+        "name": "&language",
+        "description": "Vaihtaa kieltä, jolla botti vastaa käyttäjän komentoihin. Vaihtoehdot ovat suomi ja englanti.",
+        "additional": "Ei vaihda serverin asetuksia, koskee vain komennon käyttäjän kieltä.",
+        "example": "`&lang fi`"
+    },
+    {
+        "function": [
+            "namechange"
+        ],
+        "name": "!namechange",
+        "description": "Vaihtaa seurannassa olevan käyttäjän tallennetun nimen vanhasta uuteen. Käytä aina, kun vaihdat nimimerkkiäsi pelissä.",
+        "additional": "Takaa !gains komennon toimivuuden ja on siksi tärkeää käyttää.",
+        "example": "`!namechange mahtiritari, visperi`"
+    },
+    {
+        "function": [
+            "§id"
+        ],
+        "name": "§id",
+        "description": "Hakee annetun itemin id:n.",
+        "additional": "-",
+        "example": "`§id abyssal whip`"
+    },
+    {
+        "function": [
+            "§addpuzzle"
+        ],
+        "name": "§addpuzzle",
+        "description": "Lisää annettuun anagrammiin puzzlen.",
+        "additional": "Anna anagrammi kokonaan. Erota se ja puzzlen nimi pilkulla.",
+        "example": "`§addpuzzle at her, castle`"
+    },
+    {
+        "function": [
+            "permit"
+        ],
+        "name": "&permit",
+        "description": "Antaa roolille oikeuden käyttää korkeamman oikeuden komentoja. Komentoa voi käyttää ainoastaan serverin omistaja.",
+        "additional": "Ei vaihda mitään serverin asetuksia. Koskee vain botin komentoja.",
+        "example": "`&permit testrole`"
+    },
+    {
+        "function": [
+            "unpermit"
+        ],
+        "name": "&unpermit",
+        "description": "Poistaa roolilta oikeuden käyttää korkeamman oikeuden komentoja.",
+        "additional": "Komentoa voi käyttää ainoastaan serverin omistaja.",
+        "example": "`&unpermit testrole`"
+    },
+    {
+        "function": [
+            "add commands"
+        ],
+        "name": "&add commands",
+        "description": "Asettaa komentojen lisäämisen päälle tai pois. Komentojen lisääminen on oletuksena päällä.",
+        "additional": "Komentoa voi käyttää ainoastaan serverin omistaja.",
+        "example": "`&add commands off`"
+    },
+    {
+        "function": [
+            "settings"
+        ],
+        "name": "&settings",
+        "description": "Näyttää serverin asetukset.",
+        "additional": "-",
+        "example": "`&settings`"
+    },
+    {
+        "function": [
+            "nicks"
+        ],
+        "name": "!nicks",
+        "description": "Hakee käyttäjän vanhat nimimerkit. Jos käyttäjä ei ole seurannassa, näkyy vain yksi vanha nimimerkki.",
+        "additional": "Seurattujen käyttäjien nimimerkit tallentuu muistiin vain, jos sille käytetään komentoja `!namechange` tai `!gains`.",
+        "example": "`!nicks visperi`"
+    },
+    {
+        "function": [
+            "§addobject"
+        ],
+        "name": "§addobject",
+        "description": "Lisää annetun itemin Tradeables.json listaan. Erota nimi ja id pilkulla.",
+        "additional": "Komentoon ei tarvitse syöttää high alch arvoa.",
+        "example": "`§addobject itemname, 54612`"
+    },
+    {
+        "function": [
+            "update"
+        ],
+        "name": "!update",
+        "description": "Antaa linkin uusimpaan artikkeliin Old school runescapen etusivulla.",
+        "additional": "-",
+        "example": "`!update`"
+    },
+    {
+        "function": [
+            "§delobject"
+        ],
+        "name": "§delobject",
+        "description": "Poistaa itemin Tradeables.json listalta.",
+        "additional": "Pelkkä itemin nimi riittää komennon suorittamiseen.",
+        "example": "`§delobject itemname`"
+    },
+    {
+        "function": [
+            "editcom"
+        ],
+        "name": "%editcom",
+        "description": "Muokkaa jo olemassa olevan serverikohtaisen komennon viestiä. Komennon uuden viestin tulee olla lainausmerkkien sisällä.",
+        "additional": "Tukee rivinvaihtoja käyttämällä merkintää `\\n`",
+        "example": "`%editcom hello world \"This is the new message.\"`"
+    },
+    {
+        "function": [
+            "forcelang",
+            "force language",
+            "forcelanguage"
+        ],
+        "name": "&forcelang",
+        "description": "Asettaa serverille pakotetun kielen. Pakotetun kielen ollessa käytössä botti ei vastaa käyttäjille muilla kielillä.",
+        "additional": "Komentoa voi käyttää ainoastaan serverin omistaja.",
+        "example": "`&forcelang fin`"
+    },
+    {
+        "function": [
+            "defaultlang",
+            "default language",
+            "defaultlanguage"
+        ],
+        "name": "&defaultlang",
+        "description": "Asettaa serverille oletuskielen. Uuden käyttäjän liittyessä serverille hänen kielenä on oletuskieli.",
+        "additional": "Komentoa voi käyttää ainoastaan serverin omistaja.",
+        "example": "`&defaultang en`"
+    },
+    {
+        "function": [
+            "sub streams"
+        ],
+        "name": "!sub streams",
+        "description": "Antaa käyttäjälle roolin Streams (jos sellainen on olemassa ja botti saa hallita rooleja). Kaikki tämän roolin omaavat käyttäjät saavat ilmoituksen (mention), kun joku streamers listalla olevista käyttäjistä menee online.",
+        "additional": "Streamerillä täytyy olla yhdistettynä Twitch käyttäjä discordiin ja näkyä streamer tila kaikille, jotta botti tunnistaa tämän.",
+        "example": "`!sub streams`"
+    },
+    {
+        "function": [
+            "unsub streams"
+        ],
+        "name": "!unsub streams",
+        "description": "Poistaa käyttäjältä roolin Streams. Tämän jälkeen käyttäjä ei enää saa ilmoituksia onlineen menevistä streamaajista.",
+        "additional": "-",
+        "example": "`!unsub streams`"
+    },
+    {
+        "function": [
+            "streamers"
+        ],
+        "name": "!streamers",
+        "description": "Antaa listan serverille lisätyistä streamereistä. Botti antaa ilmoituksen kaikille Streams-roolissa olijoille, kun joku listan käyttäjistä menee online.",
+        "additional": "-",
+        "example": "`!streamers`"
+    },
+    {
+        "function": [
+            "§addstream"
+        ],
+        "name": "§addstream",
+        "description": "Lisää annetun käyttäjän streamers listaan. Tarvitsee sekä linkin streamiin että käyttäjän id:n.",
+        "additional": "Anna ensin linkki streamiin, sitten käyttäjän id.",
+        "example": "`§addstream <https://www.twitch.tv/visperi> 95532930620719104`"
+    },
+    {
+        "function": [
+            "§delstream"
+        ],
+        "name": "§delstream",
+        "description": "Poistaa annetun käyttäjän streamers listasta.",
+        "additional": "Komennolle tarvitsee antaa ainoastaan poistettavan käyttäjän id.",
+        "example": "`§delstream 95532930620719104`"
+    },
+    {
+        "function": [
+            "help"
+        ],
+        "name": "!help",
+        "description": "Antaa lyhyen listan kaikista peruskomennoista, joilla saa apua botin käyttöön.",
+        "additional": "Loppuu se perseily <:danskisu:433918416710008843>",
+        "example": "`!help !help`"
+    },
+    {
+        "function": [
+            "§addlim"
+        ],
+        "name": "§addlim",
+        "description": "Lisää annetulle itemille neljän tunnin ostorajoituksen tiedostoon.",
+        "additional": "Anna komennolle pelkästään itemin nimi ja ostoraja, pilkulla erotettuna.",
+        "example": "`§addlim rune scimitar, 5000`"
+    },
+    {
+        "function": [
+            "§dellim"
+        ],
+        "name": "§dellim",
+        "description": "Poistaa annetulta itemiltä neljän tunnin ostorajoituksen tiedostosta.",
+        "additional": "Pelkkä itemin nimi riittää komennon suorittamiseen.",
+        "example": "`§dellim rune scimitar`"
+    },
+    {
+        "function": [
+            "§addobjects"
+        ],
+        "name": "§addobjects",
+        "description": "Mahdollistaa mielivaltaisen määrän itemeitä lisäämisen tiedostoon yhdellä suorituksella.",
+        "additional": "Annettujen itemien täytyy olla muodossa [\"Item1, id1\", \"Item2, id2\", ...]. Onnistuu parhaiten ajamalla skripti New_items.py, joka antaa valmiin listan.\n",
+        "example": "`§addobjects [\"Bryophyta's essence, 22372\", \"Slayer's respite(m4), 5921\", \"Bryophyta's staff (uncharged), 22368\"]`"
+    },
+    {
+        "function": [
+            "loot",
+            "drop"
+        ],
+        "name": "!loot",
+        "description": "Laskee todennäköisyyden saada droppi annetun drop raten ja yritysten määrän perusteella.",
+        "additional": "Drop rate ja yritysten määrä täytyy erottaa pilkulla. Tukee myös tiedostoon tallennettuja droprateja, jolloin haun täytyy olla muodossa `!loot kohde, itemname, yrityskerrat`. Ainoastaan kohde on tätä komentoa käyttäessä pakollinen, muut tarkentavat hakua.",
+        "example": "`!loot 1/5000, 120` **;** `!loot corporeal beast` **;** `!loot corporeal beast, 500` **;** `!loot corporeal beast, elysian sigil, 500`"
+    },
+    {
+        "function": [
+            "addloot"
+        ],
+        "name": "%addloot",
+        "description": "Tallentaa tiedostoon annetun itemin dropraten.",
+        "additional": "Jos droppi menee jollekin tietylle kohteelle, anna ensin kohteen nimi ja itemin nimi. Erota kaikki nimet ja droprate toisistaan pilkulla.",
+        "example": "`%addloot vorkath, vorki, 1/3000`."
+    },
+    {
+        "function": [
+            "delloot"
+        ],
+        "name": "%delloot",
+        "description": "Poistaa tiedostosta annetun itemin dropraten.",
+        "additional": "Jos haluat poistaa jonkin tietyn kohteen, anna ensin kohteen nimi ja sitten itemin nimi. Erota nämä toisistaan pilkulla.",
+        "example": "`%delloot vorkath, vorki`."
+    },
+    {
+        "function": [
+            "§check"
+        ],
+        "name": "§check",
+        "description": "Tarkistaa, onko rsbuddyn G.E. apiin tullut uusia itemeitä.",
+        "additional": "Lähetä tiedosto `names.json` ja samalla viesti `§check`. Tämä on suositeltu tapa tarkistaa uudet itemit.",
+        "example": "-"
+    },
+    {
+        "function": [
+            "§get"
+        ],
+        "name": "§get",
+        "description": "Lähettää pyydetyn tiedoston botin kansiosta. **Tiedosto lähetetään chattiin missä suoritat komennon, joten ole huolellinen komennon käytössä!**",
+        "additional": "Tiedoston nimi täytyy antaa täsmälleen oikein päätteineen.",
+        "example": "`§get Tradeables.json`"
+    },
+    {
+        "function": [
+            "test",
+            "connection"
+        ],
+        "name": "!test",
+        "description": "Testaa yhteyden annettuun apiin.",
+        "additional": "Anna myös api, jonka haluat testata. Vaihtoehdot ovat wiki, osrs ja cml.",
+        "example": "`!test rsbuddy`"
+    }
+]
