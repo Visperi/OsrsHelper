@@ -1,6 +1,6 @@
 # OsrsHelper v6.0
 
-## I have now started rewriting this bot into newest discord.py (rewrite) and decided that no major changes will be updated into this one. I will upload the rewrite version as soon as its somewhat working and applicable enough.
+**I have now started rewriting this bot into newest discord.py (rewrite) and decided that no major changes will be updated into this one. I will upload the rewrite version as soon as its somewhat working and applicable enough.**
 
 Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too. It was started in october 2015 as a very small project just to check item prices in G.E. Things got bigger and now it has commands for clues, users stats and gains, custom item keywords and custom server commands. I thought long about publishing this code, but now I finally decided to do it.
 
@@ -52,11 +52,12 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
 
 # Todo
 - [x] Fix timestamps to work in any timezone  **Done. Timestamps are always in UTC now.**
-- [] ~~Translate the code into english~~ 
+- [] Translate the code into english
 - [] Make the code work without downloading finnish version
 - [] Make the prefix customizable
-- [] Custom welcome messages
 - [] More server specific settings
+
+Incomplete todos are so far cancelled for this project. However, they will be supported in the rewrite version.
 
 ## Licence
 MIT License
