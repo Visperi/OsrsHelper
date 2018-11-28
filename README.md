@@ -51,8 +51,8 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
 - Add reactions (Bot will only react when subscribing or unsuscribing role Streams or tracking a player)
 
 # Todo
-- [x] Fix timestamps to work in any timezone  Done. Timestamps are always in UTC now.
-- [] Translate the code into english
+- [x] Fix timestamps to work in any timezone  **Done. Timestamps are always in UTC now.**
+- [] ~~Translate the code into english~~ 
 - [] Make the code work without downloading finnish version
 - [] Make the prefix customizable
 - [] Custom welcome messages
