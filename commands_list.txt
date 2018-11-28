@@ -10,9 +10,6 @@
 
 !keys				|	Get keywords for a given item. Item prices can be easier to check if they have simplier or shorter keywords than their ingame name.
 !limit			|	Get four hours buy limit for a given item if found any. Supports keywords.
-!pricechange		|	Get a list how much a price has changed for an item in a month, in a week, in a day and in an hour. Supports keywords.
-!price				|	Get the current price for an item in G.E. Supports keywords
-
 !cipher				|	Get an answer for a cipher cluestep.
 !anagram			|	Get an answer for an anagram cluestep.
 !puzzle				|	Get an image of a solved puzzle for a puzzle cluestep.
