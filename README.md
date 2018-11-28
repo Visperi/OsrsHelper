@@ -4,17 +4,17 @@
 
 Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too. It was started in october 2015 as a very small project just to check item prices in G.E. Things got bigger and now it has commands for clues, users stats and gains, custom item keywords and custom server commands. I thought long about publishing this code, but now I finally decided to do it.
 
-**Very spaghetti code btw** because this was my very first project in coding after a Python basics university course. I apologize that there is no documentation and the code is in finnish. I'll be updating things to be more understandable as fast as I can. However, the bot works and it has pretty straightforward help commands.
+**Very spaghetti code btw** because this was my very first project in coding after a Python basics university course. I apologize that there is no documentation and the code is in finnish. I'll be updating things to be more understandable as much as I can. However, the bot works and it has pretty straightforward help commands.
 
 ### Main features
-- 43 hard coded commands ([Full list](/commands_list.txt), better formatting will be made)
+- 41 hard coded commands ([Full list](/commands_list.txt), bad formatting but somewhat readable)
 - Compact but straightforward help messages for every command
 - Up to 200 server specific custom commands
-- Add keywords for tradeable items to check prices
+- Add keywords for tradeable items to check price
 - Manage roles who can add or delete commands and keywords
 - Full Osrs clue support (excluding map and Falo steps)
 
-All my available time goes currently into the todo list things instead of making new features. An exception can be made if something very good comes into my mind.
+All my available free time goes currently into rewriting the bot instead of improving this one. An exception can be made if something very good comes into my mind. Maintaining this version is guaranteed at least as long as the rewrite version is uploaded.
 
 # Source made with
 - Python 3.6
@@ -26,7 +26,7 @@ All my available time goes currently into the todo list things instead of making
 Code should work with newer versions of these modules if no major updates are not made. Only exception is discord.py which will **not** work if updated to rewrite.
 
 # Installation
-Unfortunately the bot is not currently guaranteed to work without downloading both finnish and english versions. Also, timestamps are currently wrong if you (bot host) live outside of timezone GMT+2. These are the first things I will be working on as much as I have time.
+Unfortunately the bot is not currently guaranteed to work without downloading both finnish and english versions.
 
 1. Download everything in this repository. move **all** files into the same directory with all .py files
 2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files can safely be emptied without causing any differences in bot functionality:
