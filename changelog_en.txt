@@ -1,0 +1,10 @@
+- Disabled commands !price and !pricechange
+- Fixed timestamps in command !gains
+- Added possibility to search for f2p EHP rates
+- (BETA) Changed wiki links from old to the new wiki website
+- §timesused now shows command usages in descending order
+
+HOTFIX 6.1.3
+
+- Fixed clues in command !stats
+- Fixed new wiki links into english version
