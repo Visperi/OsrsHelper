@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-modulelist = ["bs4", "discord", "pytz", "tabulate"]
+modulelist = ["bs4", "discord", "tabulate"]
 
 
 def check_modules():
