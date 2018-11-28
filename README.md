@@ -20,7 +20,6 @@ All my available free time goes currently into rewriting the bot instead of impr
 - Python 3.6
 - `Beautifulsoup4` version 4.6.0
 - `discord.py` version 0.16.12 **not rewrite**
-- `pytz` version 2018.3
 - `tabulate` version 0.8.2
 
 Code should work with newer versions of these modules if no major updates are not made. Only exception is discord.py which will **not** work if updated to rewrite.
@@ -39,7 +38,7 @@ Unfortunately the bot is not currently guaranteed to work without downloading bo
    
    You can safely modify the default settings in settings.ini if you know what you're doing.
 3. Install Python 3.6+ and every needed module (Use `check_modules.py` to see which modules are not installed in your system)
-4. Register the bot into discord api with your account and copy your token into file Credentials.json
+4. Register the bot into discord api with your account and copy your secret token into file Credentials.json
 5. Add the bot into a server, run Main.py and get further help with command `!help`
 
 #### Following permissions are needed for full functionality
