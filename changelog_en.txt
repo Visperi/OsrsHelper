@@ -3,6 +3,7 @@
 - Added possibility to search for f2p EHP rates
 - (BETA) Changed wiki links from old to the new wiki website
 - §timesused now shows command usages in descending order
+- !wiki now gives some possible hits if no pages are found with initial search
 
 HOTFIX 6.1.3
 
