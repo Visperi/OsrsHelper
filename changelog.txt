@@ -3,6 +3,7 @@
 - Lisättiin mahdollisuus hakea f2p EHP rateja
 - (BETA) Vaihdettiin wiki-linkit uuteen wikisivuun
 - §timesused näyttää nyt komentojen käytöt laskevassa järjestyksessä
+- !wiki näyttää nyt mahdollisia osumia, jos sivua ei löydy suoraan haulla
 
 HOTFIX 6.1.3
 
