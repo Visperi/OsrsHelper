@@ -33,6 +33,7 @@ import re
 import datetime
 import Settings
 from fractions import Fraction
+from bs4 import BeautifulSoup
 
 path = "{}/".format(os.path.dirname(__file__))
 if path == "/":
@@ -204,9 +205,23 @@ async def search_wiki(message, hakusanat, client):
     search = "_".join(hakusanat)
     search_link = baselink + search
     response = requests.get(search_link).text
-    if "This page doesn't exist on the wiki" in response:
-        await client.send_message(message.channel, "Could not find any pages with that keyword.")
-        return
+    if f"This page doesn&#039;t exist on the wiki. Maybe it should?" in response:
+        hyperlinks = []
+        truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
+        truesearch_resp = requests.get(truesearch_link).text
+
+        # parse html
+        results_html = BeautifulSoup(truesearch_resp, "html.parser")
+        result_headings = results_html.findAll("div", class_="mw-search-result-heading")
+        if len(result_headings) == 0:
+            await client.send_message(message.channel, "Could not find any pages with your search.")
+            return
+        for result in result_headings[:5]:
+            link_end = result.find("a")["href"]
+            link_title = result.find("a")["title"]
+            hyperlinks.append(f"[{link_title}](https://oldschool.runescape.wiki{link_end})")
+        embed = discord.Embed(title="Did you mean some of these?", description="\n".join(hyperlinks))
+        await client.send_message(message.channel, embed=embed)
     else:
         await client.send_message(message.channel, f"<{search_link}>")
     kayttokerrat("Wiki")
@@ -1201,7 +1216,6 @@ async def search_from_file(message, search, client):
 
 
 async def latest_update(message, client):
-    from bs4 import BeautifulSoup
 
     dates = []
     news_html = []
@@ -1599,9 +1613,9 @@ async def test_connection(message, keywords, client):
 async def hinnat(message, client):
     viesti = "All good things come to an end. Rsbuddy's api does not work anymore and as a result, for now we have " \
              "to say farewell to commands `!pricechange` and`!price`. These commands were the main reason for the " \
-             "start of the whole project and within two years those commands accounted for up to 45% of all the commands " \
-             "executed.\n\nHowever, this shall not be a problem for us. Most likely we will have at least almost the " \
-             "same commands in the future."
+             "start of the whole project and within two years those commands accounted for up to 45% of all the " \
+             "commands executed.\n\nHowever, this shall not be a problem for us. Most likely we will have at least " \
+             "almost the same commands in the future."
     await client.send_message(message.channel, viesti)
 
 if __name__ == "__main__":

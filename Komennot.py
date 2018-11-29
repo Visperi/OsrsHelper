@@ -33,6 +33,7 @@ import discord
 import requests
 import Settings
 from fractions import Fraction
+from bs4 import BeautifulSoup
 
 path = "{}/".format(os.path.dirname(__file__))
 if path == "/":
@@ -312,9 +313,23 @@ async def search_wiki(message, hakusanat, client):
     search = "_".join(hakusanat)
     search_link = baselink + search
     response = requests.get(search_link).text
-    if "This page doesn't exist on the wiki" in response:
-        await client.send_message(message.channel, "Hakusanalla ei löytynyt yhtään sivua.")
-        return
+    if f"This page doesn&#039;t exist on the wiki. Maybe it should?" in response:
+        hyperlinks = []
+        truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
+        truesearch_resp = requests.get(truesearch_link).text
+
+        # parse html
+        results_html = BeautifulSoup(truesearch_resp, "html.parser")
+        result_headings = results_html.findAll("div", class_="mw-search-result-heading")
+        if len(result_headings) == 0:
+            await client.send_message(message.channel, "Haullasi ei löytynyt yhtään sivua.")
+            return
+        for result in result_headings[:5]:
+            link_end = result.find("a")["href"]
+            link_title = result.find("a")["title"]
+            hyperlinks.append(f"[{link_title}](https://oldschool.runescape.wiki{link_end})")
+        embed = discord.Embed(title="Tarkoititko jotain näistä", description="\n".join(hyperlinks))
+        await client.send_message(message.channel, embed=embed)
     else:
         await client.send_message(message.channel, f"<{search_link}>")
     kayttokerrat("Wiki")
@@ -1190,7 +1205,6 @@ async def change_name(message, hakusanat, client):
 
 
 async def latest_update(message, client):
-    from bs4 import BeautifulSoup
 
     dates = []
     news_html = []
