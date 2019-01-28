@@ -108,7 +108,7 @@ async def kayttajan_tiedot(message, client):
         .add_field(name="Id", value=message.author.id)\
         .add_field(name="User created", value=created_at)\
         .add_field(name="Joined server", value=joined_at)\
-        .add_field(name="Role in this server", value=", ".join(roles))
+        .add_field(name="Roles in this server", value=", ".join(roles))
     await client.send_message(message.channel, embed=user_info)
 
 
@@ -117,7 +117,7 @@ async def commands(message, client):
                         "!sub streams", "!unsub streams", "!streamers", "!test"]
     osrs_commands = ["!wiki (BETA)", "!stats", "!gains", "!track", "!ttm", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
-    item_commands = ["!keys", "!limit"]
+    item_commands = ["!keys", "!limit", "price", "!iteminfo"]
     moderator_commands = ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom", "%addloot", "%delloot"]
     settings_commands = ["&language", "&settings", "&permit", "&unpermit", "&add commands", "&forcelang",
                          "&defaultlang"]
@@ -199,7 +199,7 @@ async def get_halch(itemname):
     return halch
 
 
-async def search_wiki(message, hakusanat, client):
+async def search_wiki(message, hakusanat: list, client, get_html=False):
     baselink = "https://oldschool.runescape.wiki/w/"
 
     search = "_".join(hakusanat)
@@ -220,9 +220,11 @@ async def search_wiki(message, hakusanat, client):
             link_end = result.find("a")["href"]
             link_title = result.find("a")["title"]
             hyperlinks.append(f"[{link_title}](https://oldschool.runescape.wiki{link_end})")
-        embed = discord.Embed(title="Did you mean some of these?", description="\n".join(hyperlinks))
+        embed = discord.Embed(title="Tarkoititko jotain näistä", description="\n".join(hyperlinks))
         await client.send_message(message.channel, embed=embed)
     else:
+        if get_html:
+            return response
         await client.send_message(message.channel, f"<{search_link}>")
     kayttokerrat("Wiki")
 
@@ -786,7 +788,7 @@ async def addcom(message, words_raw, client):
     try:
         server_commands = list(data[server])
         if command in server_commands:
-            await client.send_message(message.channel, "Komento on jo olemassa.")
+            await client.send_message(message.channel, f"Command `{command}` already exists.")
             return
         elif len(server_commands) > 199:
             await client.send_message(message.channel, "Maximum amount of commands is 200. This has already been "
@@ -933,8 +935,8 @@ async def hinnanmuutos(message, client):
     DEPRECATED
     """
 
-    await client.send_message(message.channel, "Unfortunately, the command had to be disabled. Get more info with "
-                                               "command `!prices`.")
+    await client.send_message(message.channel, "This command is deprecated and has been combined with command "
+                                               "`!price`.")
     return
 
 
@@ -1370,8 +1372,9 @@ async def bot_info(message, client, release_notes=False):
                         value="[discord.py](https://github.com/Rapptz/discord.py)\n"
                               "[Rsbuddy](https://rsbuddy.com/) (price, pricechange)\n"
                               "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (ttm, nicks, ehp)\n"
-                              "[Old school runescape](http://oldschool.runescape.com/) (whole game, user stats)\n"
-                              "[OSRS Wiki](https://oldschool.runescape.wiki) (wiki, clues, high alch values)")
+                              "[Old school runescape](http://oldschool.runescape.com/) (whole game, user stats, "
+                              "item info)\n"
+                              "[OSRS Wiki](https://oldschool.runescape.wiki) (wiki, clues)")
         embed.add_field(name="Latest updates", value=changelog)
         embed.set_thumbnail(url=appinfo.icon_url)
     await client.send_message(message.channel, embed=embed)
@@ -1400,6 +1403,8 @@ async def sub_to_role(message, client, unsub=False):
     except discord.errors.Forbidden:
         await client.send_message(message.channel, "My role doesn't have permission to manage roles or react to "
                                                    "messages. Role has to be added and removed manually.")
+    except AttributeError:
+        await client.send_message(message.channel, "This command does not work in direct messages.")
 
 
 async def get_streamers(message, client):
@@ -1610,13 +1615,209 @@ async def test_connection(message, keywords, client):
     await client.send_message(message.channel, embed=embed)
 
 
-async def hinnat(message, client):
-    viesti = "All good things come to an end. Rsbuddy's api does not work anymore and as a result, for now we have " \
-             "to say farewell to commands `!pricechange` and`!price`. These commands were the main reason for the " \
-             "start of the whole project and within two years those commands accounted for up to 45% of all the " \
-             "commands executed.\n\nHowever, this shall not be a problem for us. Most likely we will have at least " \
-             "almost the same commands in the future."
-    await client.send_message(message.channel, viesti)
+async def itemspecs(message, hakusanat, client):
+    """
+    Hakee käyttäjän antamasta itemistä tietoja. Yrittää aseille ja panssareille ensimmäisenä hakea statseja
+    tiedostosta, jonka epäonnistuessa ne haetaan wikistä. Lopuksi asettelee kaiken tiedon embediin ja
+    lähettää sen discordiin.
+    """
+    footer = ""
+    ignore_list = ["Toxic blowpipe (empty)", "Trident of the seas (full)", "Trident of the seas (empty)",
+                   "Serpentine helm (uncharged)"]
+
+    def check_aliases(name):
+        correct_name = name
+        if name == "Lava cape":
+            correct_name = "Fire cape"
+        elif name == "Tentacle whip":
+            correct_name = "Abyssal tentacle"
+        return correct_name
+
+    with open(f"{path}itemstats.json") as data_file:
+        data = json.load(data_file)
+    try:
+        itemname, item_id = get_iteminfo(" ".join(hakusanat))
+        tradeable = True
+        if itemname in ignore_list:
+            raise TypeError
+    except TypeError:
+        itemname = check_aliases(" ".join(hakusanat).capitalize())
+        tradeable = False
+    try:
+
+        itemdata = data[itemname]  # Löytyy tiedostosta itemstats.json
+        itemstats = itemdata["stats"]
+        description = itemdata["description"]
+        members = itemdata["members"]
+        icon = itemdata["icon"]
+    except KeyError:
+        if tradeable:
+            geapi_resp = requests.get(f"http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?"
+                                      f"item={item_id}").content
+            itemdata = json.loads(geapi_resp)["item"]
+            description = itemdata["description"]
+            members = itemdata["members"].capitalize()
+            icon = itemdata["icon_large"]
+        else:
+            description, members, icon = "-", "-", ""
+
+        wiki_resp = await search_wiki(message, itemname.split(), client, get_html=True)
+        try:
+            soup = BeautifulSoup(wiki_resp, "html.parser")
+        except TypeError:
+            await client.send_message(message.channel, "Could not find any items with your search. Untradeable items "
+                                                       "dont support using keywords.")
+            return
+        headings = soup.findAll("td", class_="smwprops")
+        itemstats = None
+        for a in headings:
+            b = a.text.replace(" ", "").strip("+")
+            if b.startswith("{") and b.endswith("}"):
+                try:
+                    itemstats = json.loads(b)
+                    break
+                except json.decoder.JSONDecodeError:
+                    footer = "Could not parse the item stats. This is probably because the item has multiple " \
+                             "variations of it in game and needs to be added manually."
+        if type(itemstats) is dict:
+            data[itemname] = {"description": description,
+                                  "members": members,
+                                  "icon": icon,
+                                  "stats": itemstats
+                              }
+            with open("itemstats.json", "w") as data_file:
+                json.dump(data, data_file, indent=4)
+    embed = discord.Embed(title=itemname).add_field(name="Description", value=description, inline=False)
+    attack_speed = ""
+    members = members
+    itemslot = ""
+    icon = icon
+
+    if not itemstats and description == "-":
+        await client.send_message(message.channel, "Found an untradeable item with no stats with your search. "
+                                                   "This embed would be empty.")
+        return
+    elif itemstats:
+        astab = itemstats["astab"]
+        aslash = itemstats["aslash"]
+        acrush = itemstats["acrush"]
+        amagic = itemstats["amagic"]
+        arange = itemstats["arange"]
+        dstab = itemstats["dstab"]
+        dslash = itemstats["dslash"]
+        dcrush = itemstats["dcrush"]
+        dmagic = itemstats["dmagic"]
+        drange = itemstats["drange"]
+        str_ = itemstats["str"]
+        rstr = itemstats["rstr"]
+        mdmg = itemstats["mdmg"]
+        prayer = itemstats["prayer"]
+        slot = itemstats["slot"]
+        itemslot = f"Slot: {slot}"
+
+        try:
+            speed = itemstats["speed"]
+            attack_speed = f"Speed: {speed} (Hit interval {round(int(speed) * 0.6, 2)}s)"
+        except KeyError:
+            attack_speed = ""
+
+        offensive = f"Stab: {astab}\n" \
+            f"Slash: {aslash}\n" \
+            f"Crush: {acrush}\n" \
+            f"Magic: {amagic}\n" \
+            f"Ranged: {arange}"
+        defensive = f"Stab: {dstab}\n" \
+            f"Slash: {dslash}\n" \
+            f"Crush: {dcrush}\n" \
+            f"Magic: {dmagic}\n" \
+            f"Ranged: {drange}"
+        other = f"Str bonus: {str_}\n" \
+            f"Ranged str: {rstr}\n" \
+            f"Magic damage: {mdmg}\n" \
+            f"Prayer bonus: {prayer}"
+
+        embed.add_field(name="Attack bonuses", value=offensive)
+        embed.add_field(name="Defence bonuses", value=defensive)
+        embed.add_field(name="Other bonuses", value=other)
+
+    misc = f"Members: {members}\n" \
+        f"{itemslot}\n" \
+        f"{attack_speed}"
+    embed.add_field(name="Misc", value=misc)
+    if icon != "":
+        embed.set_thumbnail(url=icon)
+    embed.set_footer(text=footer)
+    await client.send_message(message.channel, embed=embed)
+
+
+async def item_price(message, hakusanat, client):
+
+    def pricechanges():
+        latest = daily_data[latest_ts]
+        month = "{:,}".format(int(latest) - int(daily_data[month_ts])).replace(",", " ")
+        week = "{:,}".format(int(latest) - int(daily_data[week_ts])).replace(",", " ")
+        day = "{:,}".format(int(latest) - int(daily_data[day_ts])).replace(",", " ")
+        if month[0] != "-":
+            month = f"+{month}"
+        if week[0] != "-":
+            week = f"+{week}"
+        if day[0] != "-":
+            day = f"+{day}"
+        return month, week, day
+
+    search = " ".join(hakusanat).replace(" * ", "*").split("*")
+    try:
+        itemname, itemid = get_iteminfo(search[0])
+    except TypeError:
+        await client.send_message(message.channel, "Could not find any items with your search.")
+        return
+    api_link = f"http://services.runescape.com/m=itemdb_oldschool/api/graph/{itemid}.json"
+    try:
+        multiplier = search[1]
+        if multiplier[-1] == "k":
+            multiplier = int(multiplier[:-1]) * 1000
+        elif multiplier[-1] == "m":
+            multiplier = int(multiplier[:-1]) * 1000000
+        else:
+            multiplier = int(multiplier)
+    except IndexError:
+        multiplier = 1
+    except ValueError:
+        await client.send_message(message.channel, "Unsupported character in coefficient. The coefficient supports "
+                                                   "only abbreviations `k` and `m`.")
+        return
+    try:
+        resp = requests.get(api_link, timeout=4).text
+    except requests.exceptions.ReadTimeout:
+        await client.send_message(message.channel, "Old School Runescape api answers too slowly. Try again later.")
+        return
+
+    data = json.loads(resp)
+    daily_data = data["daily"]
+    timestamps = list(daily_data.keys())
+    latest_ts = timestamps[-1]
+    day_ts = timestamps[-2]
+    week_ts = timestamps[-7]
+    month_ts = timestamps[-31]
+
+    price_latest = f"{int(daily_data[latest_ts]):,}".replace(",", " ")
+    latest_total = f"{int(daily_data[latest_ts]) * multiplier:,}".replace(",", " ")
+
+    pc_month, pc_week, pc_day = pricechanges()
+    if multiplier != 1:
+        pcs = f"({multiplier} pcs)"
+        price_ea = f" ({price_latest} ea)"
+    else:
+        pcs = ""
+        price_ea = ""
+
+    embed = discord.Embed(title=f"{itemname} {pcs}")\
+        .add_field(name="Latest price", value=f"{latest_total} gp{price_ea}", inline=False)\
+        .add_field(name="Price changes", value=f"In a month: {pc_month} gp\n"
+                                                 f"In a week: {pc_week} gp\nIn a day: {pc_day} gp", inline=False)\
+        .set_footer(text=f"Latest price from {datetime.datetime.utcfromtimestamp(int(latest_ts) / 1e3)} UTC")
+    await client.send_message(message.channel, embed=embed)
+
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")

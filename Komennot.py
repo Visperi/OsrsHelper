@@ -79,9 +79,9 @@ async def function_help(message, keywords, client):
         if command in obj["function"]:
             name, description, additional, example = obj["name"], obj["description"], obj["additional"], obj["example"]
             await client.send_message(message.channel, f"**{name}**\n"
-                                                       f"{description}\n\n"
-                                                       f"**Lisätietoa:** {additional}\n"
-                                                       f"**Esimerkki:** {example}")
+            f"{description}\n\n"
+            f"**Lisätietoa:** {additional}\n"
+            f"**Esimerkki:** {example}")
             return
     await client.send_message(message.channel, "Hakemaasi komentoa ei löytynyt. Komennolla `!commands` saat listan "
                                                "kaikista käytettävissä olevista komennoista.")
@@ -110,35 +110,35 @@ async def kayttajan_tiedot(message, client):
         await client.send_message(message.channel, "Komento ei toimi yksityisviesteissä.")
         return
 
-    user_info = discord.Embed().set_author(name=display_name).set_thumbnail(url=avatar)\
-        .add_field(name="Username", value=str(message.author))\
-        .add_field(name="Id", value=message.author.id)\
-        .add_field(name="Käyttäjä luotu", value=created_at)\
-        .add_field(name="Liittyi serverille", value=joined_at)\
+    user_info = discord.Embed().set_author(name=display_name).set_thumbnail(url=avatar) \
+        .add_field(name="Username", value=str(message.author)) \
+        .add_field(name="Id", value=message.author.id) \
+        .add_field(name="Käyttäjä luotu", value=created_at) \
+        .add_field(name="Liittyi serverille", value=joined_at) \
         .add_field(name="Roolit tällä serverillä", value=", ".join(roles))
     await client.send_message(message.channel, embed=user_info)
 
 
 async def commands(message, client):
     discord_commands = ["!info", "!help", "!calc", "!howlong", "!namechange", "!server commands",
-                        "!sub streams", "!unsub streams", "!streamers", "!test"]
+                        "!sub streams", "!unsub streams", "!streamers", "!test", "!satokausi"]
     osrs_commands = ["!wiki (BETA)", "!stats", "!gains", "!track", "!ttm", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
-    item_commands = ["!keys", "!limit"]
+    item_commands = ["!keys", "!limit", "!price", "!iteminfo"]
     moderator_commands = ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom", "%addloot", "%delloot"]
     settings_commands = ["&language", "&settings", "&permit", "&unpermit", "&add commands", "&forcelang",
                          "&defaultlang"]
     viesti = discord.Embed().add_field(name="Osrs commands", value="\n".join(osrs_commands)) \
-        .add_field(name="Item commands", value="\n".join(item_commands))\
-        .add_field(name="Discord commands", value="\n".join(discord_commands))\
-        .add_field(name="Clue commands", value="\n".join(clue_commands))\
-        .add_field(name="High permission commands", value="\n".join(moderator_commands))\
-        .add_field(name="Settings commands", value="\n".join(settings_commands))\
+        .add_field(name="Item commands", value="\n".join(item_commands)) \
+        .add_field(name="Discord commands", value="\n".join(discord_commands)) \
+        .add_field(name="Clue commands", value="\n".join(clue_commands)) \
+        .add_field(name="High permission commands", value="\n".join(moderator_commands)) \
+        .add_field(name="Settings commands", value="\n".join(settings_commands)) \
         .set_footer(text="Jos tarvitset apua komentojen käytössä, käytä komentoa !help <komento>")
     await client.send_message(message.channel, embed=viesti)
 
 
-def get_iteminfo(itemname, default_names=False):
+def get_iteminfo(itemname: str, default_names=False):
     """Searches for item name and id from local files.
 
     :param itemname: The name of the item in string format
@@ -234,7 +234,7 @@ async def addkey(message, keywords, client):
             approved_keys.append(to_utf8(key))
     if discarded_keys > 0:
         denied_msg = f"{discarded_keys} avaimista hylättiin, koska ne sisälsi kertomerkkejä. Lisätietoa saat " \
-                     f"komennolla `!help addkey`"
+            f"komennolla `!help addkey`"
     if len(approved_keys) == 0:
         await client.send_message(message.channel, f"Kaikki antamasi avainsanat ovat varattuja. {denied_msg}")
         return
@@ -307,13 +307,15 @@ async def get_keys(message, hakusanat, client):
         await client.send_message(message.channel, "Tavaralle ei ole asetettu avainsanoja.")
 
 
-async def search_wiki(message, hakusanat, client):
+async def search_wiki(message, hakusanat: list, client, get_html=False):
     baselink = "https://oldschool.runescape.wiki/w/"
 
     search = "_".join(hakusanat)
     search_link = baselink + search
     response = requests.get(search_link).text
     if f"This page doesn&#039;t exist on the wiki. Maybe it should?" in response:
+        if get_html:
+            return TypeError
         hyperlinks = []
         truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
         truesearch_resp = requests.get(truesearch_link).text
@@ -331,6 +333,8 @@ async def search_wiki(message, hakusanat, client):
         embed = discord.Embed(title="Tarkoititko jotain näistä", description="\n".join(hyperlinks))
         await client.send_message(message.channel, embed=embed)
     else:
+        if get_html:
+            return response
         await client.send_message(message.channel, f"<{search_link}>")
     kayttokerrat("Wiki")
 
@@ -354,8 +358,8 @@ async def get_cipher(message, search, client):
         if not kuva:
             await client.send_message(message.channel, f"Solution: {solution}\nLocation: {location}\nAnswer: {answer}")
         else:
-            await client.send_message(message.channel, f"Solution: {solution}\nLocation: {location}\n"
-                                                       f"Answer: {answer}\n{kuva}")
+            await client.send_message(message.channel,
+                                      f"Solution: {solution}\nLocation: {location}\nAnswer: {answer}\n{kuva}")
         kayttokerrat("cipher")
 
 
@@ -507,7 +511,7 @@ def update_stats(nick, stats, account_type):
     except KeyError:
         account_type_old = ""
     if (account_type_old == "ironman" or account_type_old == "uim" or account_type_old == "hcim") and \
-                    account_type == "normal":
+            account_type == "normal":
         return
     data[nick] = dict(past_stats=stats, account_type=account_type, saved=current_date)
 
@@ -623,8 +627,8 @@ async def search_from_file(message, search, client):
         location = data[anagram]["location"]
         answer = data[anagram]["challenge_answer"]
         puzzle = data[anagram]["puzzle"]
-        await client.send_message(message.channel, f"Solution: {solution}\nLocation: {location}\n"
-                                                   f"Challenge answer: {answer}\n{puzzle}")
+        await client.send_message(message.channel,
+                                  f"Solution: {solution}\nLocation: {location}\nChallenge answer: {answer}\n{puzzle}")
         kayttokerrat("Anagram")
     else:
         await client.send_message(message.channel, "Haullasi löytyi {} anagrammia:\n{}\n\nJos et näe hakemaasi "
@@ -706,7 +710,7 @@ async def hae_anagram(message, hakusanat, client):
                 kayttokerrat("Anagram")
         else:
             await client.send_message(message.channel,
-                                        "Haullasi ei löytynyt yhtään anagrammia. Tarkista oikeinkirjoitus.")
+                                      "Haullasi ei löytynyt yhtään anagrammia. Tarkista oikeinkirjoitus.")
 
 
 async def experiencelaskuri(message, hakusanat, client):
@@ -919,8 +923,8 @@ async def addcom(message, words_raw, client):
                                                    "tyhjä merkkijono.")
         return
     except ValueError:
-        await client.send_message(message.channel, f"Komennon maksimipituus on 30 merkkiä. Sinun oli "
-                                                   f"{len(command_raw)}.")
+        await client.send_message(message.channel, f"Komennon nimen maksimipituus on 30 merkkiä. Sinun "
+        f"oli {len(command_raw)}.")
         return
     with open(file) as data_file:
         data = json.load(data_file)
@@ -1078,8 +1082,7 @@ async def hinnanmuutos(message, client):
     DEPRECATED
     """
 
-    await client.send_message(message.channel, "Komento on valitettavasti jouduttu ottamaan pois käytöstä. Lisätietoa "
-                                               "komennolla `!prices`.")
+    await client.send_message(message.channel, "Komento on vanhentunut ja se on yhdistetty komennon `!price` kanssa.")
     return
 
 
@@ -1093,7 +1096,7 @@ async def track_user(message, hakusanat, client):
         reactions = ["1\u20e3", "2\u20e3", "3\u20e3", "4\u20e3", "5\u20e3", "6\u20e3", "\N{CROSS MARK}"]
         choices = ["1\u20e3 Normaali", "2\u20e3 Ironman", "3\u20e3 Uim", "4\u20e3 Hcim", "5\u20e3 Dmm",
                    "6\u20e3 Seasonal", "\N{CROSS MARK} Peruuta"]
-        bot_embed = discord.Embed(title=f"Mikä on hahmon {username} tyyppi?", description="\n".join(choices))\
+        bot_embed = discord.Embed(title=f"Mikä on hahmon {username} tyyppi?", description="\n".join(choices)) \
             .set_footer(text="Botti rekisteröi reaktiosi vasta vaihtoehtojen latauduttua.")
         bot_message = await client.send_message(message.channel, embed=bot_embed)
         for reaction in reactions:
@@ -1205,7 +1208,6 @@ async def change_name(message, hakusanat, client):
 
 
 async def latest_update(message, client):
-
     dates = []
     news_html = []
     article_numbers = []
@@ -1312,7 +1314,7 @@ async def get_old_nicks(message, hakusanat, client):
                                                        "kertaakaan CML:ssä.")
             return
         else:
-            msg = discord.Embed(title="Vanha nimi käyttäjälle {}".format(search), description=previous_name)\
+            msg = discord.Embed(title="Vanha nimi käyttäjälle {}".format(search), description=previous_name) \
                 .set_footer(text=footnote)
             await client.send_message(message.channel, embed=msg)
         return
@@ -1326,7 +1328,7 @@ async def get_old_nicks(message, hakusanat, client):
     if len(old_nicks) == 0:
         await client.send_message(message.channel, "Käyttäjälle ei löydy vanhoja nimiä.\n\n{}".format(footnote))
         return
-    msg = discord.Embed(title=f"Tallennetut vanhat nimet käyttäjälle {search}", description="\n".join(old_nicks))\
+    msg = discord.Embed(title=f"Tallennetut vanhat nimet käyttäjälle {search}", description="\n".join(old_nicks)) \
         .set_footer(text=footnote)
     await client.send_message(message.channel, embed=msg)
 
@@ -1354,8 +1356,8 @@ async def bot_info(message, client, release_notes=False):
         embed.add_field(name="Kiitokset",
                         value="[discord.py](https://github.com/Rapptz/discord.py)\n"
                               "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (ttm, nicks, ehp)\n"
-                              "[Old school runescape](http://oldschool.runescape.com/) (koko peli, statsit)\n"
-                              "[OSRS Wiki](https://oldschool.runescape.wiki) (wiki, clue komennot, high alch arvot)")
+                              "[Old school runescape](http://oldschool.runescape.com/) (koko peli, statsit, hinnat)\n"
+                              "[OSRS Wiki](https://oldschool.runescape.wiki) (wiki, clue komennot)")
         embed.add_field(name="Viimeisimmät päivitykset", value=changelog)
         embed.set_thumbnail(url=appinfo.icon_url)
     await client.send_message(message.channel, embed=embed)
@@ -1386,6 +1388,8 @@ async def sub_to_role(message, client, unsub=False):
         await client.send_message(message.channel, "Roolillani ei ole oikeuksia hallinnoida rooleja tai reagoida "
                                                    "viesteihin tällä kanavalla. Rooli täytyy lisätä ja "
                                                    "poistaa manuaalisesti.")
+    except AttributeError:
+        await client.send_message(message.channel, "Komento ei toimi yksityisviesteissä.")
 
 
 async def get_streamers(message, client):
@@ -1447,7 +1451,6 @@ async def add_droprate(message, keywords, client):
 
 
 async def loot_chance(message, keywords, client):
-
     def calculate_chance(rate, attempts):
         chance_raw = (1 - (1 - rate) ** attempts) * 100
         if chance_raw < 0.01:
@@ -1597,18 +1600,236 @@ async def test_connection(message, keywords, client):
                       "[Wikipediasta](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes), " \
                       "kunnes se lisätään bottiin."
     embed = discord.Embed(title=f"Status code: {status}", description=f"{info_string}\n"
-                                                                      f"Yhteys testattiin [tällä]({link}) linkillä.")
+                                f"Yhteys testattiin [tällä]({link}) linkillä.")
     await client.send_message(message.channel, embed=embed)
 
 
-async def hinnat(message, client):
-    viesti = "Kaikki hyvä loppuu aikanaan. Rsbuddyn api ei nykyisellään toimi enää ja sen seurauksena " \
-             "on ainakin toistaiseksi sanottava jäähyväiset komennoille `!pricechange` ja `!price`. " \
-             "Näistä komennoista kaikki lähti ja vajaan kahden vuoden aikana ne muodostivatkin jopa 45% " \
-             "kaikista suoritetuista komennoista.\n\n" \
-             "Hätä ei kuitenkaan ole tämän näköinen. Tilalle saadaan " \
-             "todennäköisesti tehtyä tulevaisuudessa ainakin lähes vastaavat komennot."
-    await client.send_message(message.channel, viesti)
+async def satokausi(message, hakusanat, client):
+    kuukaudet = ["tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu",
+                 "syyskuu", "lokakuu", "marraskuu", "joulukuu"]
+    if len(hakusanat) == 0:
+        kuukausi = int(datetime.datetime.now().strftime("%m"))
+        kuukausi_str = kuukaudet[kuukausi - 1]
+    else:
+        try:
+            kuukausi_str = hakusanat[0]
+            kuukausi = str(kuukaudet.index(kuukausi_str) + 1)
+        except ValueError:
+            await client.send_message(message.channel, "Anna kuukautta hakiessa sen nimi kirjoitettuna.")
+            return
+    with open("satokaudet.json", encoding="utf-8-sig") as data_file:
+        data = json.load(data_file)
+    kotimaiset = "\n".join(data[str(kuukausi)]["kotimaiset"])
+    ulkomaiset = "\n".join(data[str(kuukausi)]["ulkomaiset"])
+    embed = discord.Embed(title=f"Satokaudet {kuukausi_str}lle").add_field(name="Kotimaiset", value=kotimaiset) \
+        .add_field(name="Ulkomaiset", value=ulkomaiset)
+    await client.send_message(message.channel, embed=embed)
+
+
+async def itemspecs(message, hakusanat, client):
+    """
+    Hakee käyttäjän antamasta itemistä tietoja. Yrittää aseille ja panssareille ensimmäisenä hakea statseja
+    tiedostosta, jonka epäonnistuessa ne haetaan wikistä. Lopuksi asettelee kaiken tiedon embediin ja
+    lähettää sen discordiin.
+    """
+    footer = ""
+    ignore_list = ["Toxic blowpipe (empty)", "Trident of the seas (full)", "Trident of the seas (empty)",
+                   "Serpentine helm (uncharged)"]
+
+    def check_aliases(name):
+        correct_name = name
+        if name == "Lava cape":
+            correct_name = "Fire cape"
+        elif name == "Tentacle whip":
+            correct_name = "Abyssal tentacle"
+        return correct_name
+
+    with open(f"{path}itemstats.json") as data_file:
+        data = json.load(data_file)
+    try:
+        itemname, item_id = get_iteminfo(" ".join(hakusanat))
+        tradeable = True
+        if itemname in ignore_list:
+            raise TypeError
+    except TypeError:
+        itemname = check_aliases(" ".join(hakusanat).capitalize())
+        tradeable = False
+    try:
+
+        itemdata = data[itemname]  # Löytyy tiedostosta itemstats.json
+        itemstats = itemdata["stats"]
+        description = itemdata["description"]
+        members = itemdata["members"]
+        icon = itemdata["icon"]
+    except KeyError:
+        if tradeable:
+            geapi_resp = requests.get(f"http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?"
+                                      f"item={item_id}").content
+            itemdata = json.loads(geapi_resp)["item"]
+            description = itemdata["description"]
+            members = itemdata["members"].capitalize()
+            icon = itemdata["icon_large"]
+        else:
+            description, members, icon = "-", "-", ""
+
+        wiki_resp = await search_wiki(message, itemname.split(), client, get_html=True)
+        try:
+            soup = BeautifulSoup(wiki_resp, "html.parser")
+        except TypeError:
+            await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä. Untradeable itemit eivät "
+                                                       "tue avainsanojen käyttöä.")
+            return
+        headings = soup.findAll("td", class_="smwprops")
+        itemstats = None
+        for a in headings:
+            b = a.text.replace(" ", "").strip("+")
+            if b.startswith("{") and b.endswith("}"):
+                try:
+                    itemstats = json.loads(b)
+                    break
+                except json.decoder.JSONDecodeError:
+                    footer = "Itemin statseja ei saatu haettua. Tämä johtuu todennäköisesti siitä, että siitä on " \
+                             "useampi eri versio ja ne täytyy lisätä manuaalisesti."
+        if type(itemstats) is dict:
+            data[itemname] = {"description": description,
+                                  "members": members,
+                                  "icon": icon,
+                                  "stats": itemstats
+                              }
+            with open("itemstats.json", "w") as data_file:
+                json.dump(data, data_file, indent=4)
+    embed = discord.Embed(title=itemname).add_field(name="Description", value=description, inline=False)
+    attack_speed = ""
+    members = members
+    itemslot = ""
+    icon = icon
+
+    if not itemstats and description == "-":
+        await client.send_message(message.channel, "Haullasi löytyi untradeable item jolle ei löydy statseja ja "
+                                                   "muodostettava upote olisi täysin tyhjä.")
+        return
+    elif itemstats:
+        astab = itemstats["astab"]
+        aslash = itemstats["aslash"]
+        acrush = itemstats["acrush"]
+        amagic = itemstats["amagic"]
+        arange = itemstats["arange"]
+        dstab = itemstats["dstab"]
+        dslash = itemstats["dslash"]
+        dcrush = itemstats["dcrush"]
+        dmagic = itemstats["dmagic"]
+        drange = itemstats["drange"]
+        str_ = itemstats["str"]
+        rstr = itemstats["rstr"]
+        mdmg = itemstats["mdmg"]
+        prayer = itemstats["prayer"]
+        slot = itemstats["slot"]
+        itemslot = f"Slot: {slot}"
+
+        try:
+            speed = itemstats["speed"]
+            attack_speed = f"Speed: {speed} (Hit interval {round(int(speed) * 0.6, 2)}s)"
+        except KeyError:
+            attack_speed = ""
+
+        offensive = f"Stab: {astab}\n" \
+            f"Slash: {aslash}\n" \
+            f"Crush: {acrush}\n" \
+            f"Magic: {amagic}\n" \
+            f"Ranged: {arange}"
+        defensive = f"Stab: {dstab}\n" \
+            f"Slash: {dslash}\n" \
+            f"Crush: {dcrush}\n" \
+            f"Magic: {dmagic}\n" \
+            f"Ranged: {drange}"
+        other = f"Str bonus: {str_}\n" \
+            f"Ranged str: {rstr}\n" \
+            f"Magic damage: {mdmg}\n" \
+            f"Prayer bonus: {prayer}"
+
+        embed.add_field(name="Attack bonuses", value=offensive)
+        embed.add_field(name="Defence bonuses", value=defensive)
+        embed.add_field(name="Other bonuses", value=other)
+
+    misc = f"Members: {members}\n" \
+        f"{itemslot}\n" \
+        f"{attack_speed}"
+    embed.add_field(name="Misc", value=misc)
+    if icon != "":
+        embed.set_thumbnail(url=icon)
+    embed.set_footer(text=footer)
+    await client.send_message(message.channel, embed=embed)
+
+
+async def item_price(message, hakusanat, client):
+
+    def pricechanges():
+        latest = daily_data[latest_ts]
+        month = "{:,}".format(int(latest) - int(daily_data[month_ts])).replace(",", " ")
+        week = "{:,}".format(int(latest) - int(daily_data[week_ts])).replace(",", " ")
+        day = "{:,}".format(int(latest) - int(daily_data[day_ts])).replace(",", " ")
+        if month[0] != "-":
+            month = f"+{month}"
+        if week[0] != "-":
+            week = f"+{week}"
+        if day[0] != "-":
+            day = f"+{day}"
+        return month, week, day
+
+    search = " ".join(hakusanat).replace(" * ", "*").split("*")
+    try:
+        itemname, itemid = get_iteminfo(search[0])
+    except TypeError:
+        await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä.")
+        return
+    api_link = f"http://services.runescape.com/m=itemdb_oldschool/api/graph/{itemid}.json"
+    try:
+        multiplier = search[1]
+        if multiplier[-1] == "k":
+            multiplier = int(multiplier[:-1]) * 1000
+        elif multiplier[-1] == "m":
+            multiplier = int(multiplier[:-1]) * 1000000
+        else:
+            multiplier = int(multiplier)
+    except IndexError:
+        multiplier = 1
+    except ValueError:
+        await client.send_message(message.channel, "Kertoimessa oli tuntematon merkki. Kerroin tukee ainoastaan "
+                                                   "lyhenteitä `k` ja `m`.")
+        return
+    try:
+        resp = requests.get(api_link, timeout=4).text
+    except requests.exceptions.ReadTimeout:
+        await client.send_message(message.channel, "Old School Runescapen api vastaa liian hitaasti. Kokeile myöhemmin "
+                                                   "uudelleen.")
+        return
+
+    data = json.loads(resp)
+    daily_data = data["daily"]
+    timestamps = list(daily_data.keys())
+    latest_ts = timestamps[-1]
+    day_ts = timestamps[-2]
+    week_ts = timestamps[-7]
+    month_ts = timestamps[-31]
+
+    price_latest = f"{int(daily_data[latest_ts]):,}".replace(",", " ")
+    latest_total = f"{int(daily_data[latest_ts]) * multiplier:,}".replace(",", " ")
+
+    pc_month, pc_week, pc_day = pricechanges()
+    if multiplier != 1:
+        pcs = f"({multiplier} kpl)"
+        price_ea = f" ({price_latest} ea)"
+    else:
+        pcs = ""
+        price_ea = ""
+
+    embed = discord.Embed(title=f"{itemname} {pcs}")\
+        .add_field(name="Viimeisin hinta", value=f"{latest_total} gp{price_ea}", inline=False)\
+        .add_field(name="Hinnanmuutokset", value=f"Kuukaudessa: {pc_month} gp\n"
+                                                 f"Viikossa: {pc_week} gp\nPäivässä: {pc_day} gp", inline=False)\
+        .set_footer(text=f"Viimeisin hinta ajalta {datetime.datetime.utcfromtimestamp(int(latest_ts) / 1e3)} UTC")
+    await client.send_message(message.channel, embed=embed)
+
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")
