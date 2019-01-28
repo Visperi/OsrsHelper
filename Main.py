@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+# OsrsHelper v6.4.2
 # coding=utf-8
 
 import discord
@@ -92,7 +93,7 @@ async def on_message(message):
         if user_lang == "english":
             moduuli = komennot_en
         if msg_lower.startswith("!price "):
-            await moduuli.current_price(message, client)
+            await moduuli.item_price(message, keywords_lower, client)
         elif msg_lower == "!commands":
             await moduuli.commands(message, client)
         elif msg_lower == "!helo":
@@ -111,9 +112,9 @@ async def on_message(message):
             await moduuli.time_to_max(message, keywords_lower, client)
         elif msg_lower.startswith("!anagram "):
             await moduuli.hae_anagram(message, keywords_lower, client)
-        elif msg_lower.startswith("!keys "):
+        elif msg_lower.startswith("!keys ") or msg_lower.startswith("!keywords "):
             await moduuli.get_keys(message, keywords_lower, client)
-        elif msg_lower == "!howlong":
+        elif msg_lower == "!howlong" or msg_lower == "!me":
             await moduuli.kayttajan_tiedot(message, client)
         elif msg_lower.startswith("!xp ") or msg_lower.startswith("!exp ") or msg_lower.startswith("!lvl ") or \
                 msg_lower.startswith("!level "):
@@ -157,8 +158,10 @@ async def on_message(message):
             await moduuli.loot_chance(message, keywords_lower, client)
         elif msg_lower.startswith("!test ") or msg_lower.startswith("!connection "):
             await moduuli.test_connection(message, keywords_lower, client)
-        elif msg_lower.startswith("!prices"):
-            await moduuli.hinnat(message, client)
+        elif msg_lower.startswith("!satokausi"):
+            await komennot.satokausi(message, keywords_lower, client)
+        elif msg_lower.startswith("!info ") or msg_lower.startswith("!iteminfo "):
+            await moduuli.itemspecs(message, keywords_lower, client)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)
