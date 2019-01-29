@@ -45,15 +45,6 @@ Unfortunately the bot is not guaranteed to work without downloading both finnish
 - Read message history
 - Add reactions (Bot will only react when subscribing or unsuscribing role Streams or tracking a player)
 
-# Todo
-- [x] Fix timestamps to work in any timezone  **Done. Timestamps are always in UTC now.**
-- [] Translate the code into english
-- [] Make the code work without downloading finnish version
-- [] Make the prefix customizable
-- [] More server specific settings
-
-Incomplete todos are so far cancelled for this project. However, they will be supported in the upcoming rewrite version.
-
 ## Licence
 MIT License
 
