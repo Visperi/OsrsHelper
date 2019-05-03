@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-modulelist = ["bs4", "discord", "tabulate"]
+modulelist = ["bs4", "discord", "tabulate", "json", "os", "datetime", "math", "re", "requests", "fractions", "configparser"]
 
 
 def check_modules():
@@ -51,7 +51,7 @@ def check_modules():
             print("{}{}NOT FOUND".format(module, dots))
     print("")
     if not_found > 0:
-        print("Modules not found must be installed for the bot to work. Program will exit now.")
+        print("Modules not found must be installed for the program to work. Program will exit now.")
     else:
         print("All necessary modules are installed. Program will exit now.")
     input("Press enter to continue.")

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v6.4.2
+# OsrsHelper v6.5.1
 # coding=utf-8
 
 import discord
@@ -103,7 +103,7 @@ async def on_message(message):
         elif msg_lower.startswith("!wiki "):
             await moduuli.search_wiki(message, keywords_lower, client)
         elif msg_lower.startswith("!cipher "):
-            await moduuli.get_cipher(message, keywords_lower, client)
+            await moduuli.search_cipher(message, keywords_lower, client)
         elif msg_lower.startswith("!puzzle "):
             await moduuli.hae_puzzle(message, keywords_lower, client)
         elif highscoret:
@@ -111,7 +111,7 @@ async def on_message(message):
         elif msg_lower.startswith("!ttm "):
             await moduuli.time_to_max(message, keywords_lower, client)
         elif msg_lower.startswith("!anagram "):
-            await moduuli.hae_anagram(message, keywords_lower, client)
+            await moduuli.search_anagram(message, keywords_lower, client)
         elif msg_lower.startswith("!keys ") or msg_lower.startswith("!keywords "):
             await moduuli.get_keys(message, keywords_lower, client)
         elif msg_lower == "!howlong" or msg_lower == "!me":
@@ -154,14 +154,14 @@ async def on_message(message):
             await moduuli.sub_to_role(message, client, unsub=True)
         elif msg_lower == "!streamers":
             await moduuli.get_streamers(message, client)
-        elif msg_lower.startswith("!drop ") or msg_lower.startswith("!loot "):
+        elif msg_lower.startswith("!drop ") or msg_lower.startswith("!loot ") or msg_lower.startswith("!kill "):
             await moduuli.loot_chance(message, keywords_lower, client)
         elif msg_lower.startswith("!test ") or msg_lower.startswith("!connection "):
             await moduuli.test_connection(message, keywords_lower, client)
         elif msg_lower.startswith("!satokausi"):
             await komennot.satokausi(message, keywords_lower, client)
         elif msg_lower.startswith("!info ") or msg_lower.startswith("!iteminfo "):
-            await moduuli.itemspecs(message, keywords_lower, client)
+            await komennot.itemspecs(message, keywords_lower, client)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)
@@ -287,7 +287,7 @@ async def on_message(message):
                 await dev_commands.get_file(message, keywords_raw, client)
         else:
             if msg_lower.startswith("!") and msg_lower != "!":
-                await komennot.execute_custom_commands(message, msg_raw, client)
+                await moduuli.execute_custom_commands(message, msg_raw, client)
 
 
 async def high_permissions(message, user_lang, sysadmin=False, server_owner=False):

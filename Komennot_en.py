@@ -97,7 +97,7 @@ async def kayttajan_tiedot(message, client):
         display_name = message.author.display_name
         for role in message.author.roles:
             if str(role) == "@everyone":
-                role = "\@everyone"
+                role = "\\@everyone"
             roles.append(str(role))
     except AttributeError:
         await client.send_message(message.channel, "This command doesn't work in direct messages.")
@@ -115,10 +115,10 @@ async def kayttajan_tiedot(message, client):
 async def commands(message, client):
     discord_commands = ["!info", "!help", "!calc", "!howlong", "!namechange", "!server commands",
                         "!sub streams", "!unsub streams", "!streamers", "!test"]
-    osrs_commands = ["!wiki (BETA)", "!stats", "!gains", "!track", "!ttm", "!xp", "!ehp", "!nicks", "!loot", "!update"]
+    osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!ttm", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
     item_commands = ["!keys", "!limit", "price", "!iteminfo"]
-    moderator_commands = ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom", "%addloot", "%delloot"]
+    moderator_commands = ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom"]
     settings_commands = ["&language", "&settings", "&permit", "&unpermit", "&add commands", "&forcelang",
                          "&defaultlang"]
     viesti = discord.Embed().add_field(name="Osrs commands", value="\n".join(osrs_commands)) \
@@ -214,10 +214,14 @@ async def search_wiki(message, hakusanat: list, client, get_html=False):
         results_html = BeautifulSoup(truesearch_resp, "html.parser")
         result_headings = results_html.findAll("div", class_="mw-search-result-heading")
         if len(result_headings) == 0:
-            await client.send_message(message.channel, "Could not find any pages with your search.")
+            await client.send_message(message.channel, "Haullasi ei löytynyt yhtään sivua.")
             return
         for result in result_headings[:5]:
             link_end = result.find("a")["href"]
+            if link_end[-1] == ")":
+                link_end = list(link_end)
+                link_end[-1] = "\\)"
+                link_end = "".join(link_end)
             link_title = result.find("a")["title"]
             hyperlinks.append(f"[{link_title}](https://oldschool.runescape.wiki{link_end})")
         embed = discord.Embed(title="Tarkoititko jotain näistä", description="\n".join(hyperlinks))
@@ -229,28 +233,31 @@ async def search_wiki(message, hakusanat: list, client, get_html=False):
     kayttokerrat("Wiki")
 
 
-async def get_cipher(message, search, client):
-    search = " ".join(search)
-    found = []
-    with open(f"{path}Ciphers.json") as data_file:
-        data = json.load(data_file)
-    for cipher in list(data):
-        if search in cipher.lower():
-            found.append(cipher.lower())
-    if len(found) == 0:
-        await client.send_message(message.channel, "Couldn't find any cipher clues with your search. Check the "
+async def search_cipher(message, search, client):
+    search = " ".join(search).upper()
+    partial_matches = []
+
+    with open(f"{path}Ciphers.json") as cipher_file:
+        ciphers = json.load(cipher_file)
+
+    for cipher in ciphers.keys():
+        if search in cipher:
+            partial_matches.append(cipher)
+    if len(partial_matches) == 0:
+        await client.send_message(message.channel, "Could not find any ciphers with your search. Please check the "
                                                    "spelling.")
-    elif len(found) > 1:
-        await client.send_message(message.channel, "Found {} ciphers with your search:\n{}".format(len(found),
-                                                                                                   "\n".join(found)))
-    elif len(found) == 1:
-        cipher = data[found[0].upper()]
+    elif len(partial_matches) > 1:
+        await client.send_message(message.channel, "Found {} ciphers with your search:\n{}"
+                                  .format(len(partial_matches), "\n".join(partial_matches)))
+    elif len(partial_matches) == 1:
+        cipher = ciphers[partial_matches[0]]
         solution, location, answer, kuva = cipher["solution"], cipher["location"], cipher["answer"], cipher["kuva"]
         if not kuva:
             await client.send_message(message.channel, f"Solution: {solution}\nLocation: {location}\nAnswer: {answer}")
         else:
-            await client.send_message(message.channel, f"Solution: {solution}\nLocation: {location}\n"
-                                                       f"Answer: {answer}\n{kuva}")
+            await client.send_message(message.channel,
+                                      f"Solution: {solution}\nLocation: {location}\nAnswer: {answer}\n{kuva}")
+        kayttokerrat("cipher")
 
 
 async def hae_puzzle(message, hakusanat, client, no_message=False):
@@ -313,24 +320,24 @@ async def hae_highscoret(message, hakusanat, client, acc_type=None, gains=False,
     count = 0
 
     def hae_cluet(stats_list):
-        master = stats_list[-3]
-        elite = stats_list[-4]
-        hard = stats_list[-5]
-        medium = stats_list[-6]
-        easy = stats_list[-7]
+        # Osrs  apin vastaus loppuu väliin
+        master = stats_list[-2]
+        elite = stats_list[-3]
+        hard = stats_list[-4]
+        medium = stats_list[-5]
+        easy = stats_list[-6]
+        beginner = stats_list[-7]
         total = stats_list[-8]
 
-        clues = [easy, medium, hard, elite, master, total]
-        clue_names = [["Easy"], ["Medium"], ["Hard"], ["Elite"], ["Master"], ["All"]]
-        time = 0
+        clues = [beginner, easy, medium, hard, elite, master, total]
+        clue_names = [["Beginner"], ["Easy"], ["Medium"], ["Hard"], ["Elite"], ["Master"], ["All"]]
 
-        for clue in clues:
+        for index, clue in enumerate(clues):
             if clue == "-1,-1":
                 clue = "0,0"
             clue = clue.split(",")
             for part in clue:
-                clue_names[time].append(part)
-            time += 1
+                clue_names[index].append(part)
         return clue_names
 
     for lista in tiedot:
@@ -495,80 +502,41 @@ async def time_to_max(message, hakusanat, client):
     kayttokerrat("Ttm")
 
 
-async def hae_anagram(message, hakusanat, client):
-    link = "http://2007.runescape.wikia.com/wiki/Anagrams"
-    f = requests.get(link)
-    sivu = f.text
-    hakusana = " ".join(hakusanat).title()
-    found = await search_from_file(message, hakusana.lower(), client)
+async def search_anagram(message, hakusanat, client):
+    partial_matches = []
+    search = " ".join(hakusanat)
+    with open(f"{path}Anagrams.json") as anagram_file:
+        anagrams = json.load(anagram_file)
 
-    if not found:
-        if hakusana == "":
-            return
-        elif hakusana == "Arr! So I Am A Crust, And?":
-            hakusana = "Arr! So I am a crust, and?"
-        elif hakusana == "Mal In Tau":
-            hakusana = "Mal in Tau"
-        elif hakusana == "Me If":
-            hakusana = "Me if"
-        elif hakusana == "Pacinng A Taie":
-            hakusana = "Pacinng a taie "
-        elif hakusana == "R Slicer":
-            hakusana = "R SLICER"
-        elif hakusana == "Woo An Egg Kiwi":
-            hakusana = "Woo an egg kiwi"
-        elif hakusana == "Yawns Gy":
-            hakusana = "YAWNS GY"
-        elif hakusana == "Ded War":
-            hakusana = "DED WAR"
-        elif hakusana == "His Phor":
-            hakusana = "HIS PHOR"
-
-        if hakusana in sivu:
-            nimi_alku = "{}</i>\n</td><td><a href=\"/wiki/".format(hakusana)
-            nimi_loppu = "\" title=\""
-            find_nimi_alku = sivu.find(nimi_alku) + len(nimi_alku)
-            find_nimi_loppu = sivu.find(nimi_loppu, find_nimi_alku)
-            nimi = sivu[find_nimi_alku:find_nimi_loppu].replace("%27", "'").replace("_", " ")
-            if nimi not in sivu:
-                await client.send_message(message.channel, "You are the first one to search this anagram. Please write "
-                                                           "it as full now so it can be found more easily in the "
-                                                           "future.")
-                return
-
-            paikka_alku = "{}</a>\n</td><td>".format(nimi)
-            paikka_vastaus_loppu = "</td><td>"
-            find_paikka_alku = sivu.find(paikka_alku) + len(paikka_alku)
-            find_paikka_loppu = sivu.find(paikka_vastaus_loppu, find_paikka_alku)
-            paikka_raaka = (sivu[find_paikka_alku:find_paikka_loppu])
-            paikka = re.sub("<[^>]+>", "", paikka_raaka).strip("\n").replace("•", "")
-
-            vastaus_alku = "{}</td><td>".format(paikka_raaka)
-            find_vastaus_alku = sivu.find(vastaus_alku) + len(vastaus_alku)
-            find_vastaus_loppu = sivu.find(paikka_vastaus_loppu, find_vastaus_alku)
-            vastaus_raaka = sivu[find_vastaus_alku:find_vastaus_loppu]
-            vastaus = re.sub("<[^>]+>", "", vastaus_raaka).strip("\n")
-
-            if "redlink=" in nimi or "redlink=" in paikka or "redlink=" in vastaus:
-                await client.send_message(message.channel, "Anagram needs to be added manually due to its different "
-                                                           "coding.")
-                return
-            if nimi and paikka and vastaus:
-                with open(f"{path}Anagrams.json") as data_file:
-                    data = json.load(data_file)
-                data[hakusana.lower()] = {"solution": nimi, "location": paikka, "challenge_answer": vastaus,
-                                          "puzzle": ""}
-                with open(f"{path}Anagrams.json", "w") as data_file:
-                    json.dump(data, data_file, indent=4)
-
-                await client.send_message(message.channel, "Solution: {nimi}\nLocation: {paikka}\nChallenge answer: "
-                                                           "{vastaus}\n\nAnagrammi tallennettiin tiedostoon ja löytyy "
-                                                           "nyt myös osittaisella hakusanalla."
-                                          .format(nimi=nimi, paikka=paikka, vastaus=vastaus))
-                kayttokerrat("Anagram")
+    try:
+        anagram = anagrams[search]
+        solution = anagram["solution"]
+        location = anagram["location"]
+        challenge_ans = anagram["challenge_ans"]
+        puzzle = anagram["puzzle"]
+        msg = f"Solution: {solution}\nLocation: {location}\nChallenge answer: {challenge_ans}\n{puzzle}"
+        await client.send_message(message.channel, msg)
+    except KeyError:
+        for anagram in anagrams.keys():
+            if search in anagram:
+                partial_matches.append(anagram)
+        matches = len(partial_matches)
+        if matches == 1:
+            anagram = anagrams[partial_matches[0]]
+            solution = anagram["solution"]
+            location = anagram["location"]
+            challenge_ans = anagram["challenge_ans"]
+            puzzle = anagram["puzzle"]
+            msg = f"Solution: {solution}\nLocation: {location}\nChallenge answer: {challenge_ans}\n{puzzle}"
+            await client.send_message(message.channel, msg)
+        elif matches < 11:
+            await client.send_message(message.channel, "Found {} anagrams with your search:\n{}\n\nTry giving a more "
+                                                       "specific search.".format(matches, "\n".join(partial_matches)))
+        elif matches > 10:
+            await client.send_message(message.channel, "Found more than 10 anagrams with your search. Try giving a "
+                                                       "more specific search.")
         else:
-            await client.send_message(message.channel,
-                                        "Couldn't find any anagrams with your search. Check the spelling.")
+            await client.send_message(message.channel, "Could not find any anagrams.")
 
 
 async def experiencelaskuri(message, hakusanat, client):
@@ -851,11 +819,10 @@ async def cryptic(message, hakusanat, client):
         if user_input in key.lower():
             keys_found.append(key)
     if len(keys_found) == 1:
-        if message.content.startswith("!cryptic "):
-            await client.send_message(message.channel, data[keys_found[0]])
-            kayttokerrat("cryptic")
-        else:
-            return [keys_found[0], data[keys_found[0]]]
+        solution = data[keys_found[0]]["solution"]
+        image = data[keys_found[0]]["image"]
+        await client.send_message(message.channel, f"{solution}\n{image}")
+        kayttokerrat("cryptic")
     elif len(keys_found) == 0:
         await client.send_message(message.channel, "Couldn't find any clues with your keyword.")
         return
@@ -1187,67 +1154,30 @@ async def get_keys(message, hakusanat, client):
         await client.send_message(message.channel, "This item has not been set any keywords.")
 
 
-async def search_from_file(message, search, client):
-    hits = []
-    with open(f"{path}Anagrams.json") as data_file:
-        data = json.load(data_file)
-    for anagram in list(data):
-        if search == anagram:
-            hits = [anagram]
-            break
-        if search in anagram:
-            hits.append(anagram)
-    if len(hits) == 0:
-        found = False
-    elif len(hits) == 1:
-        found = True
-        anagram = hits[0]
-        solution = data[anagram]["solution"]
-        location = data[anagram]["location"]
-        answer = data[anagram]["challenge_answer"]
-        puzzle = data[anagram]["puzzle"]
-        await client.send_message(message.channel, f"Solution: {solution}\nLocation: {location}\n"
-                                                   f"Challenge answer: {answer}\n{puzzle}")
-        kayttokerrat("Anagram")
-    else:
-        await client.send_message(message.channel, "Found {} anagrams:\n{}\n\nIf you dont see your anagram in this "
-                                                   "list, try searching with the whole anagram."
-                                  .format(len(hits), "\n".join(hits)))
-        found = True
-    return found
-
-
 async def latest_update(message, client):
-
-    dates = []
-    news_html = []
-    article_numbers = []
+    news_articles = {}
 
     link = "http://oldschool.runescape.com/"
-    try:
-        html = requests.get(link, timeout=4).text
-    except requests.exceptions.ReadTimeout:
-        await client.send_message(message.channel, "oldschool.runescape.com answers too slowly. Try again later.")
-        return
-    html_parsed = BeautifulSoup(html, "html.parser")
-    for i in html_parsed.findAll("time"):
-        if i.has_attr("datetime"):
-            dates.append(i["datetime"])
-    latest_date = max(dates)
+    osrs_response = requests.get(link).text
 
-    for j in html_parsed.find_all("div", attrs={"class": "news-article__details"}):
-        if j.find("time")["datetime"] == latest_date:
-            news_html.append(j.find("p"))
-    for k in news_html:
-        article_number = int(k.find("a")["id"].replace("news-article-link-", ""))
-        article_numbers.append(article_number)
-    min_article_nr = min(article_numbers)
-    for l in news_html:
-        article_number = int(l.find("a")["id"].replace("news-article-link-", ""))
-        if article_number == min_article_nr:
-            news_link = l.find("a")["href"]
-            await client.send_message(message.channel, f"Latest news regarding Osrs: {news_link}")
-            return
+    osrs_response_html = BeautifulSoup(osrs_response, "html.parser")
+
+    for div_tag in osrs_response_html.findAll("div", attrs={"class": "news-article__details"}):
+        p_tag = div_tag.p
+        # Somehow the article types always end in space
+        article_type = div_tag.span.contents[0][:-1]
+        article_link = p_tag.a["href"]
+        article_number = p_tag.a["id"][-1]
+        news_articles[article_number] = {"link": article_link, "type": article_type}
+
+    # Find the latest article by finding the smallest article key
+    latest_article_key = min(news_articles.keys())
+
+    article_link = news_articles[latest_article_key]["link"]
+    article_type = news_articles[latest_article_key]["type"]
+
+    await client.send_message(message.channel, f"Latest news about Osrs ({article_type}):\n\n"
+                                               f"{article_link}")
 
 
 async def editcom(message, words_raw, client):
@@ -1465,86 +1395,85 @@ async def add_droprate(message, keywords, client):
 
 async def loot_chance(message, keywords, client):
 
-    def calculate_chance(rate, attempts):
-        chance_raw = (1 - (1 - rate) ** attempts) * 100
-        if chance_raw < 0.01:
+    def calculate_chance(attempts: int, rate: float):
+        """
+        Calculate the chance for a drop with given attempts and drop rate.
+
+        :param attempts: Amount of kills/tries as an int
+        :param rate: Drop rate for the drop as a float
+        :return: String that has the chance to get the drop in percents
+        """
+        chance = (1 - (1 - rate) ** attempts) * 100
+        if chance < 0.01:
             chance = "< 0.01%"
-        elif chance_raw > 99.99:
+        elif chance > 99.99:
             chance = "> 99.99%"
         else:
-            rounded = round(chance_raw, 2)
-            chance = f"{rounded}%"
+            chance = f"{chance:.2f}%"
         return chance
 
-    keywords = " ".join(keywords).replace(", ", ",").split(",")
-    if keywords[0].lower() == "misc":
-        return
+    with open("droprates.json") as rates_file:
+        drop_rates_dict = json.load(rates_file)
+
+    target_input_list = keywords
     try:
-        droprate, tries = Fraction(keywords[0].replace(" ", "")), int(keywords[1])
-        if droprate > 1:
-            droprate = Fraction(1, droprate)
-        if tries < 1:
-            if tries == 0:
-                await client.send_message(message.channel, "0%")
-            else:
-                await client.send_message(message.channel, "The amount of tries can't be smaller than zero.")
-            return
-        drop_chance = calculate_chance(float(droprate), tries)
-        if "73" in str(drop_chance.replace(".", "")):
-            drop_chance = f"{drop_chance} :joy:"
-        await client.send_message(message.channel, drop_chance)
-    except IndexError:
-        await client.send_message(message.channel, "Please also give the number of tries, separated by comma.")
+        amount = int(target_input_list[0])
+        boss_name = " ".join(target_input_list[1:])
+    except ValueError:
+        await client.send_message(message.channel, "The amount of kills must be an integer. Give kills first and then "
+                                                   "the boss name.")
         return
 
-    except ValueError:
-        with open(f"{path}droprates.json") as data_file:
-            data = json.load(data_file)
-        if len(keywords) < 3 and keywords[0].capitalize() in data:
-            chances_list = []
-            dropper = keywords[0].capitalize()
-            try:
-                tries = int(keywords[1])
-                if tries < 1:
-                    await client.send_message(message.channel, "The number of tries must be at least one.")
-                    return
-            except IndexError:
-                tries = 1
-            except ValueError:
-                itemname = keywords[1].capitalize()
-                if itemname not in data[dropper]:
-                    await client.send_message(message.channel, "Given target doesnt't have this drop.")
-                else:
-                    item_chance = calculate_chance(float(Fraction(data[dropper][itemname])), 1)
-                    await client.send_message(message.channel, item_chance)
-                return
-            for drop in data[dropper]:
-                droprate = Fraction(data[dropper][drop])
-                item_chance = calculate_chance(float(droprate), tries)
-                if "73" in str(item_chance).replace(".", ""):
-                    chances_list.append(f"**{drop}**: {item_chance} :joy:")
-                else:
-                    chances_list.append(f"**{drop}**: {item_chance}")
-            await client.send_message(message.channel, "Probabilities to get drops with {} tries:\n\n{}"
-                                      .format(tries, "\n".join(chances_list)))
-        else:
-            if len(keywords) < 3:
-                keywords.insert(0, "Misc")
-                if len(keywords) < 3:
-                    keywords.insert(2, 1)
-            try:
-                dropper, itemname, tries = keywords[0].capitalize(), keywords[1].capitalize(), int(keywords[2])
-                droprate = Fraction(data[dropper][itemname])
-                item_chance = calculate_chance(float(droprate), tries)
-            except ValueError:
-                await client.send_message(message.channel, "The number of tries must be an integer and other "
-                                                           "parameters must be strings. Check more specific info with "
-                                                           "command `!help loot`.")
-                return
-            except KeyError:
-                await client.send_message(message.channel, "There is no saved droprate for this item.")
-                return
-            await client.send_message(message.channel, item_chance)
+    # Convert some most common nicknames to the full names
+    if boss_name in ["corp", "corpo"]:
+        boss_name = "corporeal beast"
+    elif boss_name == "cerb":
+        boss_name = "cerberus"
+    elif boss_name == "sire":
+        boss_name = "abyssal sire"
+    elif boss_name == "kq":
+        boss_name = "kalphite queen"
+    elif boss_name in ["bando", "bandos"]:
+        boss_name = "general graardor"
+    elif boss_name == "mole":
+        boss_name = "giant mole"
+    elif boss_name == "kbd":
+        boss_name = "king black dragon"
+    elif boss_name in ["kreearra", "arma"]:
+        boss_name = "kree'arra"
+    elif boss_name == "thermo":
+        boss_name = "thermonuclear smoke devil"
+    elif boss_name == "vetion":
+        boss_name = "vet'ion"
+    elif boss_name in ["zilyana", "sara", "zily"]:
+        boss_name = "commander zilyana"
+    elif boss_name == "zammy":
+        boss_name = "k'ril tsutsaroth"
+    elif boss_name == "hydra":
+        boss_name = "alchemical hydra"
+    elif boss_name in ["cox", "raid", "raids", "raids 1", "olm"]:
+        boss_name = "chambers of xeric"
+
+    try:
+        boss_rates = drop_rates_dict[boss_name]
+    except KeyError:
+        await client.send_message(message.channel, "Could not find a boss with that name.")
+        return
+
+    # Loop through all item drop rates for boss and add them to list
+    drop_chances = []
+    for item_drop_rate in boss_rates.items():
+        itemname = item_drop_rate[0]
+        drop_rate_frac = Fraction(item_drop_rate[1])
+        drop_rate = float(drop_rate_frac)
+        if boss_name == "chambers of xeric":
+            drop_rate = float(drop_rate_frac) * 30000
+        drop_chance = calculate_chance(amount, drop_rate)
+        drop_chances.append(f"**{itemname}:** {drop_chance}")
+
+    drop_chances_joined = "\n".join(drop_chances)
+    await client.send_message(message.channel, f"Chances to get loot in {amount} kills from {boss_name.capitalize()}:"
+                                               f"\n\n{drop_chances_joined}")
 
 
 async def delete_droprate(message, keywords, client):
@@ -1653,7 +1582,7 @@ async def itemspecs(message, hakusanat, client):
     except KeyError:
         if tradeable:
             geapi_resp = requests.get(f"http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?"
-                                      f"item={item_id}").content
+                                      f"item={item_id}").text
             itemdata = json.loads(geapi_resp)["item"]
             description = itemdata["description"]
             members = itemdata["members"].capitalize()
