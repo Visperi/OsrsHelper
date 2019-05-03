@@ -4,9 +4,9 @@
             "price"
         ],
         "name": "!price",
-        "description": "Deprecated command",
-        "additional": "Maybe in the future again...",
-        "example": "-"
+        "description": "Searches for a current price and price changes for given item.",
+        "additional": "Supports using keywords and coefficient for bigger amount of same item. Coefficient supports abbreviations `k` and `m`",
+        "example": "`!price abyssal whip` or `!price super anti * 1k`"
     },
     {
         "function": [
@@ -209,7 +209,7 @@
         ],
         "name": "!pricechange",
         "description": "Deprecated command",
-        "additional": "Maybe in the future again...",
+        "additional": "This command has been combined with command `!price`",
         "example": "-"
     },
     {
@@ -321,8 +321,8 @@
         ],
         "name": "&defaultlang",
         "description": "Sets a default language in which the bot answers for users in a server when they join. Users can change this later themselves. The default setting is off.",
-        "additional": "Onmly the server owner can use this command.",
-        "example": "`&defaultang en`"
+        "additional": "Only the server owner can use this command.",
+        "example": "`&defaultlang en`"
     },
     {
         "function": [
@@ -363,31 +363,15 @@
     {
         "function": [
             "loot",
-            "drop"
+            "drop",
+            "kill"
         ],
         "name": "!loot",
-        "description": "Calculates a probability for getting an item with given droprate.",
-        "additional": "Droprate and the number of tries must be separated with comma. Also supports droprates saved in file, when the search must be in the form of `!loot target, itemname, tries`. Only the target is necessary parameter, others just makes it more specific.",
-        "example": "`!loot 1/5000, 120` **;** `!loot corporeal beast` **;** `!loot corporeal beast, 500` **;** `!loot corporeal beast, elysian sigil, 500`"
+        "description": "Calculates a probabilities to get drops from a boss with given amount of kills.",
+        "additional": "The amount of kills must be given before the boss name. This command supports the most common abbreviations for boss names.",
+        "example": "`!loot 25 corporeal beast` **;** `!loot 300 corp`"
     },
-    {
-        "function": [
-            "addloot"
-        ],
-        "name": "%addloot",
-        "description": "Saves a droprate for a given item into a file.",
-        "additional": "If the drop goes for a specific monster/thing, give the target name first and then the itemname. Separate the names and droprate with commas..",
-        "example": "`%addloot vorkath, vorki, 1/3000`."
-    },
-    {
-        "function": [
-            "delloot"
-        ],
-        "name": "%delloot",
-        "description": "Removes a given droprate from file.",
-        "additional": "If you want to remove a specific droprate, give the target name first and then the itemname. Separate these with commas.",
-        "example": "`%delloot vorkath, vorki`."
-    },
+
     {
         "function": [
             "test",
@@ -496,5 +480,15 @@
         "description": "Get a bot file from the bot directory. **This is sent to the discord chat you use this command so use carefully!**",
         "additional": "The file name and extension must be exactly same as in the file name.",
         "example": "`§get Tradeables.json`"
+    },
+    {
+        "function": [
+            "info",
+            "iteminfo"
+        ],
+        "name": "!iteminfo",
+        "description": "Gives some basic information about given item.",
+        "additional": "Supports using keywords.",
+        "example": "`!info whip` or `!iteminfo ancestral robe top`"
     }
 ]

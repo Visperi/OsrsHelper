@@ -4,9 +4,9 @@
             "price"
         ],
         "name": "!price",
-        "description": "Käytöstä poistunut komento",
-        "additional": "Ehkä tulevaisuudessa taas...",
-        "example": "-"
+        "description": "Hakee annetun itemin hinnan ja hinnanmuutokset.",
+        "additional": "Tukee avainsanojen ja kertoimen käyttöä. Kerroin tukee lyhenteitä `k` ja `m`",
+        "example": "`!price abyssal whip` tai `!price kuulat * 10k`"
     },
     {
         "function": [
@@ -209,7 +209,7 @@
         ],
         "name": "!pricechange",
         "description": "Käytöstä poistunut komento",
-        "additional": "Ehkä tulevaisuudessa taas...",
+        "additional": "Komento on yhdistetty komennon `!price kanssa`",
         "example": "-"
     },
     {
@@ -453,30 +453,13 @@
     {
         "function": [
             "loot",
-            "drop"
+            "drop",
+            "kill"
         ],
         "name": "!loot",
-        "description": "Laskee todennäköisyyden saada droppi annetun drop raten ja yritysten määrän perusteella.",
-        "additional": "Drop rate ja yritysten määrä täytyy erottaa pilkulla. Tukee myös tiedostoon tallennettuja droprateja, jolloin haun täytyy olla muodossa `!loot kohde, itemname, yrityskerrat`. Ainoastaan kohde on tätä komentoa käyttäessä pakollinen, muut tarkentavat hakua.",
-        "example": "`!loot 1/5000, 120` **;** `!loot corporeal beast` **;** `!loot corporeal beast, 500` **;** `!loot corporeal beast, elysian sigil, 500`"
-    },
-    {
-        "function": [
-            "addloot"
-        ],
-        "name": "%addloot",
-        "description": "Tallentaa tiedostoon annetun itemin dropraten.",
-        "additional": "Jos droppi menee jollekin tietylle kohteelle, anna ensin kohteen nimi ja itemin nimi. Erota kaikki nimet ja droprate toisistaan pilkulla.",
-        "example": "`%addloot vorkath, vorki, 1/3000`."
-    },
-    {
-        "function": [
-            "delloot"
-        ],
-        "name": "%delloot",
-        "description": "Poistaa tiedostosta annetun itemin dropraten.",
-        "additional": "Jos haluat poistaa jonkin tietyn kohteen, anna ensin kohteen nimi ja sitten itemin nimi. Erota nämä toisistaan pilkulla.",
-        "example": "`%delloot vorkath, vorki`."
+        "description": "Laskee todennäköisyyden saada droppeja annetun tappojen määrän ja bossin perusteella.",
+        "additional": "Tappojen määrä annetaan ensin ja se erotetaan bossin nimestä välilyönnillä. Komento tukee myös yleisimpiä lyhenteitä nimistä.",
+        "example": "`!loot 25 corporeal beast` **;** `!loot 300 corp`"
     },
     {
         "function": [
@@ -505,5 +488,24 @@
         "description": "Testaa yhteyden annettuun apiin.",
         "additional": "Anna myös api, jonka haluat testata. Vaihtoehdot ovat wiki, osrs ja cml.",
         "example": "`!test rsbuddy`"
+    },
+    {
+        "function": [
+            "info",
+            "iteminfo"
+        ],
+        "name": "!iteminfo",
+        "description": "Antaa perustietoa haetusta itemistä.",
+        "additional": "Tukee avainsanojen käyttöä.",
+        "example": "`!info ruoska` tai `!iteminfo ancestral robe top`"
+    },
+    {
+        "function": [
+            "satokausi"
+        ],
+        "name": "!satokausi",
+        "description": "Antaa tämänhetkisen kuukauden satokaudet.",
+        "additional": "Tukee myös hakua mille tahansa kuukaudelle",
+        "example": "`!satokausi` tai `!satokausi marraskuu`"
     }
 ]
