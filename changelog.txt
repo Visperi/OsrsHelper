@@ -1,11 +1,1 @@
-- Poistettiin käytöstä komennot !price ja !pricechange
-- Korjattiin aikaleimat komentoon !gains
-- Lisättiin mahdollisuus hakea f2p EHP rateja
-- (BETA) Vaihdettiin wiki-linkit uuteen wikisivuun
-- §timesused näyttää nyt komentojen käytöt laskevassa järjestyksessä
-- !wiki näyttää nyt mahdollisia osumia, jos sivua ei löydy suoraan haulla
-
-HOTFIX 6.1.3
-
-- Korjattiin cluet komennossa !stats
-- Korjattiin wikilinkit myös englantiversioon
+- Korjattiin highscore komento ja lisättiin beginner cluet
