@@ -348,7 +348,12 @@ async def check_new_items(message, client):
                 with open(f"{path}Tradeables.json", "w") as tradeables_file:
                     json.dump(tradeables, tradeables_file, indent=4)
                 new_items_joined = "\n".join(new_items)
-                await client.send_message(message.channel, f"Added {len(new_items)} new items:\n\n{new_items_joined}")
+                if len(new_items_joined) > 2000:
+                    await client.send_message(message.channel, f"Added {len(new_items)} new items. Their total length "
+                                                               f"was over 2000 characters.")
+                else:
+                    await client.send_message(message.channel, f"Added {len(new_items)} new items:\n\n"
+                                                               f"{new_items_joined}")
 
 
 async def get_file(message, keywords, client):
