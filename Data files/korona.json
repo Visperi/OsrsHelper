@@ -1,0 +1,16 @@
+{
+    "confirmed": {
+        "cases": 155,
+        "date": "2020-03-13T09:30:00.000Z",
+        "healthCareDistrict": "Kanta-Häme"
+    },
+    "deaths": {
+        "cases": 0
+    },
+    "recovered": {
+        "cases": 2,
+        "date": "2020-03-10T08:45:00.000Z",
+        "healthCareDistrict": "Kanta-Häme"
+    },
+    "lastUpdate": "2020-03-13T09:30:00.000Z"
+}

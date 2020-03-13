@@ -10680,5 +10680,385 @@
     "Climbing boots (g)": {
         "high_alch": "",
         "id": 23413
+    },
+    "Mysterious emblem (tier 10)": {
+        "high_alch": "",
+        "id": 12756
+    },
+    "Grubby key": {
+        "high_alch": "",
+        "id": 23499
+    },
+    "Giant egg sac(full)": {
+        "high_alch": "",
+        "id": 23517
+    },
+    "Mask of ranul": {
+        "high_alch": "",
+        "id": 23522
+    },
+    "Jar of eyes": {
+        "high_alch": "",
+        "id": 23525
+    },
+    "Sarachnis cudgel": {
+        "high_alch": "",
+        "id": 23528
+    },
+    "Crystal weapon seed": {
+        "high_alch": "",
+        "id": 4207
+    },
+    "Iorwerth camp teleport": {
+        "high_alch": "",
+        "id": 12410
+    },
+    "Dragonstone armour set": {
+        "high_alch": "",
+        "id": 23667
+    },
+    "Divine super combat potion(4)": {
+        "high_alch": "",
+        "id": 23685
+    },
+    "Divine super combat potion(3)": {
+        "high_alch": "",
+        "id": 23688
+    },
+    "Divine super combat potion(2)": {
+        "high_alch": "",
+        "id": 23691
+    },
+    "Divine super combat potion(1)": {
+        "high_alch": "",
+        "id": 23694
+    },
+    "Divine super attack potion(4)": {
+        "high_alch": "",
+        "id": 23697
+    },
+    "Divine super attack potion(3)": {
+        "high_alch": "",
+        "id": 23700
+    },
+    "Divine super attack potion(2)": {
+        "high_alch": "",
+        "id": 23703
+    },
+    "Divine super attack potion(1)": {
+        "high_alch": "",
+        "id": 23706
+    },
+    "Divine super strength potion(4)": {
+        "high_alch": "",
+        "id": 23709
+    },
+    "Divine super strength potion(3)": {
+        "high_alch": "",
+        "id": 23712
+    },
+    "Divine super strength potion(2)": {
+        "high_alch": "",
+        "id": 23715
+    },
+    "Divine super strength potion(1)": {
+        "high_alch": "",
+        "id": 23718
+    },
+    "Divine super defence potion(4)": {
+        "high_alch": "",
+        "id": 23721
+    },
+    "Divine super defence potion(3)": {
+        "high_alch": "",
+        "id": 23724
+    },
+    "Divine super defence potion(2)": {
+        "high_alch": "",
+        "id": 23727
+    },
+    "Divine super defence potion(1)": {
+        "high_alch": "",
+        "id": 23730
+    },
+    "Divine ranging potion(4)": {
+        "high_alch": "",
+        "id": 23733
+    },
+    "Divine ranging potion(3)": {
+        "high_alch": "",
+        "id": 23736
+    },
+    "Divine ranging potion(2)": {
+        "high_alch": "",
+        "id": 23739
+    },
+    "Divine ranging potion(1)": {
+        "high_alch": "",
+        "id": 23742
+    },
+    "Divine magic potion(4)": {
+        "high_alch": "",
+        "id": 23745
+    },
+    "Divine magic potion(3)": {
+        "high_alch": "",
+        "id": 23748
+    },
+    "Divine magic potion(2)": {
+        "high_alch": "",
+        "id": 23751
+    },
+    "Divine magic potion(1)": {
+        "high_alch": "",
+        "id": 23754
+    },
+    "Zalcano shard": {
+        "high_alch": "",
+        "id": 23908
+    },
+    "Elven signet": {
+        "high_alch": "",
+        "id": 23943
+    },
+    "Elven dawn": {
+        "high_alch": "",
+        "id": 23948
+    },
+    "Crystal tool seed": {
+        "high_alch": "",
+        "id": 23953
+    },
+    "Crystal armour seed": {
+        "high_alch": "",
+        "id": 23956
+    },
+    "Enhanced crystal teleport seed": {
+        "high_alch": "",
+        "id": 23959
+    },
+    "Blade of saeldor (inactive)": {
+        "high_alch": "",
+        "id": 23997
+    },
+    "Crystal grail": {
+        "high_alch": "",
+        "id": 24000
+    },
+    "Elven boots": {
+        "high_alch": "",
+        "id": 24003
+    },
+    "Elven gloves": {
+        "high_alch": "",
+        "id": 24006
+    },
+    "Elven top": {
+        "high_alch": "",
+        "id": 24009
+    },
+    "Elven skirt": {
+        "high_alch": "",
+        "id": 24012
+    },
+    "Elven legwear": {
+        "high_alch": "",
+        "id": 24024
+    },
+    "Dragonstone full helm": {
+        "high_alch": "",
+        "id": 24034
+    },
+    "Dragonstone platebody": {
+        "high_alch": "",
+        "id": 24037
+    },
+    "Dragonstone platelegs": {
+        "high_alch": "",
+        "id": 24040
+    },
+    "Dragonstone boots": {
+        "high_alch": "",
+        "id": 24043
+    },
+    "Dragonstone gauntlets": {
+        "high_alch": "",
+        "id": 24046
+    },
+    "Staff of balance": {
+        "high_alch": "",
+        "id": 24144
+    },
+    "Trouver parchment": {
+        "high_alch": "",
+        "id": 24187
+    },
+    "Swift blade": {
+        "high_alch": "",
+        "id": 24219
+    },
+    "Ornate maul handle": {
+        "high_alch": "",
+        "id": 24229
+    },
+    "Wilderness crabs teleport": {
+        "high_alch": "",
+        "id": 24251
+    },
+    "Basilisk jaw": {
+        "high_alch": "",
+        "id": 24268
+    },
+    "Neitiznot shield": {
+        "high_alch": "",
+        "id": 10826
+    },
+    "Ankou leggings": {
+        "high_alch": "",
+        "id": 20104
+    },
+    "Dagon'hai hat": {
+        "high_alch": "",
+        "id": 24288
+    },
+    "Dagon'hai robe top": {
+        "high_alch": "",
+        "id": 24291
+    },
+    "Dagon'hai robe bottom": {
+        "high_alch": "",
+        "id": 24294
+    },
+    "Dagon'hai robes set": {
+        "high_alch": "",
+        "id": 24333
+    },
+    "Bounty target teleport": {
+        "high_alch": "",
+        "id": 24336
+    },
+    "Teleport card": {
+        "high_alch": "",
+        "id": 13658
+    },
+    "Twisted hat (t3)": {
+        "high_alch": "",
+        "id": 24387
+    },
+    "Twisted coat (t3)": {
+        "high_alch": "",
+        "id": 24389
+    },
+    "Twisted trousers (t3)": {
+        "high_alch": "",
+        "id": 24391
+    },
+    "Twisted boots (t3)": {
+        "high_alch": "",
+        "id": 24393
+    },
+    "Twisted cane": {
+        "high_alch": "",
+        "id": 24395
+    },
+    "Twisted hat (t2)": {
+        "high_alch": "",
+        "id": 24397
+    },
+    "Twisted coat (t2)": {
+        "high_alch": "",
+        "id": 24399
+    },
+    "Twisted trousers (t2)": {
+        "high_alch": "",
+        "id": 24401
+    },
+    "Twisted boots (t2)": {
+        "high_alch": "",
+        "id": 24403
+    },
+    "Twisted hat (t1)": {
+        "high_alch": "",
+        "id": 24405
+    },
+    "Twisted coat (t1)": {
+        "high_alch": "",
+        "id": 24407
+    },
+    "Twisted trousers (t1)": {
+        "high_alch": "",
+        "id": 24409
+    },
+    "Twisted boots (t1)": {
+        "high_alch": "",
+        "id": 24411
+    },
+    "Twisted banner": {
+        "high_alch": "",
+        "id": 24413
+    },
+    "Inquisitor's mace": {
+        "high_alch": "",
+        "id": 24417
+    },
+    "Inquisitor's great helm": {
+        "high_alch": "",
+        "id": 24419
+    },
+    "Inquisitor's hauberk": {
+        "high_alch": "",
+        "id": 24420
+    },
+    "Inquisitor's plateskirt": {
+        "high_alch": "",
+        "id": 24421
+    },
+    "Nightmare staff": {
+        "high_alch": "",
+        "id": 24422
+    },
+    "Twisted teleport scroll": {
+        "high_alch": "",
+        "id": 24460
+    },
+    "Twisted blueprints": {
+        "high_alch": "",
+        "id": 24463
+    },
+    "Twisted horns": {
+        "high_alch": "",
+        "id": 24466
+    },
+    "Twisted relichunter (t1) armour set": {
+        "high_alch": "",
+        "id": 24469
+    },
+    "Twisted relichunter (t2) armour set": {
+        "high_alch": "",
+        "id": 24472
+    },
+    "Twisted relichunter (t3) armour set": {
+        "high_alch": "",
+        "id": 24475
+    },
+    "Inquisitor's armour set": {
+        "high_alch": "",
+        "id": 24488
+    },
+    "Jar of dreams": {
+        "high_alch": "",
+        "id": 24495
+    },
+    "Harmonised orb": {
+        "high_alch": "",
+        "id": 24511
+    },
+    "Volatile orb": {
+        "high_alch": "",
+        "id": 24514
+    },
+    "Eldritch orb": {
+        "high_alch": "",
+        "id": 24517
     }
 }
