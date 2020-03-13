@@ -2,11 +2,11 @@
 
 Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too. It was started in 2015 as a very small project just to check item prices in G.E. Now it also has commands for clues, users stats and gains, custom item keywords and custom server commands.
 
-**Very ugly code** because this was my very first project in coding after a Python basics university course. Also, there is no documentation and the code is mostly in finnish. However, the bot works and it has pretty straightforward help commands. I'm not planning to translate this project into english, since it's pretty hard to read and understand even for myself. I'm rewriting the whole bot, for which I have a whole new Github page: [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite).
+**Very ugly code** since this was my very first project in coding. Also, there is no documentation and the code is mostly in Finnish. However, the bot works and it has pretty straightforward help commands. I'm not planning to translate this project into english, since it's outdated and pretty hard to read and remember even for myself. I'm rewriting the whole bot, for which I have a whole new Github page: [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite).
 
 ### Main features
 - 41 hard coded commands ([Full list](/commands_list.txt), bad formatting but somewhat readable)
-- Compact but straightforward help messages for every command
+- Compact help messages for every command that are also available in english
 - Up to 200 server specific custom commands
 - Add keywords for tradeable items to check price
 - Manage roles who can add or delete commands and keywords
@@ -17,8 +17,6 @@ Discord bot made mainly for Old school Runescape related commands, although nowa
 - `Beautifulsoup4` version 4.6.0
 - `discord.py` version 0.16.12 **not rewrite**
 - `tabulate` version 0.8.2
-
-Code should work with newer versions of these modules if no major updates are not made. Only exception is discord.py which will **not** work if updated to rewrite.
 
 # Installation
 Unfortunately the bot is not guaranteed to work without downloading both finnish and english versions.
@@ -32,8 +30,7 @@ Unfortunately the bot is not guaranteed to work without downloading both finnish
    - statsdb.json
    - streamers.json
    
-   You can safely modify the default settings in settings.ini if you know what you're doing.
-3. Install Python 3.6+ and every needed module (Use `check_modules.py` to see if you need the requirements)
+3. Use `check_modules.py` to see if you meet the requirements
 4. Register the bot into discord api with your account and copy your secret token into file Credentials.json
 5. Add the bot into a server, run Main.py and get further help with command `!help`
 
