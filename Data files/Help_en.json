@@ -4,8 +4,8 @@
             "price"
         ],
         "name": "!price",
-        "description": "Searches for a current price and price changes for given item.",
-        "additional": "Supports using keywords and coefficient for bigger amount of same item. Coefficient supports abbreviations `k` and `m`",
+        "description": "Searches for a current price and price changes for given item. This command uses official Osrs API which can be little behind, so it may not be very accurate for items whose prices change fast within a day.",
+        "additional": "Supports using keywords and coefficient for bigger amount of same item. Coefficient supports abbreviations `k` and `m`.",
         "example": "`!price abyssal whip` or `!price super anti * 1k`"
     },
     {
@@ -101,8 +101,8 @@
             "level"
         ],
         "name": "!xp",
-        "description": "Shows how much you need xp for given level",
-        "additional": "Also supports level gaps. Maximum level can be given as `max` instead of 120.",
+        "description": "Shows how much you need xp for given level. Also supports level gaps.",
+        "additional": "Maximum level can be given as `max` instead of 120.",
         "example": "`!xp 90` or `!xp 90-max`"
     },
     {
@@ -111,9 +111,9 @@
             "laskin"
         ],
         "name": "!calc",
-        "description": "Basic pocket calculator which supports sum, subtraction, product and division",
-        "additional": "Does not support more than two factors, brackets, variables or trigonometric functions",
-        "example": "`!calc 5 * 8`"
+        "description": "Calculator that supports sum, subtraction, product and division.",
+        "additional": "Also supports more than two factors, using brackets and pi by using a keyword `pi`. Powers are supported by using `**` or `^`",
+        "example": "`!calc 5 * 8` or `!calc (3 ^ 5) + 12`"
     },
     {
         "function": [
@@ -202,15 +202,6 @@
         "description": "Calculates the changes in user's highscores after the last check.",
         "additional": "User needs to be tracked to operate the command",
         "example": "`!gains visperi`"
-    },
-    {
-        "function": [
-            "pricechange"
-        ],
-        "name": "!pricechange",
-        "description": "Deprecated command",
-        "additional": "This command has been combined with command `!price`",
-        "example": "-"
     },
     {
         "function": [
@@ -490,5 +481,23 @@
         "description": "Gives some basic information about given item.",
         "additional": "Supports using keywords.",
         "example": "`!info whip` or `!iteminfo ancestral robe top`"
+    },
+    {
+        "function": [
+            "satokausi"
+        ],
+        "name": "!satokausi",
+        "description": "Antaa tämänhetkisen kuukauden satokaudet.",
+        "additional": "Tukee myös hakua mille tahansa kuukaudelle.",
+        "example": "`!satokausi` tai `!satokausi marraskuu`"
+    },
+    {
+        "function": [
+            "satokaudet"
+        ],
+        "name": "!satokaudet",
+        "description": "Antaa kuukaudet jolloin annetulla kasviksella on satokausi.",
+        "additional": "-",
+        "example": "`!satokaudet porkkana`"
     }
 ]

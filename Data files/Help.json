@@ -4,7 +4,7 @@
             "price"
         ],
         "name": "!price",
-        "description": "Hakee annetun itemin hinnan ja hinnanmuutokset.",
+        "description": "Hakee annetun itemin hinnan ja hinnanmuutokset. Tämä komento käyttää Osrs:n omaa APIa, joten se voi olla epätarkka itemeille joiden hinnat muuttuvat nopeasti vuorokauden sisällä.",
         "additional": "Tukee avainsanojen ja kertoimen käyttöä. Kerroin tukee lyhenteitä `k` ja `m`",
         "example": "`!price abyssal whip` tai `!price kuulat * 10k`"
     },
@@ -101,8 +101,8 @@
             "level"
         ],
         "name": "!xp",
-        "description": "Näyttää kuinka paljon xp:tä tarvitsee levelille.",
-        "additional": "Tukee myös hakua level väleille. Maksimilevelinä voi käyttää myös lyhennettä `max`",
+        "description": "Näyttää kuinka paljon xp:tä tarvitsee levelille. Tukee myös hakua level läveille.",
+        "additional": "Maksimilevelin (120) sijasta voi käyttää myös lyhennettä `max`",
         "example": "`!xp 90` tai `!xp 90-max`"
     },
     {
@@ -111,9 +111,9 @@
             "laskin"
         ],
         "name": "!calc",
-        "description": "Perinteinen nelilaskin, joka tukee summia, erotuksia, tuloja ja osamääriä.",
-        "additional": "Ei tue useampaa kuin kahta tekijää, sulkuja, muuttujia tai trigonometrisiä funktioita",
-        "example": "`!calc 5 * 8`"
+        "description": "Laskin, joka tukee summia, erotuksia, tuloja ja osamääriä.",
+        "additional": "Tukee myös useampia tekijöitä, sulkuja ja piitä käyttämällä avainsanaa `pi`. Potenssit tukevat merkintää `**` ja `*`.",
+        "example": "`!calc 5 * 8` tai `!calc (3 ^ 5) + 12`"
     },
     {
         "function": [
@@ -202,15 +202,6 @@
         "description": "Laskee highscoremuutokset annetulle käyttäjälle viimeisimmän tarkastuksen jälkeen. ",
         "additional": "Käyttäjän täytyy olla seurannassa komennon toimimiseksi.",
         "example": "`!gains visperi`"
-    },
-    {
-        "function": [
-            "pricechange"
-        ],
-        "name": "!pricechange",
-        "description": "Käytöstä poistunut komento",
-        "additional": "Komento on yhdistetty komennon `!price kanssa`",
-        "example": "-"
     },
     {
         "function": [
@@ -420,7 +411,7 @@
         ],
         "name": "!help",
         "description": "Antaa lyhyen listan kaikista peruskomennoista, joilla saa apua botin käyttöön.",
-        "additional": "Loppuu se perseily <:danskisu:433918416710008843>",
+        "additional": "Loppuu se perseily <:danskisu:433918416710008843> <a:hyppivapokale:582570512060907531> <:dab:356108309373124608>",
         "example": "`!help !help`"
     },
     {
@@ -505,7 +496,16 @@
         ],
         "name": "!satokausi",
         "description": "Antaa tämänhetkisen kuukauden satokaudet.",
-        "additional": "Tukee myös hakua mille tahansa kuukaudelle",
+        "additional": "Tukee myös hakua mille tahansa kuukaudelle.",
         "example": "`!satokausi` tai `!satokausi marraskuu`"
+    },
+    {
+        "function": [
+            "satokaudet"
+        ],
+        "name": "!satokaudet",
+        "description": "Antaa kuukaudet jolloin annetulla kasviksella on satokausi.",
+        "additional": "-",
+        "example": "`!satokaudet porkkana`"
     }
 ]
