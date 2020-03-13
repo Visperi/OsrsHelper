@@ -101,7 +101,7 @@
             "level"
         ],
         "name": "!xp",
-        "description": "Näyttää kuinka paljon xp:tä tarvitsee levelille. Tukee myös hakua level läveille.",
+        "description": "Näyttää kuinka paljon xp:tä tarvitsee levelille. Tukee myös hakua level väleille.",
         "additional": "Maksimilevelin (120) sijasta voi käyttää myös lyhennettä `max`",
         "example": "`!xp 90` tai `!xp 90-max`"
     },
