@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2018-2019 Visperi
+Copyright (c) 2018-2020 Visperi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,11 @@ import json
 import discord
 import os
 import math
-import re
 import datetime
 import Settings
 from fractions import Fraction
 from bs4 import BeautifulSoup
+from mathparse import mathparse
 
 path = "{}/".format(os.path.dirname(__file__))
 if path == "/":
@@ -157,15 +157,6 @@ def get_iteminfo(itemname, default_names=False):
                     itemname = to_utf8(item.capitalize())
                     item_id = data[itemname]["id"]
                     return itemname, item_id
-
-
-async def current_price(message, client):
-    """
-    DEPRECATED
-    """
-    await client.send_message(message.channel, "Unfortunately, the command had to be disabled. Get more info with "
-                                               "command `!prices`.")
-    return
 
 
 async def get_halch(itemname):
@@ -321,13 +312,13 @@ async def hae_highscoret(message, hakusanat, client, acc_type=None, gains=False,
 
     def hae_cluet(stats_list):
         # Osrs  apin vastaus loppuu väliin
-        master = stats_list[-2]
-        elite = stats_list[-3]
-        hard = stats_list[-4]
-        medium = stats_list[-5]
-        easy = stats_list[-6]
-        beginner = stats_list[-7]
-        total = stats_list[-8]
+        master = stats_list[33]
+        elite = stats_list[32]
+        hard = stats_list[31]
+        medium = stats_list[30]
+        easy = stats_list[29]
+        beginner = stats_list[28]
+        total = stats_list[27]
 
         clues = [beginner, easy, medium, hard, elite, master, total]
         clue_names = [["Beginner"], ["Easy"], ["Medium"], ["Hard"], ["Elite"], ["Master"], ["All"]]
@@ -482,24 +473,27 @@ async def gains_calculator(message, hakusanat, client):
 
 
 async def time_to_max(message, hakusanat, client):
-    nick = " ".join(hakusanat).replace("_", " ")
-    link = f"http://crystalmathlabs.com/tracker/api.php?type=ttm&player={nick}"
-    response = decode_cml(link)
-    tunnit = str(math.ceil(float(response))) + " EHP"
-    if tunnit == "-1 EHP":
-        await client.send_message(message.channel, "This username is not in use or it isn't tracked in CML.")
-        return
-    elif tunnit == "0 EHP":
-        tunnit = "0 EHP (maxed)"
-    elif tunnit == "-2 EHP":
-        return
-    elif tunnit == "-4 EHP":
-        await client.send_message(message.channel, "CML api is temporarily out of service due to heavy traffic on "
-                                                   "their sites.")
-        return
-
-    await client.send_message(message.channel, f"Ttm for {nick}: {tunnit}")
-    kayttokerrat("Ttm")
+    await client.send_message(message.channel, "This command has been disabled because either CML API is not in public "
+                                               "use anymore or it works very badly.")
+    return
+    # nick = " ".join(hakusanat).replace("_", " ")
+    # link = f"http://crystalmathlabs.com/tracker/api.php?type=ttm&player={nick}"
+    # response = decode_cml(link)
+    # tunnit = str(math.ceil(float(response))) + " EHP"
+    # if tunnit == "-1 EHP":
+    #     await client.send_message(message.channel, "This username is not in use or it isn't tracked in CML.")
+    #     return
+    # elif tunnit == "0 EHP":
+    #     tunnit = "0 EHP (maxed)"
+    # elif tunnit == "-2 EHP":
+    #     return
+    # elif tunnit == "-4 EHP":
+    #     await client.send_message(message.channel, "CML api is temporarily out of service due to heavy traffic on "
+    #                                                "their sites.")
+    #     return
+    #
+    # await client.send_message(message.channel, f"Ttm for {nick}: {tunnit}")
+    # kayttokerrat("Ttm")
 
 
 async def search_anagram(message, hakusanat, client):
@@ -594,62 +588,32 @@ async def experiencelaskuri(message, hakusanat, client):
 
 
 async def laskin(message, hakusanat, client):
-    hakusanat = "".join(hakusanat).replace("**", "^").replace(",", "")
-    operation = None
-    result = None
-    operators = ["+", "-", "*", "^", "/"]
-    for operator in operators:
-        if operator in hakusanat:
-            hakusanat = hakusanat.split(operator)
-            operation = operator
-    if not operation:
-        await client.send_message(message.channel, "Unknown operator. Check all the available operators with command "
-                                                   "`!help calc`.")
-        return
-
-    if len(hakusanat) > 2:
-        await client.send_message(message.channel, "The calculator supports only two factor calculations without "
-                                                   "brackets or variables.")
-        return
-
-    for factor in hakusanat:
-        index = hakusanat.index(factor)
-        try:
-            if factor[-1] == "m":
-                hakusanat[index] = float(factor[:-1]) * 1000000
-            elif factor[-1] == "k":
-                hakusanat[index] = float(factor[:-1]) * 1000
-            else:
-                hakusanat[index] = float(factor)
-        except ValueError:
-            await client.send_message(message.channel, "Other or both factors had a variable or other characters that "
-                                                       "cannot be converted to numbers.")
-            return
-
-    factor1, factor2 = hakusanat[0], hakusanat[1]
+    equation = " ".join(hakusanat).replace("^", " ^ ").replace("**", " ^ ").replace(",", ".").replace("+", " + ") \
+        .replace("-", " - ").replace("*", " * ").replace("/", " / ")
     try:
-        if operation == "+":
-            result = factor1 + factor2
-        elif operation == "-":
-            result = factor1 - factor2
-        elif operation == "*":
-            result = factor1 * factor2
-        elif operation == "^":
-            result = factor1 ** factor2
-        elif operation == "/":
-            try:
-                result = factor1 / factor2
-            except ZeroDivisionError:
-                await client.send_message(message.channel, "Dividing by zero is undefined.")
-                return
-    except OverflowError:
-        await client.send_message(message.channel, "The result is too big to be calculated")
+        solution = mathparse.parse(equation)
+    except IndexError:
+        await client.send_message(message.channel, "The equation was in unsupported format. Try again by putting some "
+                                                   "parts in brackets or check the supported operations with "
+                                                   "command `!help calc`.")
         return
-    if result:
-        rounded = round(result, 3)
-        result = "{:,}".format(rounded).replace(",", " ")
-        await client.send_message(message.channel, result)
-        kayttokerrat("calc")
+    except ValueError:
+        await client.send_message(message.channel, "The calculator could not evaluate some part of the equation. All "
+                                                   "unsupported operations are not known yet, so try to put some parts "
+                                                   "in brackets.")
+        return
+    except KeyError:
+        await client.send_message(message.channel, "The equation had some factors that were not convertible to "
+                                                   "numbers.")
+        return
+    except OverflowError:
+        await client.send_message(message.channel, "The solution was too big to be calculated with this command.")
+        return
+    if type(solution) is str:
+        solution_formatted = solution
+    else:
+        solution_formatted = f"{round(solution, 3):,}".replace(",", " ")
+    await client.send_message(message.channel, solution_formatted)
 
 
 async def ehp_rates(message, hakusanat, client):

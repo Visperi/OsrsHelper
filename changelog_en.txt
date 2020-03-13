@@ -1,1 +1,1 @@
-- Fixed the highscores command and added the beginner clues
+- Added command !korona

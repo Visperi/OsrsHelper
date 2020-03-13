@@ -1,1 +1,1 @@
-- Korjattiin highscore komento ja lisättiin beginner cluet
+- Lisättiin komento !korona

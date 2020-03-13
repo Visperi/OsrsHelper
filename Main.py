@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2018-2019 Visperi
+Copyright (c) 2018-2020 Visperi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v6.5.1
+# OsrsHelper v6.8.2
 # coding=utf-8
 
 import discord
@@ -160,8 +160,12 @@ async def on_message(message):
             await moduuli.test_connection(message, keywords_lower, client)
         elif msg_lower.startswith("!satokausi"):
             await komennot.satokausi(message, keywords_lower, client)
+        elif msg_lower.startswith("!satokaudet "):
+            await komennot.satokaudet(message, keywords_lower, client)
         elif msg_lower.startswith("!info ") or msg_lower.startswith("!iteminfo "):
-            await komennot.itemspecs(message, keywords_lower, client)
+            await moduuli.itemspecs(message, keywords_lower, client)
+        elif msg_lower == "!korona" or msg_lower == "!corona":
+            await komennot.korona_stats(message, client)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)

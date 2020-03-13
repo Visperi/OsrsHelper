@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2018-2019 Visperi
+Copyright (c) 2018-2020 Visperi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,13 @@ import datetime
 import json
 import math
 import os
-import re
 import discord
 import requests
 import Settings
 from fractions import Fraction
 from bs4 import BeautifulSoup
+from mathparse import mathparse
+import pytz
 
 path = "{}/".format(os.path.dirname(__file__))
 if path == "/":
@@ -430,13 +431,13 @@ async def hae_highscoret(message, hakusanat, client, acc_type=None, gains=False,
 
     def hae_cluet(stats_list):
         # Osrs  apin vastaus loppuu väliin
-        master = stats_list[-2]
-        elite = stats_list[-3]
-        hard = stats_list[-4]
-        medium = stats_list[-5]
-        easy = stats_list[-6]
-        beginner = stats_list[-7]
-        total = stats_list[-8]
+        master = stats_list[33]
+        elite = stats_list[32]
+        hard = stats_list[31]
+        medium = stats_list[30]
+        easy = stats_list[29]
+        beginner = stats_list[28]
+        total = stats_list[27]
 
         clues = [beginner, easy, medium, hard, elite, master, total]
         clue_names = [["Beginner"], ["Easy"], ["Medium"], ["Hard"], ["Elite"], ["Master"], ["All"]]
@@ -593,25 +594,28 @@ async def gains_calculator(message, hakusanat, client):
 
 
 async def time_to_max(message, hakusanat, client):
-    nick = " ".join(hakusanat).replace("_", " ")
-    link = f"http://crystalmathlabs.com/tracker/api.php?type=ttm&player={nick}"
-    response = decode_cml(link)
-    tunnit = str(math.ceil(float(response))) + " EHP"
-    if tunnit == "-1 EHP":
-        await client.send_message(message.channel, "Käyttäjänimi ei ole käytössä tai sitä ei ole päivitetty kertaakaan "
-                                                   "CML:ssä.")
-        return
-    elif tunnit == "0 EHP":
-        tunnit = "0 EHP (maxed)"
-    elif tunnit == "-2 EHP":
-        return
-    elif tunnit == "-4 EHP":
-        await client.send_message(message.channel, "CML:n api on väliaikaisesti poissa käytöstä johtuen "
-                                                   "ruuhkautuneesta liikenteestä heidän sivuilla.")
-        return
-
-    await client.send_message(message.channel, f"Ttm for {nick}: {tunnit}")
-    kayttokerrat("Ttm")
+    await client.send_message(message.channel, "Komento on poistettu käytöstä, koska CML:n API ei ole enää julkisesti "
+                                               "käytössä tai toimii todella huonosti.")
+    return
+    # nick = " ".join(hakusanat).replace("_", " ")
+    # link = f"http://crystalmathlabs.com/tracker/api.php?type=ttm&player={nick}"
+    # response = decode_cml(link)
+    # tunnit = str(math.ceil(float(response))) + " EHP"
+    # if tunnit == "-1 EHP":
+    #     await client.send_message(message.channel, "Käyttäjänimi ei ole käytössä tai sitä ei ole päivitetty kertaakaan "
+    #                                                "CML:ssä.")
+    #     return
+    # elif tunnit == "0 EHP":
+    #     tunnit = "0 EHP (maxed)"
+    # elif tunnit == "-2 EHP":
+    #     return
+    # elif tunnit == "-4 EHP":
+    #     await client.send_message(message.channel, "CML:n api on väliaikaisesti poissa käytöstä johtuen "
+    #                                                "ruuhkautuneesta liikenteestä heidän sivuilla.")
+    #     return
+    #
+    # await client.send_message(message.channel, f"Ttm for {nick}: {tunnit}")
+    # kayttokerrat("Ttm")
 
 
 async def search_anagram(message, hakusanat, client):
@@ -707,62 +711,30 @@ async def experiencelaskuri(message, hakusanat, client):
 
 
 async def laskin(message, hakusanat, client):
-    hakusanat = "".join(hakusanat).replace("**", "^").replace(",", "")
-    operation = None
-    result = None
-    operators = ["+", "-", "*", "^", "/"]
-    for operator in operators:
-        if operator in hakusanat:
-            hakusanat = hakusanat.split(operator)
-            operation = operator
-    if not operation:
-        await client.send_message(message.channel, "Tuntematon operaattori. Tarkista käytettävissä olevat operattorit "
-                                                   "komennolla `!help calc`.")
-        return
-
-    if len(hakusanat) > 2:
-        await client.send_message(message.channel, "Laskin tukee vain kahden tekijän yhtälöitä ilman sulkuja tai"
-                                                   " muuttujia")
-        return
-
-    for factor in hakusanat:
-        index = hakusanat.index(factor)
-        try:
-            if factor[-1] == "m":
-                hakusanat[index] = float(factor[:-1]) * 1000000
-            elif factor[-1] == "k":
-                hakusanat[index] = float(factor[:-1]) * 1000
-            else:
-                hakusanat[index] = float(factor)
-        except ValueError:
-            await client.send_message(message.channel, "Toisessa tai molemmissa tekijöissä oli muuttujia tai muita "
-                                                       "merkkejä, joita ei voi muuttaa luvuiksi.")
-            return
-
-    factor1, factor2 = hakusanat[0], hakusanat[1]
+    equation = " ".join(hakusanat).replace("^", " ^ ").replace("**", " ^ ").replace(",", ".").replace("+", " + ")\
+        .replace("-", " - ").replace("*", " * ").replace("/", " / ")
     try:
-        if operation == "+":
-            result = factor1 + factor2
-        elif operation == "-":
-            result = factor1 - factor2
-        elif operation == "*":
-            result = factor1 * factor2
-        elif operation == "^":
-            result = factor1 ** factor2
-        elif operation == "/":
-            try:
-                result = factor1 / factor2
-            except ZeroDivisionError:
-                await client.send_message(message.channel, "Nollalla jakaessa osamäärä on määrittelemätön.")
-                return
-    except OverflowError:
-        await client.send_message(message.channel, "Lopputulos on liian suuri laskettavaksi.")
+        solution = mathparse.parse(equation)
+    except IndexError:
+        await client.send_message(message.channel, "Yhtälö ei ollut tuetussa muodossa. Kokeile laittaa osa yhtälöstä "
+                                                   "sulkuihin tai tarkista tuetut laskut komennolla `!help calc`.")
         return
-    if result:
-        rounded = round(result, 3)
-        result = "{:,}".format(rounded).replace(",", " ")
-        await client.send_message(message.channel, result)
-        kayttokerrat("calc")
+    except ValueError:
+        await client.send_message(message.channel, "Laskin ei pystynyt laskemaan jotain osaa yhtälöstä. Kaikki ei "
+                                                   "tuetut laskujärjestykset eivät ole vielä tiedossa, joten yritä "
+                                                   "uudelleen laskemalla lasku osissa.")
+        return
+    except KeyError:
+        await  client.send_message(message.channel, "Yhtälössä oli tekijöitä joita ei voitu muuttaa numeroiksi.")
+        return
+    except OverflowError:
+        await client.send_message(message.channel, "Laskun tulos oli liian suuri tällä komennolla laskemiseen.")
+        return
+    if type(solution) is str:
+        solution_formatted = solution
+    else:
+        solution_formatted = f"{round(solution, 3):,}".replace(",", " ")
+    await client.send_message(message.channel, solution_formatted)
 
 
 async def ehp_rates(message, hakusanat, client):
@@ -1014,15 +986,6 @@ def kayttokerrat(function_used):
     data["date_now"] = current_date
     with open(f"{path}Times_used.json", "w") as data_file:
         json.dump(data, data_file, indent=4)
-
-
-async def hinnanmuutos(message, client):
-    """
-    DEPRECATED
-    """
-
-    await client.send_message(message.channel, "Komento on vanhentunut ja se on yhdistetty komennon `!price` kanssa.")
-    return
 
 
 async def track_user(message, hakusanat, client):
@@ -1546,12 +1509,41 @@ async def satokausi(message, hakusanat, client):
         except ValueError:
             await client.send_message(message.channel, "Anna kuukautta hakiessa sen nimi kirjoitettuna.")
             return
-    with open("satokaudet.json", encoding="utf-8-sig") as data_file:
+    with open(f"{path}satokaudet.json", encoding="utf-8-sig") as data_file:
         data = json.load(data_file)
-    kotimaiset = "\n".join(data[str(kuukausi)]["kotimaiset"])
-    ulkomaiset = "\n".join(data[str(kuukausi)]["ulkomaiset"])
-    embed = discord.Embed(title=f"Satokaudet {kuukausi_str}lle").add_field(name="Kotimaiset", value=kotimaiset) \
-        .add_field(name="Ulkomaiset", value=ulkomaiset)
+    kotimaiset = sorted(data[str(kuukausi)]["kotimaiset"])
+    ulkomaiset = sorted(data[str(kuukausi)]["ulkomaiset"])
+    embed = discord.Embed(title=f"Satokaudet {kuukausi_str}lle")\
+        .add_field(name="Kotimaiset", value="\n".join(kotimaiset))\
+        .add_field(name="Ulkomaiset", value="\n".join(ulkomaiset))
+    await client.send_message(message.channel, embed=embed)
+
+
+async def satokaudet(message, hakusanat, client):
+    kuukaudet = ["tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu",
+                 "syyskuu", "lokakuu", "marraskuu", "joulukuu"]
+    search = " ".join(hakusanat)
+    kotimaisena = []
+    ulkomaisena = []
+    with open(f"{path}satokaudet.json", encoding="utf-8-sig") as data_file:
+        data = json.load(data_file)
+
+    for month in data:
+        month_name = kuukaudet[int(month) - 1]
+        if search in data[month]["kotimaiset"]:
+            kotimaisena.append(month_name)
+        if search in data[month]["ulkomaiset"]:
+            ulkomaisena.append(month_name)
+
+    if not kotimaisena and not ulkomaisena:
+        await client.send_message(message.channel, "Antamallesi hakusanalle ei löytynyt satokausia.")
+        return
+
+    embed = discord.Embed(title=f"Satokaudet {search}lle")
+    if kotimaisena:
+        embed.add_field(name="Kotimaisena", value="\n".join(kotimaisena))
+    if ulkomaisena:
+        embed.add_field(name="Ulkomaisena", value="\n".join(ulkomaisena))
     await client.send_message(message.channel, embed=embed)
 
 
@@ -1757,6 +1749,82 @@ async def item_price(message, hakusanat, client):
         .add_field(name="Hinnanmuutokset", value=f"Kuukaudessa: {pc_month} gp\n"
                                                  f"Viikossa: {pc_week} gp\nPäivässä: {pc_day} gp", inline=False)\
         .set_footer(text=f"Viimeisin hinta ajalta {datetime.datetime.utcfromtimestamp(int(latest_ts) / 1e3)} UTC")
+    await client.send_message(message.channel, embed=embed)
+
+
+async def korona_stats(message, client):
+    # Hae uusimmat tiedit HS:n API:sta
+    korona_link = "https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData"
+    try:
+        resp = requests.get(korona_link, timeout=5).text
+    except requests.exceptions.ReadTimeout:
+        await client.send_message(message.channel, "Datalähde vastaa liian hitaasti. Kokeile myöhemmin uudelleen")
+        return
+
+    new_data = json.loads(resp, encoding="utf-8")
+
+    # Hae vanha data tiedostosta
+    with open("korona.json", encoding="utf-8") as korona_file:
+        old_data = json.load(korona_file)
+
+    headers = ["confirmed", "deaths", "recovered"]
+    last_timestamps = []
+    embed_data = {"confirmed": {}, "deaths": {}, "recovered": {}}
+
+    for header in headers:
+        embed_data[header]["cases"] = len(new_data[header])
+        try:
+            last_timestamps.append(new_data[header][-1]["date"])
+            embed_data[header]["date"] = new_data[header][-1]["date"]
+            embed_data[header]["healthCareDistrict"] = new_data[header][-1]["healthCareDistrict"]
+        except IndexError:
+            pass
+
+    latest_ts = max(last_timestamps)
+    embed_data["lastUpdate"] = latest_ts
+
+    if latest_ts > old_data["lastUpdate"]:
+        with open("korona.json", "w", encoding="utf-8") as output_file:
+            json.dump(embed_data, output_file, indent=4, ensure_ascii=False)
+
+    embed = discord.Embed(title="Koronan tilanne Suomessa")
+    # Aikavyöhykkeet joita käytetään muunnoksessa
+    utc_tz = pytz.utc
+    helsinki_tz = pytz.timezone("Europe/Helsinki")
+
+    # Lisätään kentät embediin erilaisille tapauksille
+    for header in headers:
+        if header == "confirmed":
+            title = "Tartunnat"
+        elif header == "deaths":
+            title = "Kuolleet"
+        else:
+            title = "Parantuneet"
+
+        cases = embed_data[header]["cases"]
+        cases_diff = cases - old_data[header]["cases"]
+        if cases_diff != 0:
+            cases_diff = "({0:+})".format(cases_diff)
+        else:
+            cases_diff = ""
+
+        try:
+            # Aiheuttaa KeyErrorin, jos ei tapauksia
+            latest_strp = datetime.datetime.strptime(embed_data[header]["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+            latest_strp = utc_tz.localize(latest_strp).astimezone(helsinki_tz)
+            latest_strf = latest_strp.strftime("%d.%m.%Y %H:%M")
+            area = embed_data[header]["healthCareDistrict"]
+            embed.add_field(name=title, value=f"{cases} {cases_diff}\nViimeisin {latest_strf}\nAlue: {area}",
+                            inline=False)
+        except KeyError:
+            # Dictionary on tyhjä eli ei tapauksia
+            embed.add_field(name=title, value=f"{cases}", inline=False)
+
+    latest_ts_strp = datetime.datetime.strptime(latest_ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+    latest_ts_strp = utc_tz.localize(latest_ts_strp).astimezone(helsinki_tz)
+    latest_ts_strf = latest_ts_strp.strftime("%d.%m.%Y %H:%M")
+    embed.set_footer(text=f"Verrokkiaika: {latest_ts_strf}")
     await client.send_message(message.channel, embed=embed)
 
 
