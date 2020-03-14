@@ -1753,79 +1753,72 @@ async def item_price(message, hakusanat, client):
 
 
 async def korona_stats(message, client):
-    # Hae uusimmat tiedit HS:n API:sta
+    utc_tz = pytz.utc
+    helsinki_tz = pytz.timezone("Europe/Helsinki")
+    # Get the latest Finnish corona data
     korona_link = "https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData"
-    try:
-        resp = requests.get(korona_link, timeout=5).text
-    except requests.exceptions.ReadTimeout:
-        await client.send_message(message.channel, "Datalähde vastaa liian hitaasti. Kokeile myöhemmin uudelleen")
-        return
-
+    resp = requests.get(korona_link).text
     new_data = json.loads(resp, encoding="utf-8")
 
-    # Hae vanha data tiedostosta
-    with open("korona.json", encoding="utf-8") as korona_file:
-        old_data = json.load(korona_file)
+    with open("korona.json", "r") as data_file:
+        saved_data = json.load(data_file)
 
-    headers = ["confirmed", "deaths", "recovered"]
-    last_timestamps = []
-    embed_data = {"confirmed": {}, "deaths": {}, "recovered": {}}
+    tmp = []
+    updated_data = {"confirmed": {}, "deaths": {}, "recovered": {}}
 
-    for header in headers:
-        embed_data[header]["cases"] = len(new_data[header])
+    for header in updated_data.keys():
+        current_cases = len(new_data[header])
         try:
-            last_timestamps.append(new_data[header][-1]["date"])
-            embed_data[header]["date"] = new_data[header][-1]["date"]
-            embed_data[header]["healthCareDistrict"] = new_data[header][-1]["healthCareDistrict"]
+            latest_case = new_data[header][-1]["date"]
+            tmp.append(latest_case)
+            updated_data[header]["latest"] = latest_case
+            updated_data[header]["healthCareDistrict"] = new_data[header][-1]["healthCareDistrict"]
         except IndexError:
             pass
 
-    latest_ts = max(last_timestamps)
-    embed_data["lastUpdate"] = latest_ts
+        updated_data[header]["cases"] = current_cases
 
-    if latest_ts > old_data["lastUpdate"]:
-        with open("korona.json", "w", encoding="utf-8") as output_file:
-            json.dump(embed_data, output_file, indent=4, ensure_ascii=False)
-
+    now = datetime.datetime.now(tz=utc_tz)
+    updated_data["lastUpdated"] = now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     embed = discord.Embed(title="Koronan tilanne Suomessa")
-    # Aikavyöhykkeet joita käytetään muunnoksessa
-    utc_tz = pytz.utc
-    helsinki_tz = pytz.timezone("Europe/Helsinki")
 
-    # Lisätään kentät embediin erilaisille tapauksille
-    for header in headers:
+    for header in updated_data.keys():
+        if header == "lastUpdated":
+            continue
         if header == "confirmed":
             title = "Tartunnat"
         elif header == "deaths":
-            title = "Kuolleet"
+            title = "Menehtyneet"
         else:
             title = "Parantuneet"
 
-        cases = embed_data[header]["cases"]
-        cases_diff = cases - old_data[header]["cases"]
+        current_cases = updated_data[header]["cases"]
+        cases_diff = current_cases - saved_data[header]["cases"]
         if cases_diff != 0:
-            cases_diff = "({0:+})".format(cases_diff)
+            cases_diff_str = "({0:+})".format(cases_diff)
         else:
-            cases_diff = ""
+            cases_diff_str = ""
 
         try:
-            # Aiheuttaa KeyErrorin, jos ei tapauksia
-            latest_strp = datetime.datetime.strptime(embed_data[header]["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
-
-            latest_strp = utc_tz.localize(latest_strp).astimezone(helsinki_tz)
-            latest_strf = latest_strp.strftime("%d.%m.%Y %H:%M")
-            area = embed_data[header]["healthCareDistrict"]
-            embed.add_field(name=title, value=f"{cases} {cases_diff}\nViimeisin {latest_strf}\nAlue: {area}",
-                            inline=False)
+            latest_strp = datetime.datetime.strptime(updated_data[header]["latest"], "%Y-%m-%dT%H:%M:%S.%fZ")
+            latest_localized = utc_tz.localize(latest_strp).astimezone(helsinki_tz)
+            latest_formatted = latest_localized.strftime("%d.%m.%Y %H:%M")
+            area = updated_data[header]["healthCareDistrict"]
+            info_str = f"{current_cases} {cases_diff_str}\nViimeisin: {latest_formatted}\nAlue: {area}"
         except KeyError:
-            # Dictionary on tyhjä eli ei tapauksia
-            embed.add_field(name=title, value=f"{cases}", inline=False)
+            info_str = current_cases
 
-    latest_ts_strp = datetime.datetime.strptime(latest_ts, "%Y-%m-%dT%H:%M:%S.%fZ")
-    latest_ts_strp = utc_tz.localize(latest_ts_strp).astimezone(helsinki_tz)
-    latest_ts_strf = latest_ts_strp.strftime("%d.%m.%Y %H:%M")
-    embed.set_footer(text=f"Verrokkiaika: {latest_ts_strf}")
+        embed.add_field(name=title, value=info_str, inline=False)
+
+    embed.set_footer(text="Muutokset ovat päiväkohtaisia")
     await client.send_message(message.channel, embed=embed)
+
+    new_compare_time = datetime.datetime.strptime(updated_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    saved_compare_time = datetime.datetime.strptime(saved_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    if ((new_compare_time - saved_compare_time).total_seconds()) / 3600 > 18:
+        with open("korona.json", "w", encoding="utf-8") as output_file:
+            json.dump(updated_data, output_file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
