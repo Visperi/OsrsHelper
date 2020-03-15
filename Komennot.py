@@ -1763,14 +1763,12 @@ async def korona_stats(message, client):
     with open("korona.json", "r") as data_file:
         saved_data = json.load(data_file)
 
-    tmp = []
     updated_data = {"confirmed": {}, "deaths": {}, "recovered": {}}
 
     for header in updated_data.keys():
         current_cases = len(new_data[header])
         try:
             latest_case = new_data[header][-1]["date"]
-            tmp.append(latest_case)
             updated_data[header]["latest"] = latest_case
             updated_data[header]["healthCareDistrict"] = new_data[header][-1]["healthCareDistrict"]
         except IndexError:
@@ -1783,14 +1781,14 @@ async def korona_stats(message, client):
     embed = discord.Embed(title="Koronan tilanne Suomessa")
 
     for header in updated_data.keys():
-        if header == "lastUpdated":
-            continue
         if header == "confirmed":
             title = "Tartunnat"
         elif header == "deaths":
             title = "Menehtyneet"
-        else:
+        elif header == "recovered":
             title = "Parantuneet"
+        else:
+            continue
 
         current_cases = updated_data[header]["cases"]
         cases_diff = current_cases - saved_data[header]["cases"]
@@ -1816,7 +1814,7 @@ async def korona_stats(message, client):
     new_compare_time = datetime.datetime.strptime(updated_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
     saved_compare_time = datetime.datetime.strptime(saved_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    if ((new_compare_time - saved_compare_time).total_seconds()) / 3600 > 18:
+    if new_compare_time.day > saved_compare_time.day:
         with open("korona.json", "w", encoding="utf-8") as output_file:
             json.dump(updated_data, output_file, indent=4, ensure_ascii=False)
 
