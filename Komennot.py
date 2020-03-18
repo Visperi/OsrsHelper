@@ -1757,8 +1757,16 @@ async def korona_stats(message, client):
     helsinki_tz = pytz.timezone("Europe/Helsinki")
     # Get the latest Finnish corona data
     korona_link = "https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData"
-    resp = requests.get(korona_link).text
-    new_data = json.loads(resp, encoding="utf-8")
+    try:
+        resp = requests.get(korona_link, timeout=5)
+    except requests.exceptions.ReadTimeout:
+        await client.send_message(message.channel, "Datalähde vastaa liian hitaasti. Kokeile myöhemmin uudelleen.")
+        return
+    if resp.status_code != 200:
+        await client.send_message(message.channel, f"Datalähde vastasi statuskoodilla {resp.status_code}. Kokeile "
+                                                   f"myöhemmin uudelleen.")
+        return
+    new_data = json.loads(resp.text, encoding="utf-8")
 
     with open("korona.json", "r") as data_file:
         saved_data = json.load(data_file)
@@ -1802,6 +1810,8 @@ async def korona_stats(message, client):
             latest_localized = utc_tz.localize(latest_strp).astimezone(helsinki_tz)
             latest_formatted = latest_localized.strftime("%d.%m.%Y %H:%M")
             area = updated_data[header]["healthCareDistrict"]
+            if area is None:
+                area = "Ei tietoa"
             info_str = f"{current_cases} {cases_diff_str}\nViimeisin: {latest_formatted}\nAlue: {area}"
         except KeyError:
             info_str = current_cases
