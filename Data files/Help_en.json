@@ -499,5 +499,27 @@
         "description": "Antaa kuukaudet jolloin annetulla kasviksella on satokausi.",
         "additional": "-",
         "example": "`!satokaudet porkkana`"
+    },
+    {
+        "function": [
+            "beer",
+            "olut",
+            "drink"
+        ],
+        "name": "!olut",
+        "description": "Adds one standard drink to an user.",
+        "additional": "-",
+        "example": "`!beer` or `!drink` or `!olut`"
+    },
+    {
+        "function": [
+            "beers",
+            "drinks",
+            "beerscores"
+        ],
+        "name": "!beerscores",
+        "description": "Lists the top 5 users with most alcohol drinks.",
+        "additional": "-",
+        "example": "`!beerscores` or `!beers` or `!drinks`"
     }
 ]

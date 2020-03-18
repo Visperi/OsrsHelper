@@ -507,5 +507,27 @@
         "description": "Antaa kuukaudet jolloin annetulla kasviksella on satokausi.",
         "additional": "-",
         "example": "`!satokaudet porkkana`"
+    },
+    {
+        "function": [
+            "beer",
+            "olut",
+            "drink"
+        ],
+        "name": "!olut",
+        "description": "Lisää Käyttäjälle yhden juodun annoksen. Varo liian isoa humalaa!",
+        "additional": "-",
+        "example": "`!olut` tai `!beer` tai `!drink`"
+    },
+    {
+        "function": [
+            "beers",
+            "drinks",
+            "beerscores"
+        ],
+        "name": "!beerscores",
+        "description": "Listaa serverin kovimmat ~~alkoholistit~~ jätkät",
+        "additional": "-",
+        "example": "`!beerscores` tai `!beers` tai `!drinks`"
     }
 ]

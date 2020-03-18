@@ -1,1 +1,2 @@
-- Lisättiin komento !korona
+- Lisättiin komento !beer
+- Lisättiin komento !beerscores
