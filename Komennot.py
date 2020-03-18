@@ -121,11 +121,11 @@ async def kayttajan_tiedot(message, client):
 
 
 async def commands(message, client):
-    discord_commands = ["!info", "!help", "!calc", "!howlong", "!namechange", "!server commands",
-                        "!sub streams", "!unsub streams", "!streamers", "!test", "!satokausi"]
-    osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!ttm", "!xp", "!ehp", "!nicks", "!loot", "!update"]
+    discord_commands = ["!info", "!help", "!calc", "!me", "!namechange", "!server commands", "!satokausi", "!beer",
+                        "!beerscores"]
+    osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
-    item_commands = ["!keys", "!limit", "!price", "!iteminfo"]
+    item_commands = ["!keys", "!limit", "!price"]
     moderator_commands = ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom"]
     settings_commands = ["&language", "&settings", "&permit", "&unpermit", "&add commands", "&forcelang",
                          "&defaultlang"]
@@ -1762,7 +1762,7 @@ async def korona_stats(message, client):
     except requests.exceptions.ReadTimeout:
         await client.send_message(message.channel, "Datalähde vastaa liian hitaasti. Kokeile myöhemmin uudelleen.")
         return
-    if resp.status_code != 200:
+    if not resp.ok:
         await client.send_message(message.channel, f"Datalähde vastasi statuskoodilla {resp.status_code}. Kokeile "
                                                    f"myöhemmin uudelleen.")
         return
@@ -1828,6 +1828,67 @@ async def korona_stats(message, client):
         with open("korona.json", "w", encoding="utf-8") as output_file:
             json.dump(updated_data, output_file, indent=4, ensure_ascii=False)
 
+
+async def add_drinks(message, client):
+    user_id = message.author.id
+    server_id = message.server.id
+
+    with open("drinks.json", "r") as data_file:
+        drink_data = json.load(data_file)
+
+    try:
+        server_data = drink_data[server_id]
+    except KeyError:
+        drink_data[server_id] = {}
+        server_data = drink_data[server_id]
+
+    try:
+        server_data[user_id] += 1
+    except KeyError:
+        server_data[user_id] = 1
+
+    with open("drinks.json", "w") as output_file:
+        json.dump(drink_data, output_file, indent=4)
+
+    await client.add_reaction(message, "a:BeerTime:689922747606106227")
+
+
+async def drink_highscores(message, client):
+    server_id = message.server.id
+
+    with open("drinks.json", "r") as data_file:
+        drink_data = json.load(data_file)
+
+    try:
+        server_data = drink_data[server_id]
+    except KeyError:
+        await client.send_message(message.channel, "Serverillä ei ole otettu vielä kertaakaan olutta "
+                                                   "<:feelsbad:333731708405022721>")
+        return
+
+    sorted_scores = sorted(server_data, key=server_data.get, reverse=True)
+    highscores = []
+
+    for pos, user_id in enumerate(sorted_scores):
+        if pos > 4:
+            break
+
+        user = message.server.get_member(user_id)
+
+        if pos == 0:
+            pos = "\N{FIRST PLACE MEDAL}"
+        elif pos == 1:
+            pos = "\N{SECOND PLACE MEDAL}"
+        elif pos == 2:
+            pos = "\N{THIRD PLACE MEDAL}"
+        else:
+            pos = f"{pos + 1}."
+
+        highscores.append(f"{pos} {user.display_name} ({server_data[user_id]})")
+
+    embed = discord.Embed(title="Serverin kovimmat kaljankittaajat", description="\n".join(highscores))
+
+    await client.send_message(message.channel, embed=embed)
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")
