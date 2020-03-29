@@ -1,15 +1,16 @@
-# OsrsHelper v6.9
+# OsrsHelper v7.1
 
-Discord bot made mainly for Old school Runescape related commands, although nowadays it has several other commands too. It was started in 2015 as a very small project just to check item prices in G.E. Now it also has commands for clues, users stats and gains, custom item keywords and custom server commands.
+Discord bot made mainly for Old school Runescape related commands, although nowadays it is pretty much an all-around project for a few Discord servers. This allows me to make quick changes and updates to meet the user base needs. There is a newer version of this bot, [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite), which has a goal of doing everything better from the beginning. Both versions will keep getting updates, although the old version in much more regular basis since it already has a live userbase.
 
-**Very ugly code** since this was my very first project in coding. Also, there is no documentation and the code is mostly in Finnish. However, the bot works and it has pretty straightforward help commands. I'm not planning to translate this project into english, since it's outdated and pretty hard to read and remember even for myself. I'm rewriting the whole bot, for which I have a whole new Github page: [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite).
+**Very ugly code** since this was my very first project in coding. Also, unfortunately there is no documentation and the code is mostly in Finnish. I'm not planning to fully translate this project into english, since the library version is outdated and the old code can be hard to read even for myself.
 
 ### Main features
-- 41 hard coded commands ([Full list](/commands_list.txt), bad formatting but somewhat readable)
-- Compact help messages for every command that are also available in english
+- Over 40 hard coded commands
+- Full support for both Finnish and English
+- Compact help messages for every command
 - Up to 200 server specific custom commands
 - Add keywords for tradeable items to check price
-- Manage roles who can add or delete commands and keywords
+- Manage roles who can add or delete commands and item keywords
 - Full Osrs clue support (excluding map and Falo steps)
 
 # Source made with
