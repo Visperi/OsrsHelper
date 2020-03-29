@@ -166,6 +166,12 @@ async def on_message(message):
             await moduuli.itemspecs(message, keywords_lower, client)
         elif msg_lower == "!korona" or msg_lower == "!corona":
             await komennot.korona_stats(message, client)
+        elif msg_lower in ["!beer", "!olut", "!drink"]:
+            await moduuli.add_drinks(message, client)
+        elif msg_lower in ["!beerscores", "!beers", "!drinks"]:
+            await moduuli.drink_highscores(message, client)
+        elif msg_lower in ["!unbeer", "!undrink"]:
+            await moduuli.remove_drinks(message, client)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)
@@ -289,6 +295,10 @@ async def on_message(message):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
                 await dev_commands.get_file(message, keywords_raw, client)
+        elif msg_lower.startswith("§drinks "):
+            permissions = await high_permissions(message, user_lang, sysadmin=True)
+            if permissions:
+                await dev_commands.manage_drinks(message, keywords_lower, client)
         else:
             if msg_lower.startswith("!") and msg_lower != "!":
                 await moduuli.execute_custom_commands(message, msg_raw, client)

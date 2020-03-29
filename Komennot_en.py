@@ -1712,8 +1712,50 @@ async def item_price(message, hakusanat, client):
     await client.send_message(message.channel, embed=embed)
 
 
+async def add_drinks(message, client):
+    user_id = message.author.id
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "This command doesn't support direct messages.")
+        return
+
+    with open("drinks.json", "r") as data_file:
+        drink_data = json.load(data_file)
+
+    try:
+        server_data = drink_data[server_id]
+    except KeyError:
+        drink_data[server_id] = {}
+        server_data = drink_data[server_id]
+
+    try:
+        server_data[user_id] += 1
+    except KeyError:
+        server_data[user_id] = 1
+
+    with open("drinks.json", "w") as output_file:
+        json.dump(drink_data, output_file, indent=4)
+
+    await client.add_reaction(message, "a:BeerTime:689922747606106227")
+
+    user_drinks = server_data[user_id]
+    mod50 = user_drinks % 50
+    mod100 = user_drinks % 100
+
+    if mod50 == 0 and mod100 != 0:
+        await client.send_message(message.channel, f"{message.author.display_name} achieved {user_drinks} drinks "
+                                                   f"milestone <a:blobbeers:693529052371222618>")
+    elif mod100 == 0:
+        await client.send_message(message.channel, f"\U0001F973 {message.author.display_name} achieved "
+                                                   f"{user_drinks} drinks milestone! \U0001F973")
+
 async def drink_highscores(message, client):
-    server_id = message.server.id
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "This command doesn't support direct messages.")
+        return
 
     with open("drinks.json", "r") as data_file:
         drink_data = json.load(data_file)
@@ -1729,10 +1771,14 @@ async def drink_highscores(message, client):
     highscores = []
 
     for pos, user_id in enumerate(sorted_scores):
-        if pos > 4:
+        if pos > 9:
             break
 
-        user = message.server.get_member(user_id)
+        try:
+            member = message.server.get_member(user_id)
+            display_name = member.display_name
+        except AttributeError:
+            display_name = "Unknown"
 
         if pos == 0:
             pos = "\N{FIRST PLACE MEDAL}"
@@ -1743,11 +1789,44 @@ async def drink_highscores(message, client):
         else:
             pos = f"{pos + 1}."
 
-        highscores.append(f"{pos} {user.display_name} ({server_data[user_id]})")
+        highscores.append(f"{pos} {display_name} ({server_data[user_id]})")
 
     embed = discord.Embed(title="Users with the most alcohol drinked in this server", description="\n".join(highscores))
 
     await client.send_message(message.channel, embed=embed)
+
+async def remove_drinks(message, client):
+    user_id = message.author.id
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "This command doesn't support direct messages.")
+        return
+
+    with open("drinks.json", "r") as data_file:
+        drink_data = json.load(data_file)
+
+    try:
+        server_data = drink_data[server_id]
+    except KeyError:
+        await client.send_message(message.channel, "This server doesn't have any saved drinks.")
+        return
+
+    try:
+        server_data[user_id] -= 1
+    except KeyError:
+        await client.send_message(message.channel, "You have not drank any drinks.")
+        return
+
+    if server_data[user_id] == 0:
+        del server_data[user_id]
+        if len(server_data) == 0:
+            del drink_data[server_id]
+
+    with open("drinks.json", "w") as output_file:
+        json.dump(drink_data, output_file, indent=4)
+
+    await client.add_reaction(message, "a:emiTreeB:693788789042184243")
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")

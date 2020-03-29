@@ -369,6 +369,69 @@ async def get_file(message, keywords, client):
         return
 
 
+async def manage_drinks(message, keywords, client):
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "Th1s command doesn't support direct messages.")
+        return
+
+    action = keywords[0]
+    target_user_id = keywords[1]
+    try:
+        member_obj = message.server.get_member(target_user_id)
+        target_display_name = member_obj.display_name
+    except AttributeError:
+        target_display_name = target_user_id
+
+    if action == "reset" and len(keywords) != 2:
+        await client.send_message(message.channel, f"Invalid amount of parameters. Got {len(keywords)} but expected 2.")
+        return
+    elif len(keywords) != 3 and action != "reset":
+        await client.send_message(message.channel, f"Invalid amount of parameters. Got {len(keywords)} but expected 3.")
+        return
+
+    with open("drinks.json", "r") as drinks_file:
+        drinks_data = json.load(drinks_file)
+
+    try:
+        server_drinks = drinks_data[server_id]
+    except KeyError:
+        await client.send_message(message.channel, "This server doesn't have any drinks yet.")
+        return
+    if action == "reset":
+        del server_drinks[target_user_id]
+        if len(server_drinks) == 0:
+            del drinks_data[server_id]
+        success_str = f"Succesfully reset drinks for {target_display_name}."
+    else:
+        try:
+            amount = int(keywords[2])
+        except ValueError:
+            await client.send_message(message.channel, "Third parameter was not convertible to an integer.")
+            return
+        try:
+            target_user_drinks = server_drinks[target_user_id]
+        except KeyError:
+            await client.send_message(message.channel, "Target doesn't have any drinks yet.")
+            return
+
+        if action == "remove":
+            target_user_drinks -= amount
+        elif action == "add":
+            target_user_drinks += amount
+        elif action == "set":
+            target_user_drinks = amount
+
+        server_drinks[target_user_id] = target_user_drinks
+        success_str = f"Succesfully modified drinks for {target_display_name}. They now have " \
+                      f"{target_user_drinks} drinks."
+
+    with open("drinks.json", "w") as output_file:
+        json.dump(drinks_data, output_file, indent=4)
+
+    await client.send_message(message.channel, success_str)
+
 if __name__ == '__main__':
     print("Please run the Main.py to use any commands. They work only through Discord.")
     exit()

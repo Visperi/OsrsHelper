@@ -122,7 +122,7 @@ async def kayttajan_tiedot(message, client):
 
 async def commands(message, client):
     discord_commands = ["!info", "!help", "!calc", "!me", "!namechange", "!server commands", "!satokausi", "!beer",
-                        "!beerscores"]
+                        "!beerscores", "!korona"]
     osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
     item_commands = ["!keys", "!limit", "!price"]
@@ -1818,7 +1818,7 @@ async def korona_stats(message, client):
 
         embed.add_field(name=title, value=info_str, inline=False)
 
-    embed.set_footer(text="Muutokset ovat päiväkohtaisia")
+    embed.set_footer(text="Parantuneiden määrä on todellisuudessa\nsuurempi, koska heitä ei testata")
     await client.send_message(message.channel, embed=embed)
 
     new_compare_time = datetime.datetime.strptime(updated_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -1831,7 +1831,11 @@ async def korona_stats(message, client):
 
 async def add_drinks(message, client):
     user_id = message.author.id
-    server_id = message.server.id
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "Tämä komento ei tue yksityisviestejä.")
+        return
 
     with open("drinks.json", "r") as data_file:
         drink_data = json.load(data_file)
@@ -1852,9 +1856,24 @@ async def add_drinks(message, client):
 
     await client.add_reaction(message, "a:BeerTime:689922747606106227")
 
+    user_drinks = server_data[user_id]
+    mod50 = user_drinks % 50
+    mod100 = user_drinks % 100
+
+    if mod50 == 0 and mod100 != 0:
+        await client.send_message(message.channel, f"{message.author.display_name} saavutti {user_drinks} annoksen "
+                                                   f"rajapyykin <a:blobbeers:693529052371222618>")
+    elif mod100 == 0:
+        await client.send_message(message.channel, f"\U0001F973 {message.author.display_name} saavutti "
+                                                   f"{user_drinks} annoksen rajapyykin! \U0001F973")
+
 
 async def drink_highscores(message, client):
-    server_id = message.server.id
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "Tämä Komento ei tue yksityisviestejä.")
+        return
 
     with open("drinks.json", "r") as data_file:
         drink_data = json.load(data_file)
@@ -1870,10 +1889,14 @@ async def drink_highscores(message, client):
     highscores = []
 
     for pos, user_id in enumerate(sorted_scores):
-        if pos > 4:
+        if pos > 9:
             break
 
-        user = message.server.get_member(user_id)
+        try:
+            member = message.server.get_member(user_id)
+            display_name = member.display_name
+        except AttributeError:
+            display_name = "Tuntematon"
 
         if pos == 0:
             pos = "\N{FIRST PLACE MEDAL}"
@@ -1884,11 +1907,46 @@ async def drink_highscores(message, client):
         else:
             pos = f"{pos + 1}."
 
-        highscores.append(f"{pos} {user.display_name} ({server_data[user_id]})")
+        highscores.append(f"{pos} {display_name} ({server_data[user_id]})")
 
     embed = discord.Embed(title="Serverin kovimmat kaljankittaajat", description="\n".join(highscores))
 
     await client.send_message(message.channel, embed=embed)
+
+
+async def remove_drinks(message, client):
+    user_id = message.author.id
+    try:
+        server_id = message.server.id
+    except AttributeError:
+        await client.send_message(message.channel, "Tämä komento ei tue yksityisviestejä.")
+        return
+
+    with open("drinks.json", "r") as data_file:
+        drink_data = json.load(data_file)
+
+    try:
+        server_data = drink_data[server_id]
+    except KeyError:
+        await client.send_message(message.channel, "Serverillä ei ole juomia mitä poistaa.")
+        return
+
+    try:
+        server_data[user_id] -= 1
+    except KeyError:
+        await client.send_message(message.channel, "Sinulla ei ole yhtään juotua juomaa.")
+        return
+
+    if server_data[user_id] == 0:
+        del server_data[user_id]
+        if len(server_data) == 0:
+            del drink_data[server_id]
+
+    with open("drinks.json", "w") as output_file:
+        json.dump(drink_data, output_file, indent=4)
+
+    await client.add_reaction(message, "a:emiTreeB:693788789042184243")
+
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")

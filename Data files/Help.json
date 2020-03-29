@@ -411,7 +411,7 @@
         ],
         "name": "!help",
         "description": "Antaa lyhyen listan kaikista peruskomennoista, joilla saa apua botin käyttöön.",
-        "additional": "Loppuu se perseily <:danskisu:433918416710008843> <a:hyppivapokale:582570512060907531> <:dab:356108309373124608>",
+        "additional": "Loppuu se perseily <:danskisu:689928015341158469> <a:hyppivapokale:582570512060907531> <:dab:356108309373124608>",
         "example": "`!help !help`"
     },
     {
@@ -526,8 +526,27 @@
             "beerscores"
         ],
         "name": "!beerscores",
-        "description": "Listaa serverin kovimmat ~~alkoholistit~~ jätkät",
+        "description": "Listaa serverin kovimmat ~~alkoholistit~~ jätkät.",
         "additional": "-",
         "example": "`!beerscores` tai `!beers` tai `!drinks`"
+    },
+    {
+        "function": [
+            "korona",
+            "corona"
+        ],
+        "name": "!korona",
+        "description": "Antaa tietoja tämänhetkisistä varmistetuista koronatapauksista.",
+        "additional": "Peskää käsiä ja välttäkää turhia ihmiskontakteja <:feelscoronaman:693540873681633361>",
+        "example": "-"
+    },
+    {
+        "function": [
+            "§drinks"
+        ],
+        "name": "§drinks",
+        "description": "Asettaa annetun käyttäjän juomia halutulla tavalla",
+        "additional": "Tukee toimintoja `reset`, `set`, `add` ja `remove`.",
+        "example": "`§drinks reset 95532930620719104` tai `§drinks add 95532930620719104 10`"
     }
 ]

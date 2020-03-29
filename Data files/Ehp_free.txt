@@ -34,7 +34,6 @@ Strength:
 Hitpoints:
 None
 
-
 Ranged:
 0 xp: 7,000 xp/h
 37,224 xp: 14,000 xp/h
@@ -80,7 +79,6 @@ Woodcutting:
 Fletching:
 None
 
-
 Fishing:
 0 xp: 14,000 xp/h
 4,470 xp: 28,000 xp/h
@@ -124,18 +122,14 @@ Mining:
 Herblore:
 None
 
-
 Agility:
 None
-
 
 Thieving:
 None
 
-
 Slayer:
 None
-
 
 Farming:
 None
@@ -146,7 +140,6 @@ Runecrafting:
 
 Hunter:
 None
-
 
 Construction:
 None

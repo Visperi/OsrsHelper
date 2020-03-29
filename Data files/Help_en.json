@@ -521,5 +521,15 @@
         "description": "Lists the top 5 users with most alcohol drinks.",
         "additional": "-",
         "example": "`!beerscores` or `!beers` or `!drinks`"
+    },
+    {
+        "function": [
+            "korona",
+            "corona"
+        ],
+        "name": "!korona",
+        "description": "Gives latest info about verified Finnish coronavirus cases.",
+        "additional": "Wash your hands, avoid non-necessary human contacts <:feelscoronaman:693540873681633361>",
+        "example": "-"
     }
 ]
