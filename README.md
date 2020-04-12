@@ -1,4 +1,4 @@
-# OsrsHelper v7.1
+# OsrsHelper v7.3
 
 Discord bot made mainly for Old school Runescape related commands, although nowadays it is pretty much an all-around project for a few Discord servers. This allows me to make quick changes and updates to meet the user base needs. There is a newer version of this bot, [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite), which has a goal of doing everything better from the beginning. Both versions will keep getting updates, although the old version in much more regular basis since it already has a live userbase.
 
