@@ -1,6 +1,1 @@
-- Lisättiin komento !undrink
-- Kasvatettiin komennon !beerscores listan pituutta
-- Lisättiin ylläpitäjän komentoja helpompaan juomien hallitsemiseen
-- Lisättiin help komento komennolle !korona
-- Päivitettiin EHP tiedot
-- Yllätyksiä :smirk:
+- Lisättiin komento !reminder

@@ -548,5 +548,15 @@
         "description": "Asettaa annetun käyttäjän juomia halutulla tavalla",
         "additional": "Tukee toimintoja `reset`, `set`, `add` ja `remove`.",
         "example": "`§drinks reset 95532930620719104` tai `§drinks add 95532930620719104 10`"
+    },
+    {
+        "function": [
+            "reminder",
+            "remindme"
+        ],
+        "name": "!reminder",
+        "description": "Asettaa muistutuksen halutulla viestillä. Muistutus sitten tägää sen asettajan annetulla viestillä.",
+        "additional": "Tukee ajastimen asettamista järjestyksessä `[yrs] [days] [hours] [min] [seconds]`. Viestin täytyy olla lainausmerkeissä.",
+        "example": "`!reminder 5d20min \"Viikonloppu starttaa\"`, `!reminder 15min \"Suihkuun ja nukkumaan\"`"
     }
 ]

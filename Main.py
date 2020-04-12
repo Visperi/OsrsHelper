@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v6.8.2
+# OsrsHelper v7.3
 # coding=utf-8
 
 import discord
@@ -34,6 +34,8 @@ import Settings as settings
 import Komennot_en as komennot_en
 import dev_commands
 import json
+import asyncio
+import dateutil.parser
 
 
 client = discord.Client()
@@ -47,10 +49,11 @@ config.read("{}settings.ini".format(path))
 @client.event
 async def on_ready():
     await client.change_presence(game=discord.Game(name="Say !help"))
-    print('Logged in as:')
+    print("Logged in as:")
     print(client.user.name)
     print(client.user.id)
-    print('------')
+    print("------")
+    await start_reminder_loop()
 
 
 @client.event
@@ -172,6 +175,9 @@ async def on_message(message):
             await moduuli.drink_highscores(message, client)
         elif msg_lower in ["!unbeer", "!undrink"]:
             await moduuli.remove_drinks(message, client)
+
+        elif msg_lower.startswith("!remindme ") or msg_lower.startswith("!reminder "):
+            await moduuli.add_reminder(message, client, keywords_lower)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)
@@ -374,9 +380,8 @@ async def on_member_join(member):
     server_id = str(member.server.id)
     if server_id == mestarit_id or server_id == test_server_id:
         await client.send_message(member.server,
-                                  f"Tervetuloa {member.mention} ! Jos olet tilaaja Teukan striimissä, saat "
-                                  f"yhdistämällä käyttäjäsi Twitchiin myös tänne roolin. Botin komennot saat "
-                                  f"komennolla `!commands` ja apua komennolla `!help`")
+                                  f"Tervetuloa {member.mention} ! Botin komennot saat komennolla "
+                                  f"`!commands` ja apua komennolla `!help`")
 
 
 @client.event
@@ -401,6 +406,62 @@ async def on_member_update(before, after):
                 return
     except AttributeError:
         return
+
+
+async def start_reminder_loop():
+    reminder_file = "reminders.json"
+    num_deprecated = 0
+
+    with open(reminder_file, "r") as data_file:
+        reminder_data = json.load(data_file)
+
+    deprecated_mentions = [ts for ts in reminder_data if dateutil.parser.isoparse(ts) < datetime.datetime.now()]
+
+    for ts in deprecated_mentions:
+        num_deprecated += len(reminder_data[ts])
+        del reminder_data[ts]
+
+    with open(reminder_file, "w") as output_file:
+        json.dump(reminder_data, output_file, indent=4, ensure_ascii=False)
+
+    print(f"Reminder loop started. Deleted {num_deprecated} deprecated reminders.")
+
+    # Start reminder loop
+    while True:
+        ts_now = str(datetime.datetime.now().replace(microsecond=0))
+
+        with open(reminder_file, "r") as data_file:
+            reminder_data = json.load(data_file)
+
+        try:
+            finished_reminders = reminder_data[ts_now]
+
+            for reminder in finished_reminders:
+                channel = client.get_channel(reminder["channel"])
+                message = reminder["message"]
+                author_id = reminder["author"]
+                author = channel.server.get_member(author_id)
+
+                if message.count("@") > 0:
+                    escape_indexes = [i for i, char in enumerate(message) if char == "@"]
+                    escaped_message = list(message)
+                    offset = 0
+                    for idx in escape_indexes:
+                        escaped_message.insert(idx + offset, "\\")
+                        offset += 1
+                    message = "".join(escaped_message)
+
+                await client.send_message(channel, f"{author.mention} {message}")
+
+            del reminder_data[ts_now]
+
+            with open(reminder_file, "w") as output_file:
+                json.dump(reminder_data, output_file, indent=4, ensure_ascii=False)
+
+        except KeyError:
+            pass
+
+        await asyncio.sleep(1)
 
 
 if __name__ == "__main__":

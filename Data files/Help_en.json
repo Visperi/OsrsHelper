@@ -531,5 +531,15 @@
         "description": "Gives latest info about verified Finnish coronavirus cases.",
         "additional": "Wash your hands, avoid non-necessary human contacts <:feelscoronaman:693540873681633361>",
         "example": "-"
+    },
+    {
+        "function": [
+            "reminder",
+            "remindme"
+        ],
+        "name": "!reminder",
+        "description": "Set a reminder with a custom message. The reminder will then tag you with its message later.",
+        "additional": "Reminder time supports order `[yrs] [days] [hours] [min] [seconds]`. The message must be in quotes.",
+        "example": "`!reminder 5d20min \"I cant come up with any examples\"`, `!reminder 15min \"Why are these so hard\"`"
     }
 ]

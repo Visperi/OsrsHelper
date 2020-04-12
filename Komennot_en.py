@@ -114,7 +114,7 @@ async def kayttajan_tiedot(message, client):
 
 async def commands(message, client):
     discord_commands = ["!info", "!help", "!calc", "!me", "!namechange", "!server commands", "!satokausi", "!beer",
-                        "!beerscores"]
+                        "!beerscores", "!reminder"]
     osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
     item_commands = ["!keys", "!limit", "!price"]
@@ -1120,6 +1120,7 @@ async def get_keys(message, hakusanat, client):
 
 async def latest_update(message, client):
     news_articles = {}
+    articles = []
 
     link = "http://oldschool.runescape.com/"
     osrs_response = requests.get(link).text
@@ -1128,20 +1129,19 @@ async def latest_update(message, client):
 
     for div_tag in osrs_response_html.findAll("div", attrs={"class": "news-article__details"}):
         p_tag = div_tag.p
+        h3_tag = div_tag.h3
+
         # Somehow the article types always end in space
         article_type = div_tag.span.contents[0][:-1]
         article_link = p_tag.a["href"]
         article_number = p_tag.a["id"][-1]
+        article_title = h3_tag.a.text
+        article_date = div_tag.time["datetime"]
+
         news_articles[article_number] = {"link": article_link, "type": article_type}
+        articles.append(f"**{article_title}** ({article_type}) ({article_date})\n<{article_link}>")
 
-    # Find the latest article by finding the smallest article key
-    latest_article_key = min(news_articles.keys())
-
-    article_link = news_articles[latest_article_key]["link"]
-    article_type = news_articles[latest_article_key]["type"]
-
-    await client.send_message(message.channel, f"Latest news about Osrs ({article_type}):\n\n"
-                                               f"{article_link}")
+    await client.send_message(message.channel, "\n\n".join(articles))
 
 
 async def editcom(message, words_raw, client):
@@ -1795,6 +1795,7 @@ async def drink_highscores(message, client):
 
     await client.send_message(message.channel, embed=embed)
 
+
 async def remove_drinks(message, client):
     user_id = message.author.id
     try:
@@ -1827,6 +1828,73 @@ async def remove_drinks(message, client):
         json.dump(drink_data, output_file, indent=4)
 
     await client.add_reaction(message, "a:emiTreeB:693788789042184243")
+
+
+def string_to_datetime(time_string: str):
+    time_string = time_string.replace("years", "y").replace("days", "d").replace("hours", "h") \
+        .replace("minutes", "min").replace("min", "m").replace("seconds", "sec").replace("sec", "s").replace(" ", "")
+    time_units = {"y": 0, "d": 0, "h": 0, "m": 0, "s": 0}
+
+    for char in time_string:
+        if char not in ["y", "d", "h", "m", "s"]:
+            continue
+        time_units[char] = int(time_string[:time_string.find(char)])
+        time_string = time_string.lstrip(time_string[:time_string.find(char) + 1])
+
+    days = time_units["d"] + (time_units["y"] * 365)
+    hours, minutes, seconds = time_units["h"], time_units["m"], time_units["s"]
+    timedelta = datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+    return timedelta
+
+
+async def add_reminder(message, client, hakusanat):
+    min_secs = 10
+    reminder_file = "reminders.json"
+    ts_now = datetime.datetime.now().replace(microsecond=0)
+    user_string = " ".join(hakusanat)
+
+    i1, i2 = user_string.find("\""), user_string.rfind("\"")
+    if i1 == i2:
+        await client.send_message(message.channel, "The message needs to be in quotes.")
+        return
+    elif i1 < 1:
+        await client.send_message(message.channel, "Please give a time for the timer")
+        return
+
+    time_string = user_string[:i1].rstrip()
+    reminder_message = user_string[i1 + 1:i2]
+    try:
+        reminder_time = datetime.timedelta(minutes=int(time_string))
+    except ValueError:
+        try:
+            reminder_time = string_to_datetime(time_string)
+        except ValueError:
+            await client.send_message(message.channel, "Given time was not in supported format.")
+            return
+
+    if reminder_time.total_seconds() < min_secs:
+        await client.send_message(message.channel, f"The reminder time must be at least {min_secs} seconds.")
+        return
+
+    with open(reminder_file) as data_file:
+        reminder_data = json.load(data_file)
+
+    try:
+        trigger_time = str(ts_now + reminder_time)
+    except OverflowError:
+        await client.send_message(message.channel, "Too big timer value :(")
+        return
+    try:
+        ts_reminders = reminder_data[trigger_time]
+    except KeyError:
+        reminder_data[trigger_time] = []
+        ts_reminders = reminder_data[trigger_time]
+
+    ts_reminders.append({"channel": message.channel.id, f"message": reminder_message, "author": message.author.id})
+    with open(reminder_file, "w") as data_file:
+        json.dump(reminder_data, data_file, indent=4, ensure_ascii=False)
+
+    await client.send_message(message.channel, f"Reminder set. I will remind you at {trigger_time}")
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")

@@ -1,4 +1,1 @@
-- Added command !undrink
-- Made !beerscores scores longer
-- Added some developer commands to make handling drink data easier
-- Updated EHP data
+- Added command !reminder

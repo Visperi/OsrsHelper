@@ -34,7 +34,7 @@ import Settings
 from fractions import Fraction
 from bs4 import BeautifulSoup
 from mathparse import mathparse
-import pytz
+import covid19_data
 
 path = "{}/".format(os.path.dirname(__file__))
 if path == "/":
@@ -122,7 +122,7 @@ async def kayttajan_tiedot(message, client):
 
 async def commands(message, client):
     discord_commands = ["!info", "!help", "!calc", "!me", "!namechange", "!server commands", "!satokausi", "!beer",
-                        "!beerscores", "!korona"]
+                        "!beerscores", "!korona", "!reminder"]
     osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!loot", "!update"]
     clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
     item_commands = ["!keys", "!limit", "!price"]
@@ -164,45 +164,6 @@ def get_iteminfo(itemname: str, default_names=False):
                     itemname = to_utf8(item.capitalize())
                     item_id = data[itemname]["id"]
                     return itemname, item_id
-
-
-async def current_price(message, client):
-    """
-    DEPRECATED
-    """
-    await client.send_message(message.channel, "Komento on valitettavasti jouduttu ottamaan pois käytöstä. Lisätietoa "
-                                               "komennolla `!prices`.")
-    return
-
-
-async def get_halch(itemname):
-    """Searches high alchemy value for given item from local files or osrs wiki.
-
-    :param itemname: Name of the item to search. Must be in string format
-    :return: High alch value in int() default format
-    """
-    itemname = itemname.capitalize()
-    with open(f"{path}Tradeables.json") as data_file:
-        data = json.load(data_file)
-    try:
-        halch = data[itemname]["high_alch"]
-    except KeyError:
-        print("Annettua itemiä ei löydy listasta.")
-        return
-    if halch == "":
-        link = "http://2007.runescape.wikia.com/wiki/{}".format(itemname.replace(" ", "_"))
-        page = requests.get(link).text
-        start = page.find("High Alch</a>\n</th><td> ") + len("High Alch</a>\n</th><td> ")
-        end = page.find("&#160;coins", start)
-        halch = page[start:end]
-        try:
-            halch = int(halch.replace(",", ""))
-        except ValueError:
-            halch = "-"
-        data[itemname]["high_alch"] = halch
-        with open(f"{path}Tradeables.json", "w") as data_file:
-            json.dump(data, data_file, indent=4)
-    return halch
 
 
 async def addkey(message, keywords, client):
@@ -467,11 +428,10 @@ async def hae_highscoret(message, hakusanat, client, acc_type=None, gains=False,
         count += 1
     if not gains and not initial_stats:
         cluet = hae_cluet(tiedot)
-        await client.send_message(message.channel, "```{}\n\n{}\n\n{}```"
-                                  .format("{:^50}".format("STATS FOR {}".format(nick.upper())),
-                                          tabulate(skillnames, headers=["Skill", "Rank", "Level", "Xp"],
-                                                   tablefmt="orgtbl"),
-                                          tabulate(cluet, headers=["Clue", "Rank", "Amount"], tablefmt="orgtbl")))
+        skilltable = tabulate(skillnames, headers=["Skill", "Rank", "Level", "Xp"], tablefmt="orgtbl")
+        cluetable = tabulate(cluet, headers=["Clue", "Rank", "Amount"], tablefmt="orgtbl")
+        title = "{:^50}".format("STATS FOR {}".format(nick.upper()))
+        await client.send_message(message.channel, f"```{title}\n\n{skilltable}\n\n{cluetable}```")
         kayttokerrat("Stats")
     if gains or initial_stats:
         update_stats(nick, skillnames, account_type)
@@ -1111,6 +1071,7 @@ async def change_name(message, hakusanat, client):
 
 async def latest_update(message, client):
     news_articles = {}
+    articles = []
 
     link = "http://oldschool.runescape.com/"
     osrs_response = requests.get(link).text
@@ -1119,20 +1080,19 @@ async def latest_update(message, client):
 
     for div_tag in osrs_response_html.findAll("div", attrs={"class": "news-article__details"}):
         p_tag = div_tag.p
+        h3_tag = div_tag.h3
+
         # Somehow the article types always end in space
         article_type = div_tag.span.contents[0][:-1]
         article_link = p_tag.a["href"]
         article_number = p_tag.a["id"][-1]
+        article_title = h3_tag.a.text
+        article_date = div_tag.time["datetime"]
+
         news_articles[article_number] = {"link": article_link, "type": article_type}
+        articles.append(f"**{article_title}** ({article_type}) ({article_date})\n<{article_link}>")
 
-    # Find the latest article by finding the smallest article key
-    latest_article_key = min(news_articles.keys())
-
-    article_link = news_articles[latest_article_key]["link"]
-    article_type = news_articles[latest_article_key]["type"]
-
-    await client.send_message(message.channel, f"Viimeisimmät uutiset liittyen Osrs:ään ({article_type}):\n\n"
-                                               f"{article_link}")
+    await client.send_message(message.channel, "\n\n".join(articles))
 
 
 async def editcom(message, words_raw, client):
@@ -1753,80 +1713,78 @@ async def item_price(message, hakusanat, client):
 
 
 async def korona_stats(message, client):
-    utc_tz = pytz.utc
-    helsinki_tz = pytz.timezone("Europe/Helsinki")
-    # Get the latest Finnish corona data
-    korona_link = "https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData"
-    try:
-        resp = requests.get(korona_link, timeout=5)
-    except requests.exceptions.ReadTimeout:
-        await client.send_message(message.channel, "Datalähde vastaa liian hitaasti. Kokeile myöhemmin uudelleen.")
-        return
-    if not resp.ok:
-        await client.send_message(message.channel, f"Datalähde vastasi statuskoodilla {resp.status_code}. Kokeile "
-                                                   f"myöhemmin uudelleen.")
-        return
-    new_data = json.loads(resp.text, encoding="utf-8")
+    cooldown = 3  # Data update cooldown in minutes
+    utc_now = datetime.datetime.utcnow()
+    corona_file = "korona.json"
 
-    with open("korona.json", "r") as data_file:
-        saved_data = json.load(data_file)
-
-    updated_data = {"confirmed": {}, "deaths": {}, "recovered": {}}
-
-    for header in updated_data.keys():
-        current_cases = len(new_data[header])
-        try:
-            latest_case = new_data[header][-1]["date"]
-            updated_data[header]["latest"] = latest_case
-            updated_data[header]["healthCareDistrict"] = new_data[header][-1]["healthCareDistrict"]
-        except IndexError:
-            pass
-
-        updated_data[header]["cases"] = current_cases
-
-    now = datetime.datetime.now(tz=utc_tz)
-    updated_data["lastUpdated"] = now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     embed = discord.Embed(title="Koronan tilanne Suomessa")
+    embed.set_thumbnail(url="https://i.imgur.com/lQ5ecBe.png")
 
-    for header in updated_data.keys():
-        if header == "confirmed":
-            title = "Tartunnat"
-        elif header == "deaths":
-            title = "Menehtyneet"
-        elif header == "recovered":
-            title = "Parantuneet"
-        else:
-            continue
+    try:
+        update_timedelta = utc_now - covid19_data.previous_request
+        update_timedelta = update_timedelta.total_seconds() / 60
+    except TypeError:
+        update_timedelta = cooldown
 
-        current_cases = updated_data[header]["cases"]
-        cases_diff = current_cases - saved_data[header]["cases"]
-        if cases_diff != 0:
-            cases_diff_str = "({0:+})".format(cases_diff)
-        else:
-            cases_diff_str = ""
-
+    if update_timedelta >= cooldown:
         try:
-            latest_strp = datetime.datetime.strptime(updated_data[header]["latest"], "%Y-%m-%dT%H:%M:%S.%fZ")
-            latest_localized = utc_tz.localize(latest_strp).astimezone(helsinki_tz)
-            latest_formatted = latest_localized.strftime("%d.%m.%Y %H:%M")
-            area = updated_data[header]["healthCareDistrict"]
-            if area is None:
-                area = "Ei tietoa"
-            info_str = f"{current_cases} {cases_diff_str}\nViimeisin: {latest_formatted}\nAlue: {area}"
-        except KeyError:
-            info_str = current_cases
+            data = covid19_data.get_updated_data(covid19_data.hs, output_file=corona_file, indent=4)
+            covid19_data.previous_request = utc_now
+        except (requests.exceptions.ReadTimeout, RuntimeError) as error:
+            if isinstance(error, requests.exceptions.ReadTimeout):
+                embed.set_footer(text="Näytetään tallennettua dataa, koska datalähde vastasi liian hitaasti")
+            elif isinstance(error, RuntimeError):
+                embed.set_footer(text="Näytetään tallennettua dataa, koska datalähde vastasi virhekoodilla")
+            data = covid19_data.read_datafile(corona_file)
+    else:
+        data = covid19_data.read_datafile(corona_file)
 
-        embed.add_field(name=title, value=info_str, inline=False)
+    all_daily_cases = covid19_data.get_daily_cases(data, localize_to="Europe/Helsinki")
+    latest_cases = covid19_data.get_latest_cases(data, localize_to="Europe/Helsinki",
+                                                 localized_datefmt="%d.%m.%Y %H:%M")
 
-    embed.set_footer(text="Parantuneiden määrä on todellisuudessa\nsuurempi, koska heitä ei testata")
+    if embed.footer.EmbedProxy == discord.Embed.Empty:
+        synch_ts = covid19_data.previous_request
+        synch_ts = covid19_data.localize_timestamp(synch_ts, "Europe/Helsinki", new_datefmt="%d.%m.%Y %H:%M:%S")
+        embed.set_footer(text=f"Data synkronoitu viimeksi: {synch_ts}")
+
+    for case_type in ["confirmed", "deaths", "recovered"]:
+        total_cases = len(data[case_type])
+        daily_cases = len(all_daily_cases[case_type])
+        latest_date = latest_cases[case_type]["date"]
+        latest_area = latest_cases[case_type]["healthCareDistrict"]
+
+        if daily_cases != 0:
+            daily_cases = f"(+{daily_cases})"
+        else:
+            daily_cases = ""
+
+        if case_type == "confirmed":
+            title = "Tartunnat"
+        elif case_type == "deaths":
+            title = "Menehtyneet"
+            if not latest_area:
+                latest_area = latest_cases["deaths"]["area"]
+        else:
+            title = "Parantuneet"
+
+        if not latest_area:
+            latest_area = "Ei tietoa"
+
+        if case_type == "confirmed":
+            in_ward = latest_cases["hospitalised"]["inWard"]
+            in_icu = latest_cases["hospitalised"]["inIcu"]
+            total_hospitalised = latest_cases["hospitalised"]["totalHospitalised"]
+
+            embed.add_field(name=title, value=f"{total_cases} {daily_cases}\nViimeisin: {latest_date}\n"
+                                              f"Alue: {latest_area}")
+            embed.add_field(name="Hoitoa vaativat", value=f"Osastohoidossa: {in_ward}\nTehohoidossa: {in_icu}\n"
+                                                          f"Yhteensä: {total_hospitalised}")
+        else:
+            embed.add_field(name=title, value=f"{total_cases} {daily_cases}\nViimeisin: {latest_date}\n"
+                                              f"Alue: {latest_area}",inline=False)
+
     await client.send_message(message.channel, embed=embed)
-
-    new_compare_time = datetime.datetime.strptime(updated_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
-    saved_compare_time = datetime.datetime.strptime(saved_data["lastUpdated"], "%Y-%m-%dT%H:%M:%S.%fZ")
-
-    if new_compare_time.day > saved_compare_time.day:
-        with open("korona.json", "w", encoding="utf-8") as output_file:
-            json.dump(updated_data, output_file, indent=4, ensure_ascii=False)
 
 
 async def add_drinks(message, client):
@@ -1946,6 +1904,77 @@ async def remove_drinks(message, client):
         json.dump(drink_data, output_file, indent=4)
 
     await client.add_reaction(message, "a:emiTreeB:693788789042184243")
+
+
+def string_to_datetime(time_string: str):
+    time_string = time_string.replace("years", "y").replace("days", "d").replace("hours", "h") \
+        .replace("minutes", "min").replace("min", "m").replace("seconds", "sec").replace("sec", "s").replace(" ", "")
+    time_units = {"y": 0, "d": 0, "h": 0, "m": 0, "s": 0}
+
+    for char in time_string:
+        if char not in ["y", "d", "h", "m", "s"]:
+            continue
+        time_units[char] = int(time_string[:time_string.find(char)])
+        time_string = time_string.lstrip(time_string[:time_string.find(char) + 1])
+
+    days = time_units["d"] + (time_units["y"] * 365)
+    hours, minutes, seconds = time_units["h"], time_units["m"], time_units["s"]
+    timedelta = datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+    return timedelta
+
+
+async def add_reminder(message, client, hakusanat):
+    min_secs = 10
+    reminder_file = "reminders.json"
+    ts_now = datetime.datetime.now().replace(microsecond=0)
+    user_string = " ".join(hakusanat)
+
+    i1, i2 = user_string.find("\""), user_string.rfind("\"")
+    if i1 == i2:
+        await client.send_message(message.channel, "Anna viesti lainausmerkkien sisällä.")
+        return
+    elif i1 < 1:
+        await client.send_message(message.channel, "Anna myös ajastimelle aika.")
+        return
+
+    time_string = user_string[:i1].rstrip()
+    reminder_message = user_string[i1 + 1:i2]
+    try:
+        reminder_time = datetime.timedelta(minutes=int(time_string))
+    except ValueError:
+        try:
+            reminder_time = string_to_datetime(time_string)
+        except ValueError:
+            await client.send_message(message.channel, "Annettu aika ei ollut tuetussa muodossa.")
+            return
+
+    if reminder_time.total_seconds() < min_secs:
+        await client.send_message(message.channel, f"Annetun ajan täytyy olla vähintään {min_secs} sekuntia.")
+        return
+
+    with open(reminder_file) as data_file:
+        reminder_data = json.load(data_file)
+
+    try:
+        trigger_time = str(ts_now + reminder_time)
+    except OverflowError:
+        await client.send_message(message.channel, "Liian iso ajastus :(")
+        return
+    try:
+        ts_reminders = reminder_data[trigger_time]
+    except KeyError:
+        reminder_data[trigger_time] = []
+        ts_reminders = reminder_data[trigger_time]
+
+    ts_reminders.append({"channel": message.channel.id, f"message": reminder_message, "author": message.author.id})
+    with open(reminder_file, "w") as data_file:
+        json.dump(reminder_data, data_file, indent=4, ensure_ascii=False)
+
+    await client.send_message(message.channel, f"Asetettiin muistutus ajankohdalle {trigger_time}")
+
+
+async def yeet(message, client, hakusanat):
+    print(hakusanat)
 
 
 if __name__ == "__main__":
