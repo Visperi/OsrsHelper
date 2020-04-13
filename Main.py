@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v7.3
+# OsrsHelper v7.3.1
 # coding=utf-8
 
 import discord
@@ -111,8 +111,6 @@ async def on_message(message):
             await moduuli.hae_puzzle(message, keywords_lower, client)
         elif highscoret:
             await moduuli.hae_highscoret(message, keywords_lower, client)
-        elif msg_lower.startswith("!ttm "):
-            await moduuli.time_to_max(message, keywords_lower, client)
         elif msg_lower.startswith("!anagram "):
             await moduuli.search_anagram(message, keywords_lower, client)
         elif msg_lower.startswith("!keys ") or msg_lower.startswith("!keywords "):

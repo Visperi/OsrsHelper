@@ -34,6 +34,7 @@ import Settings
 from fractions import Fraction
 from bs4 import BeautifulSoup
 from mathparse import mathparse
+from dateutil.relativedelta import relativedelta
 
 path = "{}/".format(os.path.dirname(__file__))
 if path == "/":
@@ -470,30 +471,6 @@ async def gains_calculator(message, hakusanat, client):
         await client.send_message(message.channel, "This username is not being tracked and old names could not be "
                                                    "found from CML's database. If you have changed the nickname, use "
                                                    "`!namechange`. Otherwise use `!track <username>`.")
-
-
-async def time_to_max(message, hakusanat, client):
-    await client.send_message(message.channel, "This command has been disabled because either CML API is not in public "
-                                               "use anymore or it works very badly.")
-    return
-    # nick = " ".join(hakusanat).replace("_", " ")
-    # link = f"http://crystalmathlabs.com/tracker/api.php?type=ttm&player={nick}"
-    # response = decode_cml(link)
-    # tunnit = str(math.ceil(float(response))) + " EHP"
-    # if tunnit == "-1 EHP":
-    #     await client.send_message(message.channel, "This username is not in use or it isn't tracked in CML.")
-    #     return
-    # elif tunnit == "0 EHP":
-    #     tunnit = "0 EHP (maxed)"
-    # elif tunnit == "-2 EHP":
-    #     return
-    # elif tunnit == "-4 EHP":
-    #     await client.send_message(message.channel, "CML api is temporarily out of service due to heavy traffic on "
-    #                                                "their sites.")
-    #     return
-    #
-    # await client.send_message(message.channel, f"Ttm for {nick}: {tunnit}")
-    # kayttokerrat("Ttm")
 
 
 async def search_anagram(message, hakusanat, client):
@@ -1263,12 +1240,11 @@ async def bot_info(message, client, release_notes=False):
                                                           f"Updated: {last_modified}\nSource code: Python 3.6 "
                                                           f"([Source](https://github.com/Visperi/OsrsHelper))")
         embed.add_field(name="Credits",
-                        value="[discord.py](https://github.com/Rapptz/discord.py)\n"
-                              "[Rsbuddy](https://rsbuddy.com/) (price, pricechange)\n"
-                              "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (ttm, nicks, ehp)\n"
-                              "[Old school runescape](http://oldschool.runescape.com/) (whole game, user stats, "
-                              "item info)\n"
-                              "[OSRS Wiki](https://oldschool.runescape.wiki) (wiki, clues)")
+                        value="[discord.py](https://github.com/Rapptz/discord.py) (Source code)\n"
+                              "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (EHP rates)\n"
+                              "[Old school runescape](http://oldschool.runescape.com/) (Highscores, G.E. prices, Game "
+                              "news)\n"
+                              "[OSRS Wiki](https://oldschool.runescape.wiki) (Wiki)", inline=False)
         embed.add_field(name="Latest updates", value=changelog)
         embed.set_thumbnail(url=appinfo.icon_url)
     await client.send_message(message.channel, embed=embed)
@@ -1750,6 +1726,7 @@ async def add_drinks(message, client):
         await client.send_message(message.channel, f"\U0001F973 {message.author.display_name} achieved "
                                                    f"{user_drinks} drinks milestone! \U0001F973")
 
+
 async def drink_highscores(message, client):
     try:
         server_id = message.server.id
@@ -1830,27 +1807,52 @@ async def remove_drinks(message, client):
     await client.add_reaction(message, "a:emiTreeB:693788789042184243")
 
 
-def string_to_datetime(time_string: str):
-    time_string = time_string.replace("years", "y").replace("days", "d").replace("hours", "h") \
-        .replace("minutes", "min").replace("min", "m").replace("seconds", "sec").replace("sec", "s").replace(" ", "")
-    time_units = {"y": 0, "d": 0, "h": 0, "m": 0, "s": 0}
+def string_to_timedelta(time_string: str):
+    replace_dict = {"years": "yrs",
+                    "yrs": "y",
+                    "months": "mon",
+                    "mon": "m",
+                    "days": "d",
+                    "hours": "H",
+                    "h": "H",
+                    "minutes": "min",
+                    "min": "M",
+                    "seconds": "sec",
+                    "sec": "S",
+                    "s": "S",
+                    " ": ""}
+
+    for old in replace_dict.keys():
+        new = replace_dict[old]
+        time_string = time_string.replace(old, new)
+
+    time_units = {"y": 0, "m": 0, "d": 0, "H": 0, "M": 0, "S": 0}
 
     for char in time_string:
-        if char not in ["y", "d", "h", "m", "s"]:
+        if char not in list(time_units):
             continue
-        time_units[char] = int(time_string[:time_string.find(char)])
-        time_string = time_string.lstrip(time_string[:time_string.find(char) + 1])
 
-    days = time_units["d"] + (time_units["y"] * 365)
-    hours, minutes, seconds = time_units["h"], time_units["m"], time_units["s"]
-    timedelta = datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+        char_idx = time_string.find(char)
+        time_units[char] = int(time_string[:char_idx])
+
+        target_substring = time_string[:char_idx + 1]
+        time_string = time_string.replace(target_substring, "")
+
+    years = time_units["y"]
+    months = time_units["m"]
+    days = time_units["d"]
+    hours = time_units["H"]
+    minutes = time_units["M"]
+    seconds = time_units["S"]
+
+    timedelta = relativedelta(years=years, months=months, days=days, hours=hours, minutes=minutes, seconds=seconds)
     return timedelta
 
 
 async def add_reminder(message, client, hakusanat):
     min_secs = 10
     reminder_file = "reminders.json"
-    ts_now = datetime.datetime.now().replace(microsecond=0)
+    ts_now = datetime.datetime.utcnow().replace(microsecond=0)
     user_string = " ".join(hakusanat)
 
     i1, i2 = user_string.find("\""), user_string.rfind("\"")
@@ -1864,14 +1866,16 @@ async def add_reminder(message, client, hakusanat):
     time_string = user_string[:i1].rstrip()
     reminder_message = user_string[i1 + 1:i2]
     try:
-        reminder_time = datetime.timedelta(minutes=int(time_string))
+        reminder_time = relativedelta(minutes=int(time_string))
     except ValueError:
         try:
-            reminder_time = string_to_datetime(time_string)
+            reminder_time = string_to_timedelta(time_string)
         except ValueError:
             await client.send_message(message.channel, "Given time was not in supported format.")
             return
 
+    # Convert the reminder time from relativedelta to datetime.datetime object so total seconds can be extracted
+    reminder_time = ((ts_now + reminder_time) - ts_now)
     if reminder_time.total_seconds() < min_secs:
         await client.send_message(message.channel, f"The reminder time must be at least {min_secs} seconds.")
         return
@@ -1894,7 +1898,7 @@ async def add_reminder(message, client, hakusanat):
     with open(reminder_file, "w") as data_file:
         json.dump(reminder_data, data_file, indent=4, ensure_ascii=False)
 
-    await client.send_message(message.channel, f"Reminder set. I will remind you at {trigger_time}")
+    await client.send_message(message.channel, f"Reminder set. I will remind you at {trigger_time} UTC")
 
 if __name__ == "__main__":
     print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")
