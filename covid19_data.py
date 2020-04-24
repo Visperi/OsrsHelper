@@ -29,6 +29,8 @@ import requests
 import datetime
 import json
 from typing import Union
+import aiohttp
+import asyncio
 
 hs = {
     "cases": "https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod/finnishCoronaData/v2",
@@ -65,6 +67,46 @@ def localize_timestamp(utc_ts: Union[str, datetime.datetime], new_tz: str,
         localized = localized.strftime(new_datefmt)
 
     return localized
+
+
+async def async_get_updated_data(session: aiohttp.ClientSession, source_dict: dict, timeout: int = 5,
+                                 safe_mode: bool = True, output_file: str = None, ensure_ascii: bool = False,
+                                 **dump_kwargs) -> dict:
+    updated_data = {}
+
+    for source_name in source_dict.keys():
+        url = source_dict[source_name]
+        try:
+            async with session.get(url, timeout=timeout) as resp:
+                resp_data = await resp.json()
+        except asyncio.TimeoutError as timeout_error:
+            if safe_mode:
+                raise timeout_error
+
+            print(f"ReadTimeout: Data source {source_name} answered too slowly.")
+            updated_data[source_name] = "ReadTimeout"
+            continue
+
+        if resp.status != 200:
+            if safe_mode:
+                raise RuntimeError(f"Data source {source_name} answered with status code {resp.status} while safe "
+                                   f"mode was turned on.")
+
+            print(f"Response not OK: Data source {source_name} answered with status code {resp.status}")
+            updated_data[source_name] = f"Error {resp.status}: {resp_data}"
+            continue
+
+        async def operation(item_key):
+            updated_data[item_key] = resp_data[item_key]
+
+        coros = [operation(key) for key in resp_data.keys()]
+        await asyncio.gather(*coros)
+
+    if output_file:
+        with open(output_file, "w") as ofile:
+            json.dump(updated_data, ofile, ensure_ascii=ensure_ascii, **dump_kwargs)
+
+    return updated_data
 
 
 def get_updated_data(source_dict: dict, timeout: int = 5, safe_mode: bool = True, output_file: str = None,

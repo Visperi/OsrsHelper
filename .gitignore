@@ -1,0 +1,15 @@
+.idea/
+__pycache__/
+
+test*
+Kehittajaversio.py
+
+Data files/Credentials.json
+Data files/Custom_commands.json
+Data files/drinks.json
+Data files/Item_keywords.json
+Data files/reminders.json
+Data files/settings.ini
+Data files/statsdb.json
+Data files/streamers.json
+Data files/Tracked_players.json

@@ -1,8 +1,15 @@
-# OsrsHelper v7.3.1
+# OsrsHelper v7.5
 
-Discord bot made mainly for Old school Runescape related commands, although nowadays it is pretty much an all-around project for a few Discord servers. This allows me to make quick changes and updates to meet the user base needs. There is a newer version of this bot, [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite), which has a goal of doing everything better from the beginning. Both versions will keep getting updates, although the old version in much more regular basis since it already has a live userbase.
+Discord bot made mainly for Old school Runescape related commands, although nowadays it is pretty much an all-around 
+project for a few Discord servers. This allows me to make quick changes and updates to meet the user base needs. There 
+is a newer version of this bot, [OsrsHelper-rewrite](https://github.com/Visperi/OsrsHelper-rewrite), which has a goal 
+of doing everything better from the beginning. Both versions will keep getting updates, although the old version in 
+much more regular basis since it already has a live userbase.
 
-**Very ugly code** since this was my very first project in coding. Also, unfortunately there is no documentation and the code is mostly in Finnish. I'm not planning to fully translate this project into english, since the library version is outdated and the old code can be hard to read even for myself.
+There is **Very ugly code** at some places since this was my very first project in coding. Newer code, which is usually 
+closer to the end of files, should be more pleasant to read. I'm not planning to fully translate this project 
+into English since the Discord library version is outdated. However, I may sometimes rewrite some old functions for 
+the sake of efficiency or my own sanity. 
 
 ### Main features
 - Over 40 hard coded commands
@@ -23,7 +30,9 @@ Discord bot made mainly for Old school Runescape related commands, although nowa
 Unfortunately the bot is not guaranteed to work without downloading both finnish and english versions.
 
 1. Download everything in this repository. move **all** files into the same directory with all .py files
-2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files can safely be emptied without causing any differences in bot functionality:
+2. Empty all data files you want. When you do this, leave one `{}` brackets in emptied .json files. Following files 
+can safely be emptied without causing any differences in bot functionality:
+
    - Custom_commands.json
    - Item_keywords.json
    - Tracked_players.json

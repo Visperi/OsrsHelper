@@ -23,18 +23,14 @@ SOFTWARE.
 """
 
 import configparser
-import os
 import json
 import discord
 
-path = "{}/".format(os.path.dirname(__file__))
-if path == "/":
-    path = ""
 config = configparser.ConfigParser()
 
 
 def read_config():
-    config.read("{}settings.ini".format(path))
+    config.read("Data files/settings.ini")
 
 
 def str2input(string):
@@ -51,7 +47,7 @@ def str2input(string):
 
 
 def write_config():
-    with open("{}settings.ini".format(path), "w") as configfile:
+    with open("Data files/settings.ini", "w") as configfile:
         config.write(configfile)
         configfile.close()
 
@@ -312,7 +308,7 @@ async def set_addcom(message, hakusanat, user_lang, client):
 
 
 def get_credential(credential, choose):
-    with open("{}Credentials.json".format(path)) as data_file:
+    with open("Data files/Credentials.json") as data_file:
         data = json.load(data_file)
     info = data[credential][choose]
     return info

@@ -1,1 +1,3 @@
-- Lisättiin komento !reminder
+- Lisättiin komentoon !gains argumentti -noupdate
+- Komento !gains näyttää nyt myös cluet (vaatii jo seuratuilla käyttäjillä yhden ylimääräisen välipäivityksen)
+- Päivitettiin komento !track

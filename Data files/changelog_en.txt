@@ -1,1 +1,3 @@
-- Added command !reminder
+- Added argument -noupdate to command !gains
+- Command !gains now shows clues too (Needs one update for already tracked users before taking effect)
+- Updated command !track

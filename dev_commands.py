@@ -26,8 +26,6 @@ import Komennot_en as commands
 import json
 import discord
 
-path = commands.path
-
 
 async def get_item_id(message, keywords, client):
     """
@@ -42,7 +40,7 @@ async def get_item_id(message, keywords, client):
 
 
 async def add_puzzle(message, hakusanat, client):
-    file = f"{path}Anagrams.json"
+    file = "Data files/Anagrams.json"
     hakusanat = " ".join(hakusanat).replace(", ", ",").split(",")
     try:
         anagram = hakusanat[0].lower()
@@ -67,7 +65,7 @@ async def add_puzzle(message, hakusanat, client):
 
 
 async def add_object(message, hakusanat, client):
-    file = f"{path}Tradeables.json"
+    file = "Data files/Tradeables.json"
     hakusanat = " ".join(hakusanat).replace(", ", ",").split(",")
     idlist = []
     try:
@@ -99,7 +97,7 @@ async def add_object(message, hakusanat, client):
 
 
 async def delete_object(message, hakusanat, client):
-    file = f"{path}Tradeables.json"
+    file = "Data files/Tradeables.json"
     itemname = " ".join(hakusanat).capitalize()
     with open(file) as data_file:
         data = json.load(data_file)
@@ -129,7 +127,7 @@ async def get_times_used(message, client):
     from tabulate import tabulate
     commands_list = []
 
-    with open(f"Times_used.json") as data_file:
+    with open("Data files/Times_used.json") as data_file:
         data = json.load(data_file)
     dates = "{} - {}".format(data["date_start"], data["date_now"])
     data.pop("date_start"), data.pop("date_now")
@@ -157,7 +155,7 @@ async def add_halch(message, keywords, client):
     if not itemname:
         await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä.")
         return
-    with open(f"{path}Tradeables.json") as data_file:
+    with open("Data files/Tradeables.json") as data_file:
         data = json.load(data_file)
     old_value = data[itemname]["high_alch"]
     if old_value == "":
@@ -168,7 +166,7 @@ async def add_halch(message, keywords, client):
     except ValueError:
         await client.send_message(message.channel, "Anna high alch kokonaislukuna.")
         return
-    with open(f"{path}Tradeables.json", "w") as data_file:
+    with open("Data files/Tradeables.json", "w") as data_file:
         json.dump(data, data_file, indent=4)
     embed = discord.Embed(title="High alch value set", description=f"Name: {itemname}\nId: {itemid}\n"
                                                                    f"High alch: {old_value} -> {new_value}")
@@ -176,7 +174,7 @@ async def add_halch(message, keywords, client):
 
 
 async def add_stream(message, keywords, client):
-    streamers_file = f"{path}streamers.json"
+    streamers_file = "Data files/streamers.json"
     streamer = discord.utils.get(message.server.members, id=keywords[-1])
     try:
         stream_link = keywords[-2].replace("<", "").replace(">", "")
@@ -211,7 +209,7 @@ async def add_stream(message, keywords, client):
 
 
 async def remove_stream(message, keywords, client):
-    streamers_file = f"{path}streamers.json"
+    streamers_file = "Data files/streamers.json"
     streamer = discord.utils.get(message.server.members, id=keywords[-1])
     if not streamer:
         await client.send_message(message.channel, "Couldn't find any users with given id.")
@@ -241,7 +239,7 @@ async def remove_stream(message, keywords, client):
 
 
 async def add_limit(message, keywords, client):
-    limit_file = f"{path}Buy_limits.json"
+    limit_file = "Data files/Buy_limits.json"
     keywords = " ".join(keywords).replace(", ", ",").split(",")
     itemname = keywords[0].capitalize()
 
@@ -268,7 +266,7 @@ async def add_limit(message, keywords, client):
 
 
 async def delete_limit(message, keywords, client):
-    limit_file = f"{path}Buy_limits.json"
+    limit_file = "Data files/Buy_limits.json"
     itemname = " ".join(keywords).capitalize()
 
     with open(limit_file) as data_file:
@@ -287,7 +285,7 @@ async def delete_limit(message, keywords, client):
 async def add_objects(message, itemlist, client):
     added_items = 0
     itemlist = itemlist.replace("§addobjects ", "")
-    with open(f"{path}Tradeables.json") as data_file:
+    with open("Data files/Tradeables.json") as data_file:
         data = json.load(data_file)
 
     itemlist = json.loads(itemlist)
@@ -305,7 +303,7 @@ async def add_objects(message, itemlist, client):
         await client.send_message(message.channel, "All the items are already in Tradeables.json.")
         return
 
-    with open(f"{path}Tradeables.json", "w") as data_file:
+    with open("Data files/Tradeables.json", "w") as data_file:
         json.dump(data, data_file, indent=4)
     msg = f"Added {added_items} new items to Tradeables.json:\n\n{new_items}"
     if len(msg) >= 2000:
@@ -332,7 +330,7 @@ async def check_new_items(message, client):
                 await client.send_message(message.channel, f"```py\n{traceback_}```")
                 return
 
-            with open(f"{path}Tradeables.json") as tradeables_file:
+            with open("Data files/Tradeables.json") as tradeables_file:
                 tradeables = json.load(tradeables_file)
 
             new_items = []
@@ -345,7 +343,7 @@ async def check_new_items(message, client):
                 await client.send_message(message.channel, "No new items to add.")
                 return
             else:
-                with open(f"{path}Tradeables.json", "w") as tradeables_file:
+                with open("Data files/Tradeables.json", "w") as tradeables_file:
                     json.dump(tradeables, tradeables_file, indent=4)
                 new_items_joined = "\n".join(new_items)
                 if len(new_items_joined) > 2000:
@@ -373,7 +371,7 @@ async def manage_drinks(message, keywords, client):
     try:
         server_id = message.server.id
     except AttributeError:
-        await client.send_message(message.channel, "Th1s command doesn't support direct messages.")
+        await client.send_message(message.channel, "This command doesn't support direct messages.")
         return
 
     action = keywords[0]
@@ -391,7 +389,7 @@ async def manage_drinks(message, keywords, client):
         await client.send_message(message.channel, f"Invalid amount of parameters. Got {len(keywords)} but expected 3.")
         return
 
-    with open("drinks.json", "r") as drinks_file:
+    with open("Data files/drinks.json", "r") as drinks_file:
         drinks_data = json.load(drinks_file)
 
     try:
@@ -422,12 +420,15 @@ async def manage_drinks(message, keywords, client):
             target_user_drinks += amount
         elif action == "set":
             target_user_drinks = amount
+        else:
+            await client.send_message(message.channel, "Unknown operation.")
+            return
 
         server_drinks[target_user_id] = target_user_drinks
         success_str = f"Succesfully modified drinks for {target_display_name}. They now have " \
                       f"{target_user_drinks} drinks."
 
-    with open("drinks.json", "w") as output_file:
+    with open("Data files/drinks.json", "w") as output_file:
         json.dump(drinks_data, output_file, indent=4)
 
     await client.send_message(message.channel, success_str)

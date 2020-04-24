@@ -200,8 +200,8 @@
         ],
         "name": "!gains",
         "description": "Calculates the changes in user's highscores after the last check.",
-        "additional": "User needs to be tracked to operate the command",
-        "example": "`!gains visperi`"
+        "additional": "You can use argument `-noupdate` to prevent saving the new stats.",
+        "example": "`!gains visperi` or `!gains visperi -noupdate`"
     },
     {
         "function": [
@@ -539,7 +539,7 @@
         ],
         "name": "!reminder",
         "description": "Set a reminder with a custom message. The reminder will then tag you with its message later.",
-        "additional": "Reminder time supports order `[yrs] [days] [hours] [min] [seconds]`. The message must be in quotes.",
+        "additional": "Reminder time supports order `[yrs] [months] [days] [hours] [min] [seconds]`. The message must be in quotes.",
         "example": "`!reminder 5d20min \"I cant come up with any examples\"`, `!reminder 15min \"Why are these so hard\"`"
     }
 ]

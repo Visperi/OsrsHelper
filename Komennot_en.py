@@ -24,21 +24,20 @@ SOFTWARE.
 
 # coding=utf-8
 
-import requests
-import json
-import discord
-import os
-import math
 import datetime
+import json
+import math
+import os
+import discord
 import Settings
 from fractions import Fraction
 from bs4 import BeautifulSoup
 from mathparse import mathparse
 from dateutil.relativedelta import relativedelta
-
-path = "{}/".format(os.path.dirname(__file__))
-if path == "/":
-    path = ""
+import asyncio
+import numpy as np
+from tabulate import tabulate
+import aiohttp
 
 
 def to_utf8(string):
@@ -52,13 +51,22 @@ def to_ascii(string):
     return string
 
 
-def decode_cml(link):
-    response = requests.get(link)
-    response.encoding = "utf-8-sig"
-    return response.text
+async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 8) -> str:
+    """
+    A non-command function for making an asynchronous request.
+
+    :param session: aiohttp.ClientSession that is used to make request
+    :param url: Target url of the request
+    :param timeout: Integer telling how long should be waited before timeouting the request
+    :return: String containing the response
+    """
+
+    async with session.get(url, timeout=timeout) as r:
+        response = await r.text()
+        return response
 
 
-async def function_help(message, keywords, client):
+async def command_help(message, keywords, client):
     command = " ".join(keywords).replace("!", "").replace("%", "").replace("&", "")
     if not command:
         msg = "`!info`: Basic info about the bot and latest updates\n" \
@@ -67,7 +75,7 @@ async def function_help(message, keywords, client):
               "`!help <command name>`: Get instructions for one command"
         await client.send_message(message.channel, msg)
         return
-    with open(f"{path}Help_en.json", encoding="utf-8") as data_file:
+    with open("Data files/Help_en.json", encoding="utf-8") as data_file:
         data = json.load(data_file)
     for obj in data:
         if command in obj["function"]:
@@ -82,55 +90,48 @@ async def function_help(message, keywords, client):
 
 
 async def kayttajan_tiedot(message, client):
-    roles = []
-
-    async def get_paivamaara(tiedot):
-        kellonaika1 = tiedot[1].split(".")
-        paivamaara1 = tiedot[0].split("-")
-        paivamaara = f"{paivamaara1[2]}.{paivamaara1[1]}.{paivamaara1[0]}"
-        kellonaika = kellonaika1[0]
-        return paivamaara, kellonaika
 
     try:
-        avatar = message.author.avatar_url
-        created_at = " ".join(await get_paivamaara(str(message.author.created_at).split()))
-        joined_at = " ".join(await get_paivamaara(str(message.author.joined_at).split()))
+        avatar_url = message.author.avatar_url
         display_name = message.author.display_name
-        for role in message.author.roles:
-            if str(role) == "@everyone":
-                role = "\\@everyone"
-            roles.append(str(role))
+
+        created_at = message.author.created_at.replace(microsecond=0)
+        joined_at = message.author.joined_at.replace(microsecond=0)
+
+        roles = [str(role) for role in message.author.roles if str(role) != "@everyone"]
     except AttributeError:
         await client.send_message(message.channel, "This command doesn't work in direct messages.")
         return
 
-    user_info = discord.Embed().set_author(name=display_name).set_thumbnail(url=avatar)\
+    user_info = discord.Embed().set_author(name=display_name).set_thumbnail(url=avatar_url)\
         .add_field(name="Username", value=str(message.author))\
         .add_field(name="Id", value=message.author.id)\
-        .add_field(name="User created", value=created_at)\
-        .add_field(name="Joined server", value=joined_at)\
+        .add_field(name="User created", value=f"{created_at} UTC")\
+        .add_field(name="Joined server", value=f"{joined_at} UTC")\
         .add_field(name="Roles in this server", value=", ".join(roles))
     await client.send_message(message.channel, embed=user_info)
 
 
 async def commands(message, client):
-    discord_commands = ["!info", "!help", "!calc", "!me", "!namechange", "!server commands", "!satokausi", "!beer",
-                        "!beerscores", "!reminder"]
-    osrs_commands = ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!loot", "!update"]
-    clue_commands = ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"]
-    item_commands = ["!keys", "!limit", "!price"]
-    moderator_commands = ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom"]
-    settings_commands = ["&language", "&settings", "&permit", "&unpermit", "&add commands", "&forcelang",
-                         "&defaultlang"]
-    viesti = discord.Embed().add_field(name="Osrs commands", value="\n".join(osrs_commands)) \
-        .add_field(name="Item commands", value="\n".join(item_commands))\
-        .add_field(name="Discord commands", value="\n".join(discord_commands))\
-        .add_field(name="Clue commands", value="\n".join(clue_commands))\
-        .add_field(name="High permission commands", value="\n".join(moderator_commands))\
-        .add_field(name="Settings commands", value="\n".join(settings_commands))\
-        .set_footer(text="In case you need help in using commands, try !help <command>")
-    await client.send_message(message.channel, embed=viesti)
-    kayttokerrat("cipher")
+    commands_dict = {"Discord commands": ["!info", "!help", "!calc", "!me", "!namechange", "!server commands",
+                                          "!satokausi", "!beer", "!beerscores", "!korona", "!reminder"],
+                     "Osrs commands": ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!kill",
+                                       "!update"],
+                     "Item commands": ["!keys", "!limit", "!price"],
+                     "Clue commands": ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"],
+                     "Mod commands": ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom"],
+                     "Settings commands": ["&language", "&settings", "&permit", "&unpermit", "&add commands",
+                                           "&forcelang", "&defaultlang"]
+                     }
+
+    embed = discord.Embed(text="In case you need help in using commands, try !help <command>")
+    embed.set_footer()
+
+    for category in commands_dict.keys():
+        category_commands = [command for command in commands_dict[category]]
+        embed.add_field(name=category, value="\n".join(category_commands))
+
+    await client.send_message(message.channel, embed=embed)
 
 
 def get_iteminfo(itemname, default_names=False):
@@ -141,7 +142,7 @@ def get_iteminfo(itemname, default_names=False):
     :return: Original item name (str) and its id (int), None if not found
     """
     itemname = itemname.capitalize()
-    with open(f"{path}Tradeables.json") as data_file:
+    with open("Data files/Tradeables.json") as data_file:
         data = json.load(data_file)
     if itemname in list(data.keys()):
         item_id = data[itemname]["id"]
@@ -150,7 +151,7 @@ def get_iteminfo(itemname, default_names=False):
         return
     else:
         itemname = to_ascii(itemname.lower())
-        with open(f"{path}Item_keywords.json") as data_file:
+        with open("Data files/Item_keywords.json") as data_file:
             keywords = json.load(data_file)
         if itemname in keywords["all nicks"]:
             for item in keywords:
@@ -160,47 +161,24 @@ def get_iteminfo(itemname, default_names=False):
                     return itemname, item_id
 
 
-async def get_halch(itemname):
-    """Searches high alchemy value for given item from local files or osrs wiki.
-
-    :param itemname: Name of the item to search. Must be in string format
-    :return: High alch value in int() default format
-    """
-
-    itemname = itemname.capitalize()
-    with open(f"{path}Tradeables.json") as data_file:
-        data = json.load(data_file)
-    try:
-        halch = data[itemname]["high_alch"]
-    except KeyError:
-        print("Annettua itemiä ei löydy listasta.")
-        return
-    if halch == "":
-        link = "http://2007.runescape.wikia.com/wiki/{}".format(itemname.replace(" ", "_"))
-        page = requests.get(link).text
-        start = page.find("High Alch</a>\n</th><td> ") + len("High Alch</a>\n</th><td> ")
-        end = page.find("&#160;coins", start)
-        halch = page[start:end]
-        try:
-            halch = int(halch.replace(",", ""))
-        except ValueError:
-            halch = "-"
-        data[itemname]["high_alch"] = halch
-        with open(f"{path}Tradeables.json", "w") as data_file:
-            json.dump(data, data_file, indent=4)
-    return halch
-
-
 async def search_wiki(message, hakusanat: list, client, get_html=False):
     baselink = "https://oldschool.runescape.wiki/w/"
 
     search = "_".join(hakusanat)
     search_link = baselink + search
-    response = requests.get(search_link).text
+    try:
+        response = await make_request(client, search_link)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Wiki answered too slowly. Try again later..")
+        return
     if f"This page doesn&#039;t exist on the wiki. Maybe it should?" in response:
         hyperlinks = []
         truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
-        truesearch_resp = requests.get(truesearch_link).text
+        try:
+            truesearch_resp = await make_request(client, truesearch_link)
+        except asyncio.TimeoutError:
+            await client.send_message(message.channel, "Wiki answered too slowly. Try again later.")
+            return
 
         # parse html
         results_html = BeautifulSoup(truesearch_resp, "html.parser")
@@ -229,7 +207,7 @@ async def search_cipher(message, search, client):
     search = " ".join(search).upper()
     partial_matches = []
 
-    with open(f"{path}Ciphers.json") as cipher_file:
+    with open("Data files/Ciphers.json") as cipher_file:
         ciphers = json.load(cipher_file)
 
     for cipher in ciphers.keys():
@@ -277,206 +255,10 @@ async def hae_puzzle(message, hakusanat, client, no_message=False):
         await client.send_message(message.channel, puzzle)
 
 
-async def hae_highscoret(message, hakusanat, client, acc_type=None, gains=False, initial_stats=False):
-    from tabulate import tabulate
-
-    table = []
-    stats = []
-    skillnames = [["Total"], ["Attack"], ["Defence"], ["Strength"], ["Hitpoints"], ["Ranged"], ["Prayer"], ["Magic"],
-                  ["Cooking"], ["Woodcutting"], ["Fletching"], ["Fishing"], ["Firemaking"], ["Crafting"], ["Smithing"],
-                  ["Mining"], ["Herblore"], ["Agility"], ["Thieving"], ["Slayer"], ["Farming"], ["Runecrafting"],
-                  ["Hunter"],
-                  ["Construction"]]
-    nick = " ".join(hakusanat).lower()
-    account_type = "normal"
-    header = "hiscore_oldschool"
-    if message.content.startswith("!ironstats") or acc_type == "ironman":
-        header = "hiscore_oldschool_ironman"
-        account_type = "ironman"
-    elif message.content.startswith("!uimstats") or acc_type == "uim":
-        header = "hiscore_oldschool_ultimate"
-        account_type = "uim"
-    elif message.content.startswith("!dmmstats") or acc_type == "dmm":
-        header = "hiscore_oldschool_deadman"
-        account_type = "dmm"
-    elif message.content.startswith("!seasonstats") or acc_type == "seasonal":
-        header = "hiscore_oldschool_seasonal"
-        account_type = "seasonal"
-    elif message.content.startswith("!hcstats") or acc_type == "hcim":
-        header = "hiscore_oldschool_hardcore_ironman"
-        account_type = "hcim"
-    elif message.content.startswith("!tournamentstats") or acc_type == "tournament":
-        header = "hiscore_oldschool_tournament"
-    link = requests.get(f"http://services.runescape.com/m={header}/index_lite.ws?player={nick}")
-    tiedot = list(link.text.split("\n"))
-    count = 0
-
-    def hae_cluet(stats_list):
-        # Osrs  apin vastaus loppuu väliin
-        master = stats_list[33]
-        elite = stats_list[32]
-        hard = stats_list[31]
-        medium = stats_list[30]
-        easy = stats_list[29]
-        beginner = stats_list[28]
-        total = stats_list[27]
-
-        clues = [beginner, easy, medium, hard, elite, master, total]
-        clue_names = [["Beginner"], ["Easy"], ["Medium"], ["Hard"], ["Elite"], ["Master"], ["All"]]
-
-        for index, clue in enumerate(clues):
-            if clue == "-1,-1":
-                clue = "0,0"
-            clue = clue.split(",")
-            for part in clue:
-                clue_names[index].append(part)
-        return clue_names
-
-    for lista in tiedot:
-        table.append(lista.split(", "))
-    for lists in table:
-        for arvo in lists:
-            stats.append(arvo.split(","))
-    for skill in stats[0:24]:
-        for info in skill:
-            try:
-                if info == "-1":
-                    info = "0"
-                skillnames[count].append("{:,}".format(int(info)))
-            except ValueError:
-                await client.send_message(message.channel, "User not found.")
-                return
-        count += 1
-    if not gains and not initial_stats:
-        cluet = hae_cluet(tiedot)
-        await client.send_message(message.channel, "```{}\n\n{}\n\n{}```"
-                                  .format("{:^50}".format("STATS FOR {}".format(nick.upper())),
-                                          tabulate(skillnames, headers=["Skill", "Rank", "Level", "Xp"],
-                                                   tablefmt="orgtbl"),
-                                          tabulate(cluet, headers=["Clue", "Rank", "Amount"], tablefmt="orgtbl")))
-        kayttokerrat("Stats")
-    if gains or initial_stats:
-        update_stats(nick, skillnames, account_type)
-        return skillnames
-
-
-def check_if_tracked(nimi):
-    with open(f"{path}Tracked_players.json") as data_file:
-        data = json.load(data_file)
-    try:
-        # noinspection PyUnusedLocal
-        name = data[nimi]
-        return True
-    except KeyError:
-        link = f"http://crystalmathlabs.com/tracker/api.php?type=previousname&player={nimi}"
-        previous_name = decode_cml(link).replace("_", " ")
-        if previous_name != "-1":
-            if previous_name in list(data):
-                previous_names = data[previous_name]["previous_names"]
-                if previous_name not in previous_names:
-                    previous_names.append(previous_name)
-                data[nimi] = data.pop(previous_name)
-                with open(f"{path}Tracked_players.json", "w") as data_file:
-                    json.dump(data, data_file, indent=4)
-                with open(f"{path}statsdb.json") as data_file:
-                    stats_data = json.load(data_file)
-                stats_data[nimi] = stats_data.pop(previous_name)
-                with open(f"{path}statsdb.json", "w") as data_file:
-                    json.dump(stats_data, data_file, indent=4)
-                return True
-            else:
-                return False
-        else:
-            return
-
-
-def update_stats(nick, stats, account_type):
-    current_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-
-    with open(f"{path}statsdb.json") as data_file:
-        data = json.load(data_file)
-    try:
-        account_type_old = data[nick]["account_type"]
-    except KeyError:
-        account_type_old = ""
-    if (account_type_old == "ironman" or account_type_old == "uim" or account_type_old == "hcim") and \
-                    account_type == "normal":
-        return
-    data[nick] = dict(past_stats=stats, account_type=account_type, saved=current_date)
-
-    with open(f"{path}statsdb.json", "w") as data_file:
-        json.dump(data, data_file, indent=4)
-
-
-async def gains_calculator(message, hakusanat, client):
-    from tabulate import tabulate
-    username = " ".join(hakusanat).lower().replace("_", " ")
-    if username == "":
-        await client.send_message(message.channel, "Please give also the user whose gains you want to inspect. If you "
-                                                   "need help, use command `!help gains`")
-        return
-
-    tracked = check_if_tracked(username)
-    if tracked:
-        with open(f"{path}statsdb.json") as data_file:
-            data = json.load(data_file)
-        try:
-            stats_past = data[username]["past_stats"]
-        except KeyError:
-            await client.send_message(message.channel, "KeyError: User is being tracked, but old data could not be "
-                                                       "found. Please report this to bot owner. You can find him by "
-                                                       "using `!info`.")
-            return
-        stats_recent = await hae_highscoret(message, hakusanat, client, data[username]["account_type"], gains=True)
-        if not stats_recent:
-            return
-        gains_list = [["Total"], ["Attack"], ["Defence"], ["Strength"], ["Hitpoints"], ["Ranged"], ["Prayer"],
-                      ["Magic"], ["Cooking"], ["Woodcutting"], ["Fletching"], ["Fishing"], ["Firemaking"],
-                      ["Crafting"], ["Smithing"], ["Mining"], ["Herblore"], ["Agility"], ["Thieving"], ["Slayer"],
-                      ["Farming"], ["Runecrafting"], ["Hunter"], ["Construction"]]
-        last_savedate = data[username]["saved"]
-        current_date = datetime.datetime.now()
-
-        def calculate_gains(recent, old):
-            recent = recent.split(",")
-            recent = "".join(recent)
-            past_tmp = old.split(",")
-            past_tmp = "".join(past_tmp)
-            gains = int(recent) - int(past_tmp)
-            if 0 < gains:
-                gains = "+{:,}".format(gains)
-            return gains
-
-        # noinspection PyTypeChecker
-        for stat in stats_recent:
-            current = stat[1]
-            past = stats_past[stats_recent.index(stat)][stat.index(current)]
-            calc = calculate_gains("-" + current, "-" + past)
-            gains_list[stats_recent.index(stat)].append(calc)
-            for current in stat[2:]:
-                past = stats_past[stats_recent.index(stat)][stat.index(current)]
-                calc = calculate_gains(current, past)
-                gains_list[stats_recent.index(stat)].append(calc)
-        await client.send_message(message.channel,
-                                  "```Gains between {} - {} UTC\n\n{}```"
-                                  .format(last_savedate, current_date,
-                                          tabulate(gains_list, headers=["Skill", "Rank", "Level", "Xp"],
-                                                   tablefmt="orgtbl")))
-        kayttokerrat("Gains")
-    elif tracked is False:
-        await client.send_message(message.channel, "This username is not being tracked. Use command "
-                                                   "`!track <username>` first. If you're sure its tracked, "
-                                                   "try `!namechange`.")
-    else:
-        await client.send_message(message.channel, "This username is not being tracked and old names could not be "
-                                                   "found from CML's database. If you have changed the nickname, use "
-                                                   "`!namechange`. Otherwise use `!track <username>`.")
-
-
 async def search_anagram(message, hakusanat, client):
     partial_matches = []
     search = " ".join(hakusanat)
-    with open(f"{path}Anagrams.json") as anagram_file:
+    with open("Data files/Anagrams.json") as anagram_file:
         anagrams = json.load(anagram_file)
 
     try:
@@ -513,7 +295,7 @@ async def search_anagram(message, hakusanat, client):
 async def experiencelaskuri(message, hakusanat, client):
     x = "".join(hakusanat).replace("-", " ").replace("max", "127").split()
 
-    with open(f"{path}Experiences.txt", "r") as file:
+    with open("Data files/Experiences.txt", "r") as file:
         all_rows = file.readlines()
         experiences = []
         for row in all_rows:
@@ -602,7 +384,7 @@ async def ehp_rates(message, hakusanat, client):
         filename = "Ehp_skiller.txt"
     elif message.content.startswith("!f2pehp"):
         filename = "Ehp_free.txt"
-    file = f"{path}{filename}"
+    file = f"Data files/{filename}"
 
     with open(file, "r") as file:
         lines = file.read().split("\n\n")
@@ -623,7 +405,7 @@ async def execute_custom_commands(message, user_input, client):
         return
     command = user_input.replace("!", "")
 
-    with open(f"{path}Custom_commands.json") as data_file:
+    with open("Data files/Custom_commands.json") as data_file:
         data = json.load(data_file)
     try:
         viesti = data[server]["!{}".format(to_ascii(command))]["message"]
@@ -635,7 +417,7 @@ async def execute_custom_commands(message, user_input, client):
 
 async def addcom(message, words_raw, client):
     words = " ".join(words_raw)
-    file = f"{path}Custom_commands.json"
+    file = "Data files/Custom_commands.json"
     server = str(message.server.id)
     if not await Settings.get_settings(message, client, get_addcom=True):
         await client.send_message(message.channel, "Adding commands has been switched off.")
@@ -723,7 +505,7 @@ async def get_custom_commands(message, client):
         await client.send_message(message.channel, "This command can't be used in direct messages.")
         return
     custom_commands = []
-    with open(f"{path}Custom_commands.json") as data_file:
+    with open("Data files/Custom_commands.json") as data_file:
         data = json.load(data_file)
     custom_commands_raw = list(data[server])
     if len(custom_commands_raw) == 0:
@@ -754,7 +536,7 @@ async def cryptic(message, hakusanat, client):
     user_input = " ".join(hakusanat).lower()
     keys_found = []
 
-    with open(f"{path}cryptic_clues.json") as data_file:
+    with open("Data files/cryptic_clues.json") as data_file:
         data = json.load(data_file)
     for key in data.keys():
         if user_input in key.lower():
@@ -784,7 +566,7 @@ async def mapit(message, client):
 async def delcom(message, words_raw, client):
     komento = " ".join(words_raw)
     server = message.server.id
-    file = f"{path}Custom_commands.json"
+    file = "Data files/Custom_commands.json"
     if not komento[0].isalpha() and not komento[0].isdigit():
         komento = list(komento)
         komento[0] = "!"
@@ -812,7 +594,7 @@ async def get_buylimit(message, keywords, client):
         return
     else:
         itemname = iteminfo[0]
-    with open(f"{path}Buy_limits.json") as data_file:
+    with open("Data files/Buy_limits.json") as data_file:
         data = json.load(data_file)
     try:
         buy_limit = data[itemname]
@@ -827,89 +609,19 @@ async def get_buylimit(message, keywords, client):
 def kayttokerrat(function_used):
     command = function_used.capitalize()
     current_date = datetime.datetime.now().strftime("%d/%m/%Y")
-    with open(f"{path}Times_used.json") as data_file:
+    with open("Data files/Times_used.json") as data_file:
         data = json.load(data_file)
     times = data[command]
     data[command] = times + 1
     if data["date_start"] == "":
         data["date_start"] = current_date
     data["date_now"] = current_date
-    with open(f"{path}Times_used.json", "w") as data_file:
+    with open("Data files/Times_used.json", "w") as data_file:
         json.dump(data, data_file, indent=4)
-
-
-async def hinnanmuutos(message, client):
-    """
-    DEPRECATED
-    """
-
-    await client.send_message(message.channel, "This command is deprecated and has been combined with command "
-                                               "`!price`.")
-    return
-
-
-async def track_user(message, hakusanat, client):
-    name = " ".join(hakusanat).replace("_", " ")
-    link = "http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={}".format(name)
-    request = requests.get(link).text
-
-    async def get_user_type(username):
-        account_type = None
-        reactions = ["1\u20e3", "2\u20e3", "3\u20e3", "4\u20e3", "5\u20e3", "6\u20e3", "\N{CROSS MARK}"]
-        choices = ["1\u20e3 Normal", "2\u20e3 Ironman", "3\u20e3 Uim", "4\u20e3 Hcim", "5\u20e3 Dmm",
-                   "6\u20e3 Seasonal", "\N{CROSS MARK} Cancel"]
-        bot_embed = discord.Embed(title=f"What is the type of character {username}?",
-                                   description="\n".join(choices)).set_footer(text="your reaction is registered only "
-                                                                                   "after all options are loaded.")
-        bot_message = await client.send_message(message.channel, embed=bot_embed)
-        for reaction in reactions:
-            await client.add_reaction(bot_message, reaction)
-        answer = await client.wait_for_reaction(emoji=reactions, message=bot_message, user=message.author, timeout=7)
-        if not answer:
-            await client.edit_message(bot_message, embed=discord.Embed(title="No answer, operation cancelled."))
-            return
-        elif answer.reaction.emoji == reactions[-1]:
-            await client.edit_message(bot_message, embed=discord.Embed(title="Operation cancelled."))
-            return
-        elif answer.reaction.emoji == reactions[0]:
-            account_type = "normal"
-        elif answer.reaction.emoji == reactions[1]:
-            account_type = "ironman"
-        elif answer.reaction.emoji == reactions[2]:
-            account_type = "uim"
-        elif answer.reaction.emoji == reactions[3]:
-            account_type = "hcim"
-        elif answer.reaction.emoji == reactions[4]:
-            account_type = "dmm"
-        elif answer.reaction.emoji == reactions[5]:
-            account_type = "seasonal"
-        await client.edit_message(bot_message, embed=discord.Embed(title="Started tracking {}. Character type: {}"
-                                                                   .format(username, account_type.capitalize())))
-        return account_type
-
-    with open(f"{path}Tracked_players.json") as data_file:
-        data = json.load(data_file)
-    if "404 - Page not found" in request:
-        await client.send_message(message.channel, "User not found.")
-        return
-    if name in list(data):
-        await client.send_message(message.channel, "This user is already being tracked.")
-        return
-    try:
-        acc_type = await get_user_type(name)
-    except discord.errors.Forbidden:
-        await client.send_message(message.channel, "For this command bot needs permission to add reactions.")
-        return
-    if not acc_type:
-        return
-    data[name] = {"previous_names": []}
-    with open(f"{path}Tracked_players.json", "w") as data_file:
-        json.dump(data, data_file, indent=4)
-    await hae_highscoret(message, name.split(), client, acc_type=acc_type, initial_stats=True)
 
 
 async def change_name(message, hakusanat, client):
-    tiedosto = f"{path}Tracked_players.json"
+    tiedosto = "Data files/Tracked_players.json"
     nimet = " ".join(hakusanat).replace(", ", ",")
 
     async def confirm_change(vanha, uusi):
@@ -941,8 +653,12 @@ async def change_name(message, hakusanat, client):
     if new_name in list(data):
         await client.send_message(message.channel, "The new name is already in lists.")
     elif old_name in list(data):
-        check_name = requests.get("http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={}"
-                                  .format(new_name)).text
+        try:
+            check_name = await make_request(client, f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws"
+                                                    f"?player={new_name}")
+        except asyncio.TimeoutError:
+            await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
+            return
         if "404 - Page not found" in check_name:
             await client.send_message(message.channel, "User with the new name not found.")
             return
@@ -954,10 +670,10 @@ async def change_name(message, hakusanat, client):
             data[new_name] = data.pop(old_name)
             with open(tiedosto, "w") as data_file:
                 json.dump(data, data_file, indent=4)
-            with open(f"{path}statsdb.json") as data_file:
+            with open("Data files/statsdb.json") as data_file:
                 stats_data = json.load(data_file)
             stats_data[new_name] = stats_data.pop(old_name)
-            with open(f"{path}statsdb.json", "w") as data_file:
+            with open("Data files/statsdb.json", "w") as data_file:
                 json.dump(stats_data, data_file, indent=4)
         else:
             return
@@ -974,9 +690,9 @@ async def addkey(message, keywords, client):
     denied_msg = ""
     approved_keys = []
     discarded_keys = 0
-    with open(f"{path}Tradeables.json") as tradeables:
+    with open("Data files/Tradeables.json") as tradeables:
         all_tradeables = json.load(tradeables)
-    with open(f"{path}Item_keywords.json") as data_file:
+    with open("Data files/Item_keywords.json") as data_file:
         data = json.load(data_file)
     if itemname not in all_tradeables.keys():
         await client.send_message(message.channel, "Could not find any items with your keyword.")
@@ -1001,7 +717,7 @@ async def addkey(message, keywords, client):
         await client.send_message(message.channel, f"Kaikki antamasi avainsanat ovat varattuja. {denied_msg}")
         return
     else:
-        with open(f"{path}Item_keywords.json", "w") as data_file:
+        with open("Data files/Item_keywords.json", "w") as data_file:
             json.dump(data, data_file, indent=4)
             await client.send_message(message.channel, "Added following items for {}: `{}`. {}"
                                       .format(itemname, ", ".join(approved_keys), denied_msg))
@@ -1009,7 +725,7 @@ async def addkey(message, keywords, client):
 
 
 async def delkey(message, keywords, client):
-    file = f"{path}Item_keywords.json"
+    file = "Data files/Item_keywords.json"
     keywords = " ".join(keywords).replace(", ", ",").split(",")
     itemname = keywords[0]
     deletelist = keywords[1:]
@@ -1054,14 +770,14 @@ async def find_itemname(message, hakusanat, client, vanilla_names=False):
     print(hakusanat)
     itemname = to_ascii(" ".join(hakusanat)).capitalize()
     print(itemname)
-    with open(f"{path}Tradeables.json") as data_file:
+    with open("Data files/Tradeables.json") as data_file:
         data = json.load(data_file)
     try:
         item_id = data[itemname]["id"]
         return itemname, item_id
     except KeyError:
         if not vanilla_names:
-            with open(f"{path}Item_keywords.json") as nicks_file:
+            with open("Data files/Item_keywords.json") as nicks_file:
                 nicks_dict = json.load(nicks_file)
             if itemname in nicks_dict["all nicks"]:
                 for item in nicks_dict:
@@ -1083,7 +799,7 @@ async def get_keys(message, hakusanat, client):
     if not iteminfo:
         await client.send_message(message.channel, "Could not find any items with your keyword.")
         return
-    with open(f"{path}Item_keywords.json") as data_file:
+    with open("Data files/Item_keywords.json") as data_file:
         data = json.load(data_file)
     try:
         nicks_ascii = data[itemname]
@@ -1100,7 +816,11 @@ async def latest_update(message, client):
     articles = []
 
     link = "http://oldschool.runescape.com/"
-    osrs_response = requests.get(link).text
+    try:
+        osrs_response = await make_request(client, link)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Osrs frontpage answered too slowly. Try again later.")
+        return
 
     osrs_response_html = BeautifulSoup(osrs_response, "html.parser")
 
@@ -1123,7 +843,7 @@ async def latest_update(message, client):
 
 async def editcom(message, words_raw, client):
     words = " ".join(words_raw)
-    file = f"{path}Custom_commands.json"
+    file = "Data files/Custom_commands.json"
     server = str(message.server.id)
     with open(file) as data_file:
         data = json.load(data_file)
@@ -1177,46 +897,23 @@ async def editcom(message, words_raw, client):
 
 async def get_old_nicks(message, hakusanat, client):
     search = " ".join(hakusanat)
-    footnote = ""
-    link = f"http://crystalmathlabs.com/tracker/api.php?type=previousname&player={search}"
-    previous_name = decode_cml(link).replace("_", " ")
-    with open(f"{path}Tracked_players.json") as data_file:
+    with open("Data files/Tracked_players.json") as data_file:
         data = json.load(data_file)
     try:
         old_nicks = data[search]["previous_names"]
     except KeyError:
-        footnote = "To save all user's old nicknames it must be tracked."
-        if previous_name == "-4":
-            await client.send_message(message.channel, "CML api is currently out of use and the user is not being "
-                                                       "tracked, so no old nicknames was found.")
-            return
-        elif previous_name == "-1":
-            await client.send_message(message.channel, "Nickname is not in use or it has never been updated in CML.")
-            return
-        else:
-            msg = discord.Embed(title="Old nick for {}".format(search), description=previous_name)\
-                .set_footer(text=footnote)
-            await client.send_message(message.channel, embed=msg)
+        await client.send_message(message.channel, "This user is not tracked.")
         return
-    if previous_name != "-1" and previous_name != "-4" and previous_name not in old_nicks:
-        old_nicks.append(previous_name)
-        data[search]["previous_names"] = old_nicks
-        with open(f"{path}Tracked_players.json", "w") as data_file:
-            json.dump(data, data_file, indent=4)
-    elif previous_name == "-4":
-        footnote = "CML api is currently out of use and therefore there may be an old name missing."
     if len(old_nicks) == 0:
-        await client.send_message(message.channel, "Could not find any old nicknames for this user.\n\n{}"
-                                  .format(footnote))
+        await client.send_message(message.channel, "Could not find any old nicknames for this user.")
         return
-    msg = discord.Embed(title=f"Stored old nicks for {search}", description="\n".join(old_nicks))\
-        .set_footer(text=footnote)
-    await client.send_message(message.channel, embed=msg)
+    embed = discord.Embed(title=f"Stored old nicks for {search}", description="\n".join(old_nicks))
+    await client.send_message(message.channel, embed=embed)
 
 
 async def get_times_used(message, client):
     commands_list = []
-    with open(f"{path}Times_used.json") as data_file:
+    with open("Data files/Times_used.json") as data_file:
         data = json.load(data_file)
     dates = "{} - {}".format(data["date_start"], data["date_now"])
     for item in data:
@@ -1226,8 +923,16 @@ async def get_times_used(message, client):
     await client.send_message(message.channel, "```{}\n\n{}```".format(dates, "\n".join(commands_list)))
 
 
-async def bot_info(message, client, release_notes=False):
-    with open(f"{path}changelog_en.txt", "r", encoding="utf-8") as file:
+async def bot_info(message, client, release_notes=False) -> None:
+    """
+    A command function for command !info to get basic bot info.
+
+    :param message:
+    :param client:
+    :param release_notes:
+    """
+
+    with open("Data files/changelog_en.txt", "r", encoding="utf-8") as file:
         changelog = file.read()
     if release_notes:
         embed = discord.Embed(title="Latest updates", description=changelog)
@@ -1235,10 +940,12 @@ async def bot_info(message, client, release_notes=False):
         appinfo = await client.application_info()
         bot_name = appinfo.name
         bot_owner = appinfo.owner
-        last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(f"{path}Main.py")).strftime("%d/%m/%Y")
-        embed = discord.Embed(title=bot_name, description=f"Administrator: {bot_owner.mention}\n"
+        last_modified = datetime.datetime.fromtimestamp(os.path.getmtime("Main.py")).strftime("%d/%m/%Y")
+        created_at = client.user.created_at.replace(microsecond=0)
+        embed = discord.Embed(title=bot_name, description=f"Developer: {bot_owner.mention}\n"
                                                           f"Updated: {last_modified}\nSource code: Python 3.6 "
-                                                          f"([Source](https://github.com/Visperi/OsrsHelper))")
+                                                          f"([Source](https://github.com/Visperi/OsrsHelper))\n"
+                                                          f"Created at: {created_at} UTC")
         embed.add_field(name="Credits",
                         value="[discord.py](https://github.com/Rapptz/discord.py) (Source code)\n"
                               "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (EHP rates)\n"
@@ -1284,7 +991,7 @@ async def get_streamers(message, client):
         name = discord.utils.get(message.server.members, id=user_id).display_name
         return name
 
-    with open(f"{path}streamers.json") as data_file:
+    with open("Data files/streamers.json") as data_file:
         data = json.load(data_file)
     try:
         streamers_list = data[message.server.id]
@@ -1314,7 +1021,7 @@ async def add_droprate(message, keywords, client):
                                                    "(if there is any). After that give the itemname and droprate. "
                                                    "Separate the three parameters with commas.")
         return
-    with open(f"{path}droprates.json") as data_file:
+    with open("Data files/droprates.json") as data_file:
         data = json.load(data_file)
     try:
         if itemname in data[dropper]:
@@ -1327,7 +1034,7 @@ async def add_droprate(message, keywords, client):
         droprate = Fraction(1, droprate)
     data[dropper][itemname] = str(droprate)
 
-    with open(f"{path}droprates.json", "w") as data_file:
+    with open("Data files/droprates.json", "w") as data_file:
         json.dump(data, data_file, indent=4)
     await client.send_message(message.channel, f"Saved droprate into a file:\n\n**Dropper**: {dropper}\n"
                                                f"**Itemname**: {itemname}\n**Droprate**: {droprate}")
@@ -1352,7 +1059,7 @@ async def loot_chance(message, keywords, client):
             chance = f"{chance:.2f}%"
         return chance
 
-    with open("droprates.json") as rates_file:
+    with open("Data files/droprates.json") as rates_file:
         drop_rates_dict = json.load(rates_file)
 
     target_input_list = keywords
@@ -1418,7 +1125,7 @@ async def loot_chance(message, keywords, client):
 
 async def delete_droprate(message, keywords, client):
     keywords = " ".join(keywords).replace(", ", ",").split(",")
-    with open(f"{path}droprates.json") as data_file:
+    with open("Data files/droprates.json") as data_file:
         data = json.load(data_file)
     if len(keywords) == 2:
         target, itemname = keywords[0].capitalize(), keywords[1].capitalize()
@@ -1431,14 +1138,14 @@ async def delete_droprate(message, keywords, client):
         else:
             await client.send_message(message.channel, "The target doesn't have any droprates saved.")
             return
-        with open(f"{path}droprates.json", "w") as data_file:
+        with open("Data files/droprates.json", "w") as data_file:
             json.dump(data, data_file, indent=4)
         await client.send_message(message.channel, f"Removed droprate {itemname} from {target}.")
     elif len(keywords) == 1:
         try:
             if keywords[0].capitalize() in data["Misc"]:
                 del data["Misc"][keywords[0].capitalize()]
-                with open(f"{path}droprates.json", "w") as data_file:
+                with open("Data files/droprates.json", "w") as data_file:
                     json.dump(data, data_file, indent=4)
                 await client.send_message(message.channel, f"Removed droprate {keywords[0].capitalize()}.")
                 return
@@ -1450,46 +1157,17 @@ async def delete_droprate(message, keywords, client):
                                                    "droprates one at a time if you give the target name first.")
 
 
-async def test_connection(message, keywords, client):
-    site = keywords[0]
-    if site == "wiki":
-        link = "https://oldschool.runescape.wiki/"
-    elif site == "osrs" or site == "runescape":
-        link = "http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=visperi"
-    elif site == "cml" or site == "crystalmathlabs":
-        link = "https://crystalmathlabs.com/tracker/api.php?type=ttm&player=visperi"
-    else:
-        sites = "\n".join(["rsbuddy", "wiki", "osrs", "cml"])
-        await client.send_message(message.channel, f"Unknown site. All current choices are:\n\n{sites}")
-        return
-
-    try:
-        request = requests.get(link, timeout=5)
-    except requests.exceptions.ReadTimeout:
-        await client.send_message(message.channel, "Site answer was too slow.")
-        return
-    status = str(request.status_code)
-    if status[0] == "2":
-        info_string = "Site takes requests, understands them and answers normally."
-    elif status[0] == "4":
-        info_string = "The request given by bot is faulty."
-    elif status[0] == "5":
-        info_string = "Site has problems at answering requests."
-    else:
-        info_string = "Unkwonw response. Before its added to bot, you can check the code by yourself e.g. from " \
-                      "[Wikipediasta](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)."
-    embed = discord.Embed(title=f"Status code: {status}", description=f"{info_string}\n"
-                                                                      f"Connection was tested with [this]({link}) "
-                                                                      f"link.")
-    await client.send_message(message.channel, embed=embed)
-
-
-async def itemspecs(message, hakusanat, client):
+async def itemspecs(message, hakusanat, client) -> None:
     """
-    Hakee käyttäjän antamasta itemistä tietoja. Yrittää aseille ja panssareille ensimmäisenä hakea statseja
-    tiedostosta, jonka epäonnistuessa ne haetaan wikistä. Lopuksi asettelee kaiken tiedon embediin ja
-    lähettää sen discordiin.
+    Soon to be deprecated/rewritten command function for command !iteminfo. Attempts to find any stats or data of given
+    item. If successful, sends all gathered data in an Discord embed.
+
+    :param message:
+    :param hakusanat:
+    :param client:
+    :return:
     """
+
     footer = ""
     ignore_list = ["Toxic blowpipe (empty)", "Trident of the seas (full)", "Trident of the seas (empty)",
                    "Serpentine helm (uncharged)"]
@@ -1502,7 +1180,7 @@ async def itemspecs(message, hakusanat, client):
             correct_name = "Abyssal tentacle"
         return correct_name
 
-    with open(f"{path}itemstats.json") as data_file:
+    with open("Data files/itemstats.json") as data_file:
         data = json.load(data_file)
     try:
         itemname, item_id = get_iteminfo(" ".join(hakusanat))
@@ -1521,8 +1199,13 @@ async def itemspecs(message, hakusanat, client):
         icon = itemdata["icon"]
     except KeyError:
         if tradeable:
-            geapi_resp = requests.get(f"http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?"
-                                      f"item={item_id}").text
+            link = f"http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?item={item_id}"
+            try:
+                geapi_resp = await make_request(client, link)
+            except asyncio.TimeoutError:
+                await client.send_message(message.channel, "Osrs API answered too slowly and no item stats could be"
+                                                           " gathered.")
+                return
             itemdata = json.loads(geapi_resp)["item"]
             description = itemdata["description"]
             members = itemdata["members"].capitalize()
@@ -1554,7 +1237,7 @@ async def itemspecs(message, hakusanat, client):
                                   "icon": icon,
                                   "stats": itemstats
                               }
-            with open("itemstats.json", "w") as data_file:
+            with open("Data files/itemstats.json", "w") as data_file:
                 json.dump(data, data_file, indent=4)
     embed = discord.Embed(title=itemname).add_field(name="Description", value=description, inline=False)
     attack_speed = ""
@@ -1619,20 +1302,17 @@ async def itemspecs(message, hakusanat, client):
     await client.send_message(message.channel, embed=embed)
 
 
-async def item_price(message, hakusanat, client):
+async def item_price(message, hakusanat, client) -> None:
+    """
+    A command function for command !price to get current item price and price changes from Osrs API. If successful,
+    sends the data in an Discord embed. Also supports multipliers for calculating price for multiple pieces of
+    same item, e.g. '!price item * 10'.
 
-    def pricechanges():
-        latest = daily_data[latest_ts]
-        month = "{:,}".format(int(latest) - int(daily_data[month_ts])).replace(",", " ")
-        week = "{:,}".format(int(latest) - int(daily_data[week_ts])).replace(",", " ")
-        day = "{:,}".format(int(latest) - int(daily_data[day_ts])).replace(",", " ")
-        if month[0] != "-":
-            month = f"+{month}"
-        if week[0] != "-":
-            week = f"+{week}"
-        if day[0] != "-":
-            day = f"+{day}"
-        return month, week, day
+    :param message: Message that invoked this command
+    :param hakusanat: Message content as a list
+    :param client: Bot client that is responsible of work between code and Discord client
+    :return:
+    """
 
     search = " ".join(hakusanat).replace(" * ", "*").split("*")
     try:
@@ -1656,9 +1336,9 @@ async def item_price(message, hakusanat, client):
                                                    "only abbreviations `k` and `m`.")
         return
     try:
-        resp = requests.get(api_link, timeout=4).text
-    except requests.exceptions.ReadTimeout:
-        await client.send_message(message.channel, "Old School Runescape api answers too slowly. Try again later.")
+        resp = await make_request(client.aiohttp_session, api_link)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Osrs API answered too slowly. Kokeile myöhemmin Try again later.")
         return
 
     data = json.loads(resp)
@@ -1668,27 +1348,38 @@ async def item_price(message, hakusanat, client):
     day_ts = timestamps[-2]
     week_ts = timestamps[-7]
     month_ts = timestamps[-31]
+    latest_price = int(daily_data[latest_ts])
 
-    price_latest = f"{int(daily_data[latest_ts]):,}".replace(",", " ")
-    latest_total = f"{int(daily_data[latest_ts]) * multiplier:,}".replace(",", " ")
+    latest_price_formal = f"{latest_price:,}".replace(",", " ")
+    latest_price_total = f"{latest_price * multiplier:,}".replace(",", " ")
 
-    pc_month, pc_week, pc_day = pricechanges()
+    pc_month = "{:+,}".format(latest_price - int(daily_data[month_ts])).replace(",", " ")
+    pc_week = "{:+,}".format(latest_price - int(daily_data[week_ts])).replace(",", " ")
+    pc_day = "{:+,}".format(latest_price - int(daily_data[day_ts])).replace(",", " ")
     if multiplier != 1:
-        pcs = f"({multiplier} pcs)"
-        price_ea = f" ({price_latest} ea)"
+        pcs = f"({multiplier} kpl)"
+        price_ea = f" ({latest_price_formal} ea)"
     else:
         pcs = ""
         price_ea = ""
 
-    embed = discord.Embed(title=f"{itemname} {pcs}")\
-        .add_field(name="Latest price", value=f"{latest_total} gp{price_ea}", inline=False)\
-        .add_field(name="Price changes", value=f"In a month: {pc_month} gp\n"
-                                                 f"In a week: {pc_week} gp\nIn a day: {pc_day} gp", inline=False)\
-        .set_footer(text=f"Latest price from {datetime.datetime.utcfromtimestamp(int(latest_ts) / 1e3)} UTC")
+    embed = discord.Embed(title=f"{itemname} {pcs}")
+    embed.add_field(name="Latest price", value=f"{latest_price_total} gp{price_ea}", inline=False)
+    embed.add_field(name="Price changes", value=f"In a month: {pc_month} gp\n"
+                                                  f"In a week: {pc_week} gp\n"
+                                                  f"In a day: {pc_day} gp", inline=False)
+    embed.set_footer(text=f"Latest price from {datetime.datetime.utcfromtimestamp(int(latest_ts) / 1e3)} UTC")
     await client.send_message(message.channel, embed=embed)
 
 
-async def add_drinks(message, client):
+async def add_drinks(message, client) -> None:
+    """
+    A command function for command !drink/!beer to increment user drinks in server hiscores.
+
+    :param message: Message that invoked this command
+    :param client: Bot client responsible of work between code and Discord client
+    """
+
     user_id = message.author.id
     try:
         server_id = message.server.id
@@ -1696,7 +1387,7 @@ async def add_drinks(message, client):
         await client.send_message(message.channel, "This command doesn't support direct messages.")
         return
 
-    with open("drinks.json", "r") as data_file:
+    with open("Data files/drinks.json", "r") as data_file:
         drink_data = json.load(data_file)
 
     try:
@@ -1710,7 +1401,7 @@ async def add_drinks(message, client):
     except KeyError:
         server_data[user_id] = 1
 
-    with open("drinks.json", "w") as output_file:
+    with open("Data files/drinks.json", "w") as output_file:
         json.dump(drink_data, output_file, indent=4)
 
     await client.add_reaction(message, "a:BeerTime:689922747606106227")
@@ -1727,14 +1418,21 @@ async def add_drinks(message, client):
                                                    f"{user_drinks} drinks milestone! \U0001F973")
 
 
-async def drink_highscores(message, client):
+async def drink_highscores(message, client) -> None:
+    """
+    A command function for command !beerscores to display server specific drink hiscores.
+
+    :param message: Message that invoked this command
+    :param client: Bot client responsible of work between code and Discord client
+    """
+
     try:
         server_id = message.server.id
     except AttributeError:
         await client.send_message(message.channel, "This command doesn't support direct messages.")
         return
 
-    with open("drinks.json", "r") as data_file:
+    with open("Data files/drinks.json", "r") as data_file:
         drink_data = json.load(data_file)
 
     try:
@@ -1773,7 +1471,14 @@ async def drink_highscores(message, client):
     await client.send_message(message.channel, embed=embed)
 
 
-async def remove_drinks(message, client):
+async def remove_drinks(message, client) -> None:
+    """
+    A command function for command !undrink/!unbeer to remove a drink from user in drink hiscores.
+
+    :param message: Message that invoked this command
+    :param client: Bot client that is responsible of work between code and Discord client
+    """
+
     user_id = message.author.id
     try:
         server_id = message.server.id
@@ -1781,7 +1486,7 @@ async def remove_drinks(message, client):
         await client.send_message(message.channel, "This command doesn't support direct messages.")
         return
 
-    with open("drinks.json", "r") as data_file:
+    with open("Data files/drinks.json", "r") as data_file:
         drink_data = json.load(data_file)
 
     try:
@@ -1801,13 +1506,21 @@ async def remove_drinks(message, client):
         if len(server_data) == 0:
             del drink_data[server_id]
 
-    with open("drinks.json", "w") as output_file:
+    with open("Data files/drinks.json", "w") as output_file:
         json.dump(drink_data, output_file, indent=4)
 
     await client.add_reaction(message, "a:emiTreeB:693788789042184243")
 
 
-def string_to_timedelta(time_string: str):
+def string_to_timedelta(time_string: str) -> relativedelta:
+    """
+    Convert string from format '[years][months][days][hours][minutes][seconds]' to relativedelta object. Any time unit
+    can be left out if not needed.
+
+    :param time_string: Relative time in string format
+    :return: datetutil.relativedelta.relativedelta object
+    """
+
     replace_dict = {"years": "yrs",
                     "yrs": "y",
                     "months": "mon",
@@ -1828,6 +1541,7 @@ def string_to_timedelta(time_string: str):
 
     time_units = {"y": 0, "m": 0, "d": 0, "H": 0, "M": 0, "S": 0}
 
+    # Extract all different time units from string
     for char in time_string:
         if char not in list(time_units):
             continue
@@ -1849,12 +1563,25 @@ def string_to_timedelta(time_string: str):
     return timedelta
 
 
-async def add_reminder(message, client, hakusanat):
+async def add_reminder(message, client, hakusanat) -> None:
+    """
+    A command function for command !reminder to set a user specifid reminder. This reminder then mentions its owner
+    with given custom messaage after given time interval. Supported time units are years, months, days, hours, minutes
+    and seconds. Minimum reminder time is 10 seconds.
+
+    :param message: Message that invoked this command
+    :param client: Bot client that is responsible of work between code and Discord client
+    :param hakusanat: Message content as a list
+    :return:
+    """
+
+    # Minimum reminder time in seconds for easy and quick modifications
     min_secs = 10
-    reminder_file = "reminders.json"
+    reminder_file = "Data files/reminders.json"
     ts_now = datetime.datetime.utcnow().replace(microsecond=0)
     user_string = " ".join(hakusanat)
 
+    # Find the start and end indexes of reminder message
     i1, i2 = user_string.find("\""), user_string.rfind("\"")
     if i1 == i2:
         await client.send_message(message.channel, "The message needs to be in quotes.")
@@ -1865,7 +1592,19 @@ async def add_reminder(message, client, hakusanat):
 
     time_string = user_string[:i1].rstrip()
     reminder_message = user_string[i1 + 1:i2]
+
+    # Escape all mentions in the message to prevent mention spamming
+    if reminder_message.count("@") > 0:
+        escape_indexes = [i for i, char in enumerate(reminder_message) if char == "@"]
+        escaped_message = list(reminder_message)
+        offset = 0
+        for idx in escape_indexes:
+            escaped_message.insert(idx + offset, "\\")
+            offset += 1
+        reminder_message = "".join(escaped_message)
+
     try:
+        # Set reminder time in minutes if time unit not specified
         reminder_time = relativedelta(minutes=int(time_string))
     except ValueError:
         try:
@@ -1900,7 +1639,338 @@ async def add_reminder(message, client, hakusanat):
 
     await client.send_message(message.channel, f"Reminder set. I will remind you at {trigger_time} UTC")
 
+
+async def make_scoretable(user_stats: list, username: str, account_type: str, gains: bool = False,
+                          saved_ts: datetime.datetime = None) -> str:
+    """
+    A non-command function for other functions to ask for making user hiscores into a easy-to-read table.
+
+    :param user_stats: List of list containing user hiscores
+    :param username: Username of the user which hiscores are handled
+    :param account_type: Acconut type of the user
+    :param gains: Boolean that tells if requested table is for gains command
+    :param saved_ts: Timestamp for the last time command !gains was used for this user. Needed only if gains == True!
+    :return: String that has a tabulate table inside of a Discord command block
+    """
+
+    skillnames = ["Total", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking",
+                     "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining",
+                     "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter",
+                     "Construction"]
+    cluenames = ["All", "Beginner", "Easy", "Medium", "Hard", "Elite", "Master"]
+
+    skills = user_stats[:24]
+    clues = user_stats[27:34]
+
+    # Iterate through all hiscore data and separate thousands with comma, and add sign if gains
+    for index, list_ in enumerate(user_stats):
+        for index2, value in enumerate(list_):
+            if gains:
+                separated = f"{value:+,}"
+            else:
+                separated = f"{value:,}"
+            user_stats[index][index2] = separated
+
+    # Add skill and clue names
+    for i, skill in enumerate(skills):
+        skill.insert(0, skillnames[i])
+    for i, clue in enumerate(clues):
+        clue.insert(0, cluenames[i])
+
+    skilltable = tabulate(skills, tablefmt="orgtbl", headers=["Skill", "Rank", "Level", "Xp"])
+    cluetable = tabulate(clues, tablefmt="orgtbl", headers=["Clue", "Rank", "Amount"])
+
+    if gains:
+        utc_now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
+        utc_now = utc_now.strftime("%Y-%m-%d %H:%M")
+        saved_ts = saved_ts.strftime("%Y-%m-%d %H:%M")
+        table_header = "{:^50}\n{:^50}\n{}".format(f"Gains of {username.capitalize()}",
+                                                   f"Account type: {account_type.capitalize()}",
+                                                   f"Between {saved_ts} - {utc_now} UTC")
+    else:
+        if account_type.lower() == "normal":
+            table_header = "{:^50}".format(f"Stats of {username.capitalize()}")
+        else:
+            table_header = "{:^54}".format(f"{account_type.capitalize()} Stats of {username.capitalize()}")
+
+    scoretable = f"```{table_header}\n\n{skilltable}\n\n{cluetable}```"
+    return scoretable
+
+
+async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession, acc_type: str = None) -> list:
+    """
+    A non-command function for commands to ask for hiscores of Osrs accounts. Request is sent to Osrs API and then if
+    successful, answer is parsed from string to a list of integers for easier handling.
+
+    :param username: Username which hiscores are wanted
+    :param aiohttp_session: aiohttp.ClientSession that is used to make the request
+    :param acc_type: Optional account type if other than normal hiscores are needed
+    :return: List of lists that has user current hiscores in format [[rank, xp, level], [rank, xp, level], ...]
+    """
+
+    if len(username) > 12:
+        raise ValueError("Username can't be longer than 12 characters.")
+
+    if acc_type == "normal" or acc_type is None:
+        header = "hiscore_oldschool"
+    elif acc_type == "ironman":
+        header = "hiscore_oldschool_ironman"
+    elif acc_type == "uim":
+        header = "hiscore_oldschool_ultimate"
+    elif acc_type == "dmm":
+        header = "hiscore_oldschool_deadman"
+    elif acc_type == "seasonal":
+        header = "hiscore_oldschool_seasonal"
+    elif acc_type == "hcim":
+        header = "hiscore_oldschool_hardcore_ironman"
+    elif acc_type == "tournament":
+        header = "hiscore_oldschool_tournament"
+    else:
+        raise ValueError(f"Unknown account type: {acc_type}")
+
+    url = f"http://services.runescape.com/m={header}/index_lite.ws?player={username}"
+    user_stats = await make_request(aiohttp_session, url)
+    if "404 - Page not found" in user_stats:
+        raise TypeError(f"Username {username} does not exist.")
+
+    user_stats = user_stats.split()
+    user_stats = [x.split(",") for x in user_stats]
+
+    # Convert all data into integers
+    for skill in user_stats:
+        for i, value in enumerate(skill):
+            if value == "-1":
+                skill[i] = 0
+            else:
+                skill[i] = int(value)
+
+    return user_stats
+
+
+async def get_user_stats(message: discord.Message, keywords: str, client: discord.Client) -> None:
+    """
+    A command function for command !stats to get current hiscores of given username. Hiscore type can be specified with
+    giving more specific command invokation to get more accurate rankings (All users are always at least in normal
+    hiscores). These user stats are then send in a nice tabulate table.
+
+    :param message: Message that invoked this command
+    :param keywords: Message content as a list
+    :param client: Bot client responsible of all work in between code and Discord client
+    """
+
+    keywords = keywords.split()
+    invoked_with = keywords[0]
+    username = keywords[1]
+
+    if invoked_with == "!stats":
+        account_type = "normal"
+    elif invoked_with == "!ironstats":
+        account_type = "ironman"
+    elif invoked_with == "!uimstats":
+        account_type = "uim"
+    elif invoked_with == "!dmmstats":
+        account_type = "dmm"
+    elif invoked_with == "!seasonstats":
+        account_type = "seasonal"
+    elif invoked_with == "!hcstats":
+        account_type = "hcim"
+    else:
+        await client.send_message(message.channel, f"Unknown account type with invokation: {invoked_with}")
+        return
+
+    try:
+        user_stats = await get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Osrs API answered too slowly. Try again later..")
+        return
+    except TypeError:
+        await client.send_message(message.channel, "Could not find hiscores for user with given account type.")
+        return
+    except ValueError:
+        await client.send_message(message.channel, "Username can't be longer than 12 characters.")
+        return
+
+    scoretable = await make_scoretable(user_stats, username, account_type)
+    await client.send_message(message.channel, scoretable)
+
+
+async def get_user_gains(message: discord.Message, keywords: list, client: discord.Client) -> None:
+    """
+    A command function for getting progress of given username since usage of !track or last usage of this command. Given
+    username must be tracked with command !track first to use this command. Right hiscore data are calculated based on
+    given account type while tracking user. Additional argument '-noupdate' can be used to bypass overwriting the saved
+    data in tracked players file.
+
+    :param message: Message that invoked this command
+    :param keywords: Message content as a list
+    :param client: Bot client responsible of all work in between code and Discord client
+    """
+
+    keywords = " ".join(keywords)
+    update = True
+
+    arg_idx = keywords.find("-")
+    if arg_idx != -1:
+        keywords = keywords.split("-")
+        argument = keywords[1]
+        username = keywords[0].rstrip(" ")
+        update = False
+        if argument.lower() != "noupdate":
+            await client.send_message(message.channel, f"Invalid argument: `{argument}`")
+            return
+    else:
+        username = keywords
+
+    with open("Data files/statsdb.json", "r") as db_file:
+        data = json.load(db_file)
+    try:
+        saved_data = data[username]
+    except KeyError:
+        # Username is not in tracked players
+        await client.send_message(message.channel, "This user is not tracked.")
+        return
+
+    account_type = saved_data["account_type"]
+    saved_stats = saved_data["past_stats"]
+    saved_ts = datetime.datetime.fromtimestamp(saved_data["saved"])
+
+    try:
+        new_stats = await get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
+        return
+
+    len_diff = len(new_stats) - len(saved_stats)
+    if len_diff > 0:
+        for _ in range(len_diff):
+            saved_stats.append([0, 0])
+
+    new_skills_arr = np.array(new_stats[:24], dtype=int)
+    new_minigames_arr = np.array(new_stats[24:], dtype=int)
+
+    saved_skills_arr = np.array(saved_stats[:24], dtype=int)
+    saved_minigames_arr = np.array(saved_stats[24:], dtype=int)
+
+    skills_difference = new_skills_arr - saved_skills_arr
+    minigames_difference = new_minigames_arr - saved_minigames_arr
+
+    skills_difference[:, 0] *= -1
+    minigames_difference[:, 0] *= -1
+
+    gains = skills_difference.tolist() + minigames_difference.tolist()
+    scoretable = await make_scoretable(gains, username, account_type, gains=True, saved_ts=saved_ts)
+
+    # Overwrite saved user data if argument -noupdate was used
+    if update is True:
+        saved_data["past_stats"] = new_stats
+        saved_data["saved"] = int(datetime.datetime.utcnow().replace(microsecond=0, second=0).timestamp())
+
+        with open("Data files/statsdb.json", "w") as output_file:
+            json.dump(data, output_file, indent=4)
+
+    await client.send_message(message.channel, scoretable)
+
+
+async def track_username(message: discord.Message, keywords: list, client: discord.Client) -> None:
+    """
+    A command function for command !track to add an username and its current info into tracked players. Progress for
+    this user can be then calculated just by using command !gains <username>.
+
+    :param message: Message that invoked this command
+    :param keywords: Message content as a list
+    :param client: Bot client which is responsible of all work between this code and Discord client
+    :return:
+    """
+
+    user_data = {"past_stats": [], "account_type": None, "saved": None}
+    username = " ".join(keywords).replace("_", " ")
+
+    with open("Data files/statsdb.json", "r") as data_file:
+        tracked_players_data = json.load(data_file)
+
+    if username in tracked_players_data.keys():
+        await client.send_message(message.channel, "This user is already tracked.")
+        return
+
+    account_types = ["Normal", "Ironman", "Ultimate Ironman", "Hardcore Ironman", "Deadman", "Peruuta"]
+    reactions = []
+    type_options = []
+
+    for i, type_ in enumerate(account_types):
+        if i == len(account_types) - 1:
+            reaction = "\N{CROSS MARK}"
+        else:
+            reaction = f"{i + 1}\u20e3"
+
+        reactions.append(reaction)
+        type_options.append(f"{reaction} {type_}")
+
+    acc_type_embed = discord.Embed(title=f"What is the account type of {username}?",
+                                   description="\n".join(type_options))
+    acc_type_embed.set_footer(text=f"Your answer will be registered only after all  {len(reactions)} reactions "
+                                   f"have been loaded!")
+    acc_type_query = await client.send_message(message.channel, embed=acc_type_embed)
+
+    for reaction in reactions:
+        await client.add_reaction(acc_type_query, reaction)
+
+    acc_type_answer = await client.wait_for_reaction(emoji=reactions, user=message.author, timeout=8,
+                                                     message=acc_type_query)
+    # Embed that is used to edit previous embed when command finishes, exceptions or not
+    finish_embed = discord.Embed()
+    if not acc_type_answer:
+        finish_embed.title = "No answer. Command canceled."
+        await client.edit_message(acc_type_query, embed=finish_embed)
+        return
+
+    answer_reaction_idx = reactions.index(acc_type_answer.reaction.emoji)
+    if answer_reaction_idx == len(reactions) - 1:
+        finish_embed.title = "Command canceled."
+        await client.edit_message(acc_type_query, embed=finish_embed)
+        return
+    account_type_formal = account_types[answer_reaction_idx]
+
+    if account_type_formal == "Ultimate Ironman":
+        account_type = "uim"
+    elif account_type_formal == "Hardcore Ironman":
+        account_type = "hcim"
+    elif account_type_formal == "Deadman":
+        account_type = "dmm"
+    else:
+        account_type = account_type_formal.lower()
+
+    try:
+        getting_stats_embed = discord.Embed(title=f"Gathering stats of {username}...")
+        await client.edit_message(acc_type_query, embed=getting_stats_embed)
+        initial_stats = await get_hiscore_data(username, client.aiohttp_session, account_type)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Osrs API answered too slowly and user could not be tracked. "
+                                                   "Try again later.")
+        return
+    except TypeError:
+        finish_embed.title = f"Could not fins hiscores for user {username} with account type {account_type_formal}."
+        await client.edit_message(acc_type_query, embed=finish_embed)
+        return
+    except ValueError as e:
+        if e.args[0].startswith("Username"):
+            finish_embed.title = "Usernames can't be longer than 12 characters."
+        else:
+            finish_embed.title = "ValueError: Unknown account type."
+        await client.edit_message(acc_type_query, embed=finish_embed)
+        return
+
+    user_data["past_stats"] = initial_stats
+    user_data["account_type"] = account_type
+    user_data["saved"] = int(datetime.datetime.utcnow().replace(microsecond=0, second=0).timestamp())
+    tracked_players_data[username] = user_data
+
+    with open("Data files/statsdb.json", "w") as data_file:
+        json.dump(tracked_players_data, data_file, indent=4)
+
+    finish_embed.title = f"Started tracking user {username}. Account type: {account_type_formal}"
+    await client.edit_message(acc_type_query, embed=finish_embed)
+
+
 if __name__ == "__main__":
-    print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")
-    print("Suljetaan...")
+    print("Dont run this module as a independent process as it doesn't do anything. Run Main.py instead.")
     exit()

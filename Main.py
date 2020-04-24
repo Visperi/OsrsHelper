@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v7.3.1
+# OsrsHelper v7.5
 # coding=utf-8
 
 import discord
@@ -36,6 +36,7 @@ import dev_commands
 import json
 import asyncio
 import dateutil.parser
+import aiohttp
 
 
 client = discord.Client()
@@ -53,7 +54,21 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print("------")
-    await start_reminder_loop()
+    # on_ready is not guaranteed to execute only once so a check is needed to guarantee only one reminder loop
+    if not client.reminder_loop_running:
+        await start_reminder_loop()
+
+
+@client.event
+async def on_ready():
+    await client.change_presence(game=discord.Game(name="Say !help"))
+    print("Logged in as:")
+    print(client.user.name)
+    print(client.user.id)
+    print("------")
+    # on_ready is not guaranteed to execute only once so a check is needed to guarantee only one reminder loop
+    if not client.reminder_loop_running:
+        await start_reminder_loop()
 
 
 @client.event
@@ -110,7 +125,7 @@ async def on_message(message):
         elif msg_lower.startswith("!puzzle "):
             await moduuli.hae_puzzle(message, keywords_lower, client)
         elif highscoret:
-            await moduuli.hae_highscoret(message, keywords_lower, client)
+            await moduuli.get_user_stats(message, msg_lower, client)
         elif msg_lower.startswith("!anagram "):
             await moduuli.search_anagram(message, keywords_lower, client)
         elif msg_lower.startswith("!keys ") or msg_lower.startswith("!keywords "):
@@ -136,13 +151,11 @@ async def on_message(message):
         elif msg_lower.startswith("!limit "):
             await moduuli.get_buylimit(message, keywords_lower, client)
         elif msg_lower.startswith("!help"):
-            await moduuli.function_help(message, keywords_lower, client)
+            await moduuli.command_help(message, keywords_lower, client)
         elif msg_lower.startswith("!gains"):
-            await moduuli.gains_calculator(message, keywords_lower, client)
-        elif msg_lower.startswith("!pricechange ") or msg_lower.startswith("!pc "):
-            await moduuli.hinnanmuutos(message, client)
+            await moduuli.get_user_gains(message, keywords_lower, client)
         elif msg_lower.startswith("!track "):
-            await moduuli.track_user(message, keywords_lower, client)
+            await moduuli.track_username(message, keywords_lower, client)
         elif msg_lower.startswith("!namechange "):
             await moduuli.change_name(message, keywords_lower, client)
         elif msg_lower.startswith("!nicks "):
@@ -157,8 +170,6 @@ async def on_message(message):
             await moduuli.get_streamers(message, client)
         elif msg_lower.startswith("!drop ") or msg_lower.startswith("!loot ") or msg_lower.startswith("!kill "):
             await moduuli.loot_chance(message, keywords_lower, client)
-        elif msg_lower.startswith("!test ") or msg_lower.startswith("!connection "):
-            await moduuli.test_connection(message, keywords_lower, client)
         elif msg_lower.startswith("!satokausi"):
             await komennot.satokausi(message, keywords_lower, client)
         elif msg_lower.startswith("!satokaudet "):
@@ -173,7 +184,6 @@ async def on_message(message):
             await moduuli.drink_highscores(message, client)
         elif msg_lower in ["!unbeer", "!undrink"]:
             await moduuli.remove_drinks(message, client)
-
         elif msg_lower.startswith("!remindme ") or msg_lower.startswith("!reminder "):
             await moduuli.add_reminder(message, client, keywords_lower)
 
@@ -413,7 +423,7 @@ async def start_reminder_loop():
     with open(reminder_file, "r") as data_file:
         reminder_data = json.load(data_file)
 
-    deprecated_mentions = [ts for ts in reminder_data if dateutil.parser.isoparse(ts) < datetime.datetime.now()]
+    deprecated_mentions = [ts for ts in reminder_data if dateutil.parser.isoparse(ts) < datetime.datetime.utcnow()]
 
     for ts in deprecated_mentions:
         num_deprecated += len(reminder_data[ts])
@@ -422,11 +432,13 @@ async def start_reminder_loop():
     with open(reminder_file, "w") as output_file:
         json.dump(reminder_data, output_file, indent=4, ensure_ascii=False)
 
+    # Set the state true to prevent multiple reminder loops
+    client.reminder_loop_running = True
     print(f"Reminder loop started. Deleted {num_deprecated} deprecated reminders.")
 
     # Start reminder loop
     while True:
-        ts_now = str(datetime.datetime.now().replace(microsecond=0))
+        ts_now = str(datetime.datetime.utcnow().replace(microsecond=0))
 
         with open(reminder_file, "r") as data_file:
             reminder_data = json.load(data_file)
@@ -439,15 +451,6 @@ async def start_reminder_loop():
                 message = reminder["message"]
                 author_id = reminder["author"]
                 author = channel.server.get_member(author_id)
-
-                if message.count("@") > 0:
-                    escape_indexes = [i for i, char in enumerate(message) if char == "@"]
-                    escaped_message = list(message)
-                    offset = 0
-                    for idx in escape_indexes:
-                        escaped_message.insert(idx + offset, "\\")
-                        offset += 1
-                    message = "".join(escaped_message)
 
                 await client.send_message(channel, f"{author.mention} {message}")
 
@@ -464,4 +467,6 @@ async def start_reminder_loop():
 
 if __name__ == "__main__":
     token = settings.get_credential("tokens", "osrshelper")
+    client.aiohttp_session = aiohttp.ClientSession(loop=client.loop)
+    client.reminder_loop_running = False
     client.run(token)
