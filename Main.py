@@ -40,23 +40,8 @@ import aiohttp
 
 
 client = discord.Client()
-path = "{}/".format(os.path.dirname(__file__))
-if path == "/":
-    path = ""
 config = configparser.ConfigParser()
-config.read("{}settings.ini".format(path))
-
-
-@client.event
-async def on_ready():
-    await client.change_presence(game=discord.Game(name="Say !help"))
-    print("Logged in as:")
-    print(client.user.name)
-    print(client.user.id)
-    print("------")
-    # on_ready is not guaranteed to execute only once so a check is needed to guarantee only one reminder loop
-    if not client.reminder_loop_running:
-        await start_reminder_loop()
+config.read("Data files/settings.ini")
 
 
 @client.event
@@ -94,7 +79,7 @@ async def on_message(message):
                 config["LANGUAGE"][str(message.author.id)] = language
             except TypeError:
                 return
-            with open("{}settings.ini".format(path), "w") as configfile:
+            with open("Data files/settings.ini", "w") as configfile:
                 config.write(configfile)
             language = config["LANGUAGE"][str(message.author.id)]
         # Check if server has a forced language on
@@ -229,7 +214,7 @@ async def on_message(message):
 
         elif msg_lower.startswith("&language ") or msg_lower.startswith("&lang "):
             await settings.change_language(message, keywords_lower, user_lang, client)
-            config.read("{}settings.ini".format(path))
+            config.read("Data files/settings.ini")
         elif msg_lower == "&settings":
             await settings.get_settings(message, client)
         elif msg_lower.startswith("&permit "):
@@ -371,13 +356,13 @@ async def high_permissions(message, user_lang, sysadmin=False, server_owner=Fals
 @client.event
 async def on_member_remove(member):
     settings.clear_user_ini(member.id)
-    with open(f"{path}streamers.json") as data_file:
+    with open("Data files/streamers.json") as data_file:
         data = json.load(data_file)
     if member.id in data[member.server.id]:
         data[member.server.id].pop(member.id)
         if len(data[member.server.id]) == 0:
             data.pop(member.server.id)
-        with open(f"{path}streamers.json", "w") as data_file:
+        with open("Data files/streamers.json", "w") as data_file:
             json.dump(data, data_file, indent=4)
 
 
@@ -401,7 +386,7 @@ async def on_member_update(before, after):
                     return
             except AttributeError:
                 pass
-            with open(f"{path}streamers.json") as data_file:
+            with open("Data files/streamers.json") as data_file:
                 data = json.load(data_file)
             try:
                 if str(after.id) in data[after.server.id]:
@@ -417,7 +402,7 @@ async def on_member_update(before, after):
 
 
 async def start_reminder_loop():
-    reminder_file = "reminders.json"
+    reminder_file = "Data files/reminders.json"
     num_deprecated = 0
 
     with open(reminder_file, "r") as data_file:

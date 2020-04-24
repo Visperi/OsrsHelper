@@ -1,54 +1,49 @@
+"""
+MIT License
+
+Copyright (c) 2018-2020 Visperi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import discord
 import Settings as settings
-import os
-import configparser
 
 # coding=utf-8
 
 client = discord.Client()
-path = "{}/".format(os.path.dirname(__file__))
-if path == "/":
-    path = ""
-spamdict = {}
-config = configparser.ConfigParser()
-config.read("{}settings.ini".format(path))
 
-print("Käynnistetään huoltokoodi...")
+print("Starting maintenance module...")
 
 
 @client.event
 async def on_ready():
-    print("Tämä on huoltokatkotiedosto! Muista vaihtaa takaisin oikeaan päivityksen jälkeen.")
+    print("This is a maintenance file and doesn't have any commands! Remember to change back to Main.py!")
     await client.change_presence(game=discord.Game(name="Updating..."))
 
 
 @client.event
 async def on_message(message):
-    msg = message.content.lower()
-    viesti = client.send_message(message.channel, "Päivitys käynnissä. Katko kestää jonkin aikaa.")
-    viesti_en = client.send_message(message.channel, "Bot is being updated. This usually takes only a few minutes.")
-    andis_server_id = "261644024958418954"
+    content = message.content
 
-    if message.author != client.user:
-        try:
-            if str(message.server.id) == andis_server_id:
-                user_lang = "english"
-            else:
-                raise AttributeError
-        except AttributeError:
-            try:
-                user_lang = config.get("LANGUAGE", str(message.author.id))
-            except configparser.NoOptionError:
-                config.set("LANGUAGE", str(message.author.id), "finnish")
-                with open("{}settings.ini".format(path), "w") as configfile:
-                    config.write(configfile)
-                user_lang = config.get("LANGUAGE", str(message.author.id))
-        if msg.startswith("!") or msg.startswith("%") or msg.startswith("&"):
-            if msg != "!" and msg != "%" and msg != "&":
-                if user_lang == "finnish":
-                    await viesti
-                else:
-                    await viesti_en
+    if content.startswith("!") or content.startswith("%") or content.startswith("&"):
+        await client.send_message(message.channel, "The bot is being updated. This shouldn't take too long.")
 
 
 if __name__ == "__main__":
