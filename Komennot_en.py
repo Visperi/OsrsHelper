@@ -36,34 +36,7 @@ from mathparse import mathparse
 from dateutil.relativedelta import relativedelta
 import asyncio
 import numpy as np
-from tabulate import tabulate
-import aiohttp
-
-
-def to_utf8(string):
-    string = string.replace("Ã¤", "ä").replace("Ã¶", "ö").replace("/ae", "ä").replace("/oe", "ö").replace("Ã„", "Ä")\
-        .replace("Ã–", "Ö")
-    return string
-
-
-def to_ascii(string):
-    string = string.replace("ä", "/ae").replace("ö", "/oe").replace("Ä", "/AE").replace("Ö", "/OE")
-    return string
-
-
-async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 8) -> str:
-    """
-    A non-command function for making an asynchronous request.
-
-    :param session: aiohttp.ClientSession that is used to make request
-    :param url: Target url of the request
-    :param timeout: Integer telling how long should be waited before timeouting the request
-    :return: String containing the response
-    """
-
-    async with session.get(url, timeout=timeout) as r:
-        response = await r.text()
-        return response
+import static_functions
 
 
 async def command_help(message, keywords, client):
@@ -134,40 +107,13 @@ async def commands(message, client):
     await client.send_message(message.channel, embed=embed)
 
 
-def get_iteminfo(itemname, default_names=False):
-    """Searches for item name and id from local files.
-
-    :param itemname: The name of the item in string format
-    :param default_names: If set true, only default item names are accepted as itemname input
-    :return: Original item name (str) and its id (int), None if not found
-    """
-    itemname = itemname.capitalize()
-    with open("Data files/Tradeables.json") as data_file:
-        data = json.load(data_file)
-    if itemname in list(data.keys()):
-        item_id = data[itemname]["id"]
-        return itemname, item_id
-    elif default_names:
-        return
-    else:
-        itemname = to_ascii(itemname.lower())
-        with open("Data files/Item_keywords.json") as data_file:
-            keywords = json.load(data_file)
-        if itemname in keywords["all nicks"]:
-            for item in keywords:
-                if itemname in keywords[item] and item != "all nicks":
-                    itemname = to_utf8(item.capitalize())
-                    item_id = data[itemname]["id"]
-                    return itemname, item_id
-
-
 async def search_wiki(message, hakusanat: list, client, get_html=False):
     baselink = "https://oldschool.runescape.wiki/w/"
 
     search = "_".join(hakusanat)
     search_link = baselink + search
     try:
-        response = await make_request(client, search_link)
+        response = await static_functions.make_request(client, search_link)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Wiki answered too slowly. Try again later..")
         return
@@ -175,7 +121,7 @@ async def search_wiki(message, hakusanat: list, client, get_html=False):
         hyperlinks = []
         truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
         try:
-            truesearch_resp = await make_request(client, truesearch_link)
+            truesearch_resp = await static_functions.make_request(client, truesearch_link)
         except asyncio.TimeoutError:
             await client.send_message(message.channel, "Wiki answered too slowly. Try again later.")
             return
@@ -408,10 +354,10 @@ async def execute_custom_commands(message, user_input, client):
     with open("Data files/Custom_commands.json") as data_file:
         data = json.load(data_file)
     try:
-        viesti = data[server]["!{}".format(to_ascii(command))]["message"]
+        viesti = data[server]["!{}".format(static_functions.to_ascii(command))]["message"]
     except KeyError:
         return
-    await client.send_message(message.channel, to_utf8(viesti))
+    await client.send_message(message.channel, static_functions.to_utf8(viesti))
     kayttokerrat("custom")
 
 
@@ -437,8 +383,8 @@ async def addcom(message, words_raw, client):
         string = "".join(string_list)
         start = string.find("[start]") + 7
         end = string.find("[end]")
-        viesti_raw = to_ascii(string[start:end]).replace("\\n", "\n")
-        komento_raw = to_ascii(" ".join(string[:start - 8].split(" ")[0:]))
+        viesti_raw = static_functions.to_ascii(string[start:end]).replace("\\n", "\n")
+        komento_raw = static_functions.to_ascii(" ".join(string[:start - 8].split(" ")[0:]))
         komento = komento_raw.replace("!", "")
         try:
             if not komento[0].isalpha() and not komento[0].isdigit():
@@ -491,7 +437,7 @@ async def addcom(message, words_raw, client):
 
     with open(file, "w") as data_file:
         json.dump(data, data_file, indent=4)
-    await client.send_message(message.channel, "Command `{}` added.".format(to_utf8(command)))
+    await client.send_message(message.channel, "Command `{}` added.".format(static_functions.to_utf8(command)))
     if (command_raw[0] == "!" and command_raw.count("!") > 1) or (command_raw[0] != "!" and command_raw.count("!") > 0):
         await client.send_message(message.channel, "Command's name cannot have any exclamation marks and they were "
                                                    "removed automatically.")
@@ -512,7 +458,7 @@ async def get_custom_commands(message, client):
         await client.send_message(message.channel, "Server doesn't have any custom commands.")
         return
     for command in custom_commands_raw:
-        custom_commands.append(to_utf8(command))
+        custom_commands.append(static_functions.to_utf8(command))
     embed = discord.Embed(title=f"Custom commands for {str(message.server).capitalize()}")
     embed.set_footer(text=f"Total amount of commands: {len(custom_commands)}")
 
@@ -573,14 +519,15 @@ async def delcom(message, words_raw, client):
         komento = "".join(komento)
     elif komento[0].isalpha() or komento[0].isdigit():
         komento = "!" + komento
-    komento = to_ascii(komento)
+    komento = static_functions.to_ascii(komento)
     with open(file) as data_file:
         data = json.load(data_file)
     if komento in list(data[server]):
         del data[server][komento]
         with open(file, "w") as data_file:
             json.dump(data, data_file, indent=4)
-            await client.send_message(message.channel, "Command `{}` deleted.".format(to_utf8(komento)))
+            await client.send_message(message.channel, "Command `{}` deleted."
+                                      .format(static_functions.to_utf8(komento)))
             kayttokerrat("delcom")
     else:
         await client.send_message(message.channel, "That command doesn't exist")
@@ -588,7 +535,7 @@ async def delcom(message, words_raw, client):
 
 async def get_buylimit(message, keywords, client):
     keyword = " ".join(keywords)
-    iteminfo = get_iteminfo(keyword)
+    iteminfo = static_functions.get_iteminfo(keyword)
     if not iteminfo:
         await client.send_message(message.channel, "Could not find any items with your keyword.")
         return
@@ -654,8 +601,8 @@ async def change_name(message, hakusanat, client):
         await client.send_message(message.channel, "The new name is already in lists.")
     elif old_name in list(data):
         try:
-            check_name = await make_request(client, f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws"
-                                                    f"?player={new_name}")
+            url = f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={new_name}"
+            check_name = await static_functions.make_request(client, url)
         except asyncio.TimeoutError:
             await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
             return
@@ -703,14 +650,14 @@ async def addkey(message, keywords, client):
     if itemname not in data.keys():
         data[itemname.lower()] = []
     for key in new_keys:
-        key = to_ascii(key)
+        key = static_functions.to_ascii(key)
         if "*" in key:
             discarded_keys += 1
             continue
         elif key not in data["all nicks"] and key not in all_tradeables.keys():
             data["all nicks"].append(key)
             data[itemname.lower()].append(key)
-            approved_keys.append(to_utf8(key))
+            approved_keys.append(static_functions.to_utf8(key))
     if discarded_keys > 0:
         denied_msg = f"{discarded_keys} of the keys were discarded because they contained `*` signs."
     if len(approved_keys) == 0:
@@ -730,7 +677,7 @@ async def delkey(message, keywords, client):
     itemname = keywords[0]
     deletelist = keywords[1:]
     deleted_keys = []
-    item_info = get_iteminfo(itemname, default_names=True)
+    item_info = static_functions.get_iteminfo(itemname, default_names=True)
     if not item_info:
         await client.send_message(message.channel, "Could not find any items with your keyword.")
         return
@@ -746,7 +693,7 @@ async def delkey(message, keywords, client):
         await client.send_message(message.channel, "Item has not been set any keywords.")
         return
     for keyword in deletelist:
-        keyword = to_ascii(keyword)
+        keyword = static_functions.to_ascii(keyword)
         if keyword in item_keys:
             delete_keys.append(keyword)
     if len(delete_keys) == 0:
@@ -755,7 +702,7 @@ async def delkey(message, keywords, client):
     for key in delete_keys:
         data[itemname].remove(key)
         data["all nicks"].remove(key)
-        deleted_keys.append(to_utf8(key))
+        deleted_keys.append(static_functions.to_utf8(key))
     if len(data[itemname]) == 0:
         data.pop(itemname)
     deleted_keys = ", ".join(deleted_keys)
@@ -768,7 +715,7 @@ async def delkey(message, keywords, client):
 
 async def find_itemname(message, hakusanat, client, vanilla_names=False):
     print(hakusanat)
-    itemname = to_ascii(" ".join(hakusanat)).capitalize()
+    itemname = static_functions.to_ascii(" ".join(hakusanat)).capitalize()
     print(itemname)
     with open("Data files/Tradeables.json") as data_file:
         data = json.load(data_file)
@@ -795,7 +742,7 @@ async def find_itemname(message, hakusanat, client, vanilla_names=False):
 async def get_keys(message, hakusanat, client):
     itemname = " ".join(hakusanat).lower()
     nicks_utf8 = []
-    iteminfo = get_iteminfo(itemname, default_names=True)
+    iteminfo = static_functions.get_iteminfo(itemname, default_names=True)
     if not iteminfo:
         await client.send_message(message.channel, "Could not find any items with your keyword.")
         return
@@ -804,7 +751,7 @@ async def get_keys(message, hakusanat, client):
     try:
         nicks_ascii = data[itemname]
         for nick in nicks_ascii:
-            nicks_utf8.append(to_utf8(nick))
+            nicks_utf8.append(static_functions.to_utf8(nick))
         embed = discord.Embed(title=f"Keywords for {itemname.capitalize()}", description="\n".join(nicks_utf8))
         await client.send_message(message.channel, embed=embed)
     except KeyError:
@@ -817,7 +764,7 @@ async def latest_update(message, client):
 
     link = "http://oldschool.runescape.com/"
     try:
-        osrs_response = await make_request(client, link)
+        osrs_response = await static_functions.make_request(client, link)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs frontpage answered too slowly. Try again later.")
         return
@@ -859,8 +806,8 @@ async def editcom(message, words_raw, client):
         string = "".join(string_list)
         start = string.find("[start]") + 7
         end = string.find("[end]")
-        viesti_raw = to_ascii(string[start:end]).replace("\\n", "\n")
-        komento = to_ascii(" ".join(string[:start - 8].split(" ")[0:])).replace("!", "")
+        viesti_raw = static_functions.to_ascii(string[start:end]).replace("\\n", "\n")
+        komento = static_functions.to_ascii(" ".join(string[:start - 8].split(" ")[0:])).replace("!", "")
         if not komento[0].isalpha() and not komento[0].isdigit():
             komento = list(komento)
             komento[0] = "!"
@@ -1183,7 +1130,7 @@ async def itemspecs(message, hakusanat, client) -> None:
     with open("Data files/itemstats.json") as data_file:
         data = json.load(data_file)
     try:
-        itemname, item_id = get_iteminfo(" ".join(hakusanat))
+        itemname, item_id = static_functions.get_iteminfo(" ".join(hakusanat))
         tradeable = True
         if itemname in ignore_list:
             raise TypeError
@@ -1201,7 +1148,7 @@ async def itemspecs(message, hakusanat, client) -> None:
         if tradeable:
             link = f"http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?item={item_id}"
             try:
-                geapi_resp = await make_request(client, link)
+                geapi_resp = await static_functions.make_request(client, link)
             except asyncio.TimeoutError:
                 await client.send_message(message.channel, "Osrs API answered too slowly and no item stats could be"
                                                            " gathered.")
@@ -1316,7 +1263,7 @@ async def item_price(message, hakusanat, client) -> None:
 
     search = " ".join(hakusanat).replace(" * ", "*").split("*")
     try:
-        itemname, itemid = get_iteminfo(search[0])
+        itemname, itemid = static_functions.get_iteminfo(search[0])
     except TypeError:
         await client.send_message(message.channel, "Could not find any items with your search.")
         return
@@ -1336,7 +1283,7 @@ async def item_price(message, hakusanat, client) -> None:
                                                    "only abbreviations `k` and `m`.")
         return
     try:
-        resp = await make_request(client.aiohttp_session, api_link)
+        resp = await static_functions.make_request(client.aiohttp_session, api_link)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly. Kokeile myöhemmin Try again later.")
         return
@@ -1512,57 +1459,6 @@ async def remove_drinks(message, client) -> None:
     await client.add_reaction(message, "a:emiTreeB:693788789042184243")
 
 
-def string_to_timedelta(time_string: str) -> relativedelta:
-    """
-    Convert string from format '[years][months][days][hours][minutes][seconds]' to relativedelta object. Any time unit
-    can be left out if not needed.
-
-    :param time_string: Relative time in string format
-    :return: datetutil.relativedelta.relativedelta object
-    """
-
-    replace_dict = {"years": "yrs",
-                    "yrs": "y",
-                    "months": "mon",
-                    "mon": "m",
-                    "days": "d",
-                    "hours": "H",
-                    "h": "H",
-                    "minutes": "min",
-                    "min": "M",
-                    "seconds": "sec",
-                    "sec": "S",
-                    "s": "S",
-                    " ": ""}
-
-    for old in replace_dict.keys():
-        new = replace_dict[old]
-        time_string = time_string.replace(old, new)
-
-    time_units = {"y": 0, "m": 0, "d": 0, "H": 0, "M": 0, "S": 0}
-
-    # Extract all different time units from string
-    for char in time_string:
-        if char not in list(time_units):
-            continue
-
-        char_idx = time_string.find(char)
-        time_units[char] = int(time_string[:char_idx])
-
-        target_substring = time_string[:char_idx + 1]
-        time_string = time_string.replace(target_substring, "")
-
-    years = time_units["y"]
-    months = time_units["m"]
-    days = time_units["d"]
-    hours = time_units["H"]
-    minutes = time_units["M"]
-    seconds = time_units["S"]
-
-    timedelta = relativedelta(years=years, months=months, days=days, hours=hours, minutes=minutes, seconds=seconds)
-    return timedelta
-
-
 async def add_reminder(message, client, hakusanat) -> None:
     """
     A command function for command !reminder to set a user specifid reminder. This reminder then mentions its owner
@@ -1608,7 +1504,7 @@ async def add_reminder(message, client, hakusanat) -> None:
         reminder_time = relativedelta(minutes=int(time_string))
     except ValueError:
         try:
-            reminder_time = string_to_timedelta(time_string)
+            reminder_time = static_functions.string_to_timedelta(time_string)
         except ValueError:
             await client.send_message(message.channel, "Given time was not in supported format.")
             return
@@ -1638,113 +1534,6 @@ async def add_reminder(message, client, hakusanat) -> None:
         json.dump(reminder_data, data_file, indent=4, ensure_ascii=False)
 
     await client.send_message(message.channel, f"Reminder set. I will remind you at {trigger_time} UTC")
-
-
-async def make_scoretable(user_stats: list, username: str, account_type: str, gains: bool = False,
-                          saved_ts: datetime.datetime = None) -> str:
-    """
-    A non-command function for other functions to ask for making user hiscores into a easy-to-read table.
-
-    :param user_stats: List of list containing user hiscores
-    :param username: Username of the user which hiscores are handled
-    :param account_type: Acconut type of the user
-    :param gains: Boolean that tells if requested table is for gains command
-    :param saved_ts: Timestamp for the last time command !gains was used for this user. Needed only if gains == True!
-    :return: String that has a tabulate table inside of a Discord command block
-    """
-
-    skillnames = ["Total", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking",
-                     "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining",
-                     "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter",
-                     "Construction"]
-    cluenames = ["All", "Beginner", "Easy", "Medium", "Hard", "Elite", "Master"]
-
-    skills = user_stats[:24]
-    clues = user_stats[27:34]
-
-    # Iterate through all hiscore data and separate thousands with comma, and add sign if gains
-    for index, list_ in enumerate(user_stats):
-        for index2, value in enumerate(list_):
-            if gains:
-                separated = f"{value:+,}"
-            else:
-                separated = f"{value:,}"
-            user_stats[index][index2] = separated
-
-    # Add skill and clue names
-    for i, skill in enumerate(skills):
-        skill.insert(0, skillnames[i])
-    for i, clue in enumerate(clues):
-        clue.insert(0, cluenames[i])
-
-    skilltable = tabulate(skills, tablefmt="orgtbl", headers=["Skill", "Rank", "Level", "Xp"])
-    cluetable = tabulate(clues, tablefmt="orgtbl", headers=["Clue", "Rank", "Amount"])
-
-    if gains:
-        utc_now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
-        utc_now = utc_now.strftime("%Y-%m-%d %H:%M")
-        saved_ts = saved_ts.strftime("%Y-%m-%d %H:%M")
-        table_header = "{:^50}\n{:^50}\n{}".format(f"Gains of {username.capitalize()}",
-                                                   f"Account type: {account_type.capitalize()}",
-                                                   f"Between {saved_ts} - {utc_now} UTC")
-    else:
-        if account_type.lower() == "normal":
-            table_header = "{:^50}".format(f"Stats of {username.capitalize()}")
-        else:
-            table_header = "{:^54}".format(f"{account_type.capitalize()} Stats of {username.capitalize()}")
-
-    scoretable = f"```{table_header}\n\n{skilltable}\n\n{cluetable}```"
-    return scoretable
-
-
-async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession, acc_type: str = None) -> list:
-    """
-    A non-command function for commands to ask for hiscores of Osrs accounts. Request is sent to Osrs API and then if
-    successful, answer is parsed from string to a list of integers for easier handling.
-
-    :param username: Username which hiscores are wanted
-    :param aiohttp_session: aiohttp.ClientSession that is used to make the request
-    :param acc_type: Optional account type if other than normal hiscores are needed
-    :return: List of lists that has user current hiscores in format [[rank, xp, level], [rank, xp, level], ...]
-    """
-
-    if len(username) > 12:
-        raise ValueError("Username can't be longer than 12 characters.")
-
-    if acc_type == "normal" or acc_type is None:
-        header = "hiscore_oldschool"
-    elif acc_type == "ironman":
-        header = "hiscore_oldschool_ironman"
-    elif acc_type == "uim":
-        header = "hiscore_oldschool_ultimate"
-    elif acc_type == "dmm":
-        header = "hiscore_oldschool_deadman"
-    elif acc_type == "seasonal":
-        header = "hiscore_oldschool_seasonal"
-    elif acc_type == "hcim":
-        header = "hiscore_oldschool_hardcore_ironman"
-    elif acc_type == "tournament":
-        header = "hiscore_oldschool_tournament"
-    else:
-        raise ValueError(f"Unknown account type: {acc_type}")
-
-    url = f"http://services.runescape.com/m={header}/index_lite.ws?player={username}"
-    user_stats = await make_request(aiohttp_session, url)
-    if "404 - Page not found" in user_stats:
-        raise TypeError(f"Username {username} does not exist.")
-
-    user_stats = user_stats.split()
-    user_stats = [x.split(",") for x in user_stats]
-
-    # Convert all data into integers
-    for skill in user_stats:
-        for i, value in enumerate(skill):
-            if value == "-1":
-                skill[i] = 0
-            else:
-                skill[i] = int(value)
-
-    return user_stats
 
 
 async def get_user_stats(message: discord.Message, keywords: str, client: discord.Client) -> None:
@@ -1779,7 +1568,7 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
         return
 
     try:
-        user_stats = await get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
+        user_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly. Try again later..")
         return
@@ -1790,7 +1579,7 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
         await client.send_message(message.channel, "Username can't be longer than 12 characters.")
         return
 
-    scoretable = await make_scoretable(user_stats, username, account_type)
+    scoretable = await static_functions.make_scoretable(user_stats, username, account_type)
     await client.send_message(message.channel, scoretable)
 
 
@@ -1835,7 +1624,7 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
     saved_ts = datetime.datetime.fromtimestamp(saved_data["saved"])
 
     try:
-        new_stats = await get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
+        new_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
         return
@@ -1858,7 +1647,7 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
     minigames_difference[:, 0] *= -1
 
     gains = skills_difference.tolist() + minigames_difference.tolist()
-    scoretable = await make_scoretable(gains, username, account_type, gains=True, saved_ts=saved_ts)
+    scoretable = await static_functions.make_scoretable(gains, username, account_type, gains=True, saved_ts=saved_ts)
 
     # Overwrite saved user data if argument -noupdate was used
     if update is True:
@@ -1942,7 +1731,7 @@ async def track_username(message: discord.Message, keywords: list, client: disco
     try:
         getting_stats_embed = discord.Embed(title=f"Gathering stats of {username}...")
         await client.edit_message(acc_type_query, embed=getting_stats_embed)
-        initial_stats = await get_hiscore_data(username, client.aiohttp_session, account_type)
+        initial_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly and user could not be tracked. "
                                                    "Try again later.")

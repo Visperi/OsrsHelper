@@ -27,7 +27,6 @@ SOFTWARE.
 
 import discord
 import datetime
-import os
 import configparser
 import Komennot as komennot
 import Settings as settings
@@ -242,10 +241,6 @@ async def on_message(message):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
                 await dev_commands.get_item_id(message, keywords_lower, client)
-        elif msg_lower.startswith("§addpuzzle "):
-            permissions = await high_permissions(message, user_lang, sysadmin=True)
-            if permissions:
-                await dev_commands.add_puzzle(message, keywords_lower, client)
         elif msg_lower.startswith("§addobject "):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:

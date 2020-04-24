@@ -322,6 +322,5 @@ def clear_user_ini(member_id):
 
 
 if __name__ == "__main__":
-    print("Tätä moduulia ei ole tarkoitettu ajettavaksi itsessään. Suorita Kehittajaversio.py tai Main.py")
-    print("Suljetaan...")
+    print("Dont run this module as a independent process as it doesn't do anything. Run Main.py instead.")
     exit()

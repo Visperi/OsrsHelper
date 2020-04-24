@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import Komennot_en as commands
+import static_functions
 import json
 import discord
 
@@ -32,36 +32,11 @@ async def get_item_id(message, keywords, client):
     Dev command to easily get the name and id of an item
     """
     itemname = " ".join(keywords)
-    item_info = commands.get_iteminfo(itemname)
+    item_info = static_functions.get_iteminfo(itemname)
     if not item_info:
         await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä.")
         return
     await client.send_message(message.channel, f"Item name: `{item_info[0]}`\nId: `{item_info[1]}`")
-
-
-async def add_puzzle(message, hakusanat, client):
-    file = "Data files/Anagrams.json"
-    hakusanat = " ".join(hakusanat).replace(", ", ",").split(",")
-    try:
-        anagram = hakusanat[0].lower()
-        puzzle = hakusanat[1].lower()
-    except IndexError:
-        await client.send_message(message.channel, "Erottele anagrammi ja puzzlen nimi pilkulla.")
-        return
-    with open(file) as data_file:
-        data = json.load(data_file)
-    puzzle_link = await commands.hae_puzzle(message, [puzzle], client, no_message=True)
-    if not puzzle_link:
-        return
-    else:
-        try:
-            data[anagram]["puzzle"] = puzzle_link
-            with open(file, "w") as data_file:
-                json.dump(data, data_file, indent=4)
-            await client.send_message(message.channel, "Tallennustiedot:\nPuzzle: {}\nAnagram: {}"
-                                      .format(puzzle.capitalize(), anagram.capitalize()))
-        except KeyError:
-            await client.send_message(message.channel, "Hakemaasi anagrammia ei ole tallennettu.")
 
 
 async def add_object(message, hakusanat, client):
@@ -115,7 +90,7 @@ async def delete_object(message, hakusanat, client):
 
 
 async def dev_commands(message, client):
-    sysadmin_commands = ["§id", "§addpuzzle", "§addobject", "§delobject", "§times used", "§addalch", "§addstream",
+    sysadmin_commands = ["§id", "§addobject", "§delobject", "§times used", "§addalch", "§addstream",
                          "§delstream", "§addlim", "§dellim", "§addobjects", "§check", "§get"]
     viesti = discord.Embed(title="Developer commands", description="\n".join(sysadmin_commands))\
         .set_footer(text="These commands are only for the developer's use")
@@ -146,7 +121,7 @@ async def get_times_used(message, client):
 
 async def add_halch(message, keywords, client):
     keywords = " ".join(keywords).split(", ")
-    item_info = commands.get_iteminfo(keywords[0], default_names=True)
+    item_info = static_functions.get_iteminfo(keywords[0], default_names=True)
     try:
         itemname, itemid = item_info[0], item_info[1]
     except TypeError:
@@ -356,7 +331,7 @@ async def check_new_items(message, client):
 
 async def get_file(message, keywords, client):
     filename = " ".join(keywords)
-    filepath = path + filename
+    filepath = f"Data files/{filename}"
     try:
         await client.send_file(message.channel, filepath)
     except FileNotFoundError:
@@ -434,5 +409,4 @@ async def manage_drinks(message, keywords, client):
     await client.send_message(message.channel, success_str)
 
 if __name__ == '__main__':
-    print("Please run the Main.py to use any commands. They work only through Discord.")
-    exit()
+    print("Dont run this module as a independent process as it doesn't do anything. Run Main.py instead.")
