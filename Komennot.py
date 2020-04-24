@@ -1828,13 +1828,13 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
     These user stats are then send in a nice tabulate table.
 
     :param message: Message that invoked this command
-    :param keywords: Message content as a list
+    :param keywords: Message content as a string
     :param client: Bot client responsible of all work in between code and Discord client
     """
 
     keywords = keywords.split()
     invoked_with = keywords[0]
-    username = keywords[1]
+    username = " ".join(keywords[1:])
 
     if invoked_with == "!stats":
         account_type = "normal"

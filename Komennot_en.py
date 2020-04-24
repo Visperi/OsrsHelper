@@ -1760,7 +1760,7 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
 
     keywords = keywords.split()
     invoked_with = keywords[0]
-    username = keywords[1]
+    username = " ".join(keywords[1:])
 
     if invoked_with == "!stats":
         account_type = "normal"
