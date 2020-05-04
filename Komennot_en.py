@@ -758,13 +758,13 @@ async def get_keys(message, hakusanat, client):
         await client.send_message(message.channel, "This item has not been set any keywords.")
 
 
-async def latest_update(message, client):
+async def latest_updates(message, client):
     news_articles = {}
     articles = []
 
     link = "http://oldschool.runescape.com/"
     try:
-        osrs_response = await static_functions.make_request(client, link)
+        osrs_response = await static_functions.make_request(client.aiohttp_session, link)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs frontpage answered too slowly. Try again later.")
         return

@@ -749,7 +749,7 @@ async def change_name(message, hakusanat, client):
                                   "ylläpitäjään.")
 
 
-async def latest_update(message, client):
+async def latest_updates(message, client):
     news_articles = {}
     articles = []
 

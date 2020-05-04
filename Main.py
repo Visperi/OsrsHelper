@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v7.5
+# OsrsHelper v7.5.1
 # coding=utf-8
 
 import discord
@@ -145,7 +145,7 @@ async def on_message(message):
         elif msg_lower.startswith("!nicks "):
             await moduuli.get_old_nicks(message, keywords_lower, client)
         elif msg_lower == "!update":
-            await moduuli.latest_update(message, client)
+            await moduuli.latest_updates(message, client)
         elif msg_lower == "!sub streams":
             await moduuli.sub_to_role(message, client)
         elif msg_lower == "!unsub streams":
