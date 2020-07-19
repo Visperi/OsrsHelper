@@ -541,5 +541,14 @@
         "description": "Set a reminder with a custom message. The reminder will then tag you with its message later.",
         "additional": "Reminder time supports order `[yrs] [months] [days] [hours] [min] [seconds]`. The message must be in quotes.",
         "example": "`!reminder 5d20min \"I cant come up with any examples\"`, `!reminder 15min \"Why are these so hard\"`"
+    },
+    {
+        "function": [
+            "roll"
+        ],
+        "name": "!roll",
+        "description": "Throw a die with given number of sides.",
+        "additional": "Also supports the RPG dice notation: <throws>d<sides>",
+        "example": "`!roll`, `!roll 8`, `!roll 4d120`"
     }
 ]

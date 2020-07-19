@@ -1,0 +1,16 @@
+{
+    "2020-05-08 12:59:39": [
+        {
+            "channel": "channel id",
+            "message": "lol",
+            "author": "author id"
+        }
+    ],
+    "2020-05-08 12:55:30": [
+        {
+            "channel": "channel id",
+            "message": "test",
+            "author": "author id"
+        }
+    ]
+}

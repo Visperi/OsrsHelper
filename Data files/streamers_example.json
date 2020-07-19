@@ -1,0 +1,8 @@
+{
+    "Server id": {
+        "User id": {
+            "stream_link": "stream url",
+            "username": "Display name"
+        }
+    }
+}

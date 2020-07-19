@@ -25,6 +25,7 @@ SOFTWARE.
 import static_functions
 import json
 import discord
+import asyncio
 
 
 async def get_item_id(message, keywords, client):
@@ -32,66 +33,20 @@ async def get_item_id(message, keywords, client):
     Dev command to easily get the name and id of an item
     """
     itemname = " ".join(keywords)
-    item_info = static_functions.get_iteminfo(itemname)
-    if not item_info:
-        await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä.")
+    item_data = await static_functions.get_item_data(itemname)
+    if not item_data:
+        await client.send_message(message.channel, "Could not find any items.")
         return
-    await client.send_message(message.channel, f"Item name: `{item_info[0]}`\nId: `{item_info[1]}`")
 
+    default_itemname = item_data["name"]
+    item_id = item_data["id"]
 
-async def add_object(message, hakusanat, client):
-    file = "Data files/Tradeables.json"
-    hakusanat = " ".join(hakusanat).replace(", ", ",").split(",")
-    idlist = []
-    try:
-        itemname = hakusanat[0].capitalize()
-        item_id = int(hakusanat[1])
-    except IndexError:
-        await client.send_message(message.channel, "Erottele itemin nimi ja id pilkulla. Anna ensin nimi ja sitten id.")
-        return
-    except ValueError:
-        await  client.send_message(message.channel, "Virheellinen id.")
-        return
-    with open(file) as data_file:
-        data = json.load(data_file)
-    for itemdict in list(data.values()):
-        idlist.append(itemdict["id"])
-    if itemname in list(data):
-        await client.send_message(message.channel, "Item on jo listalla.")
-        return
-    elif item_id in idlist:
-        await client.send_message(message.channel, "Id on jo käytössä jollain toisella itemillä.")
-        return
-    else:
-        data[itemname] = {"id": item_id, "high_alch": ""}
-        with open(file, "w") as data_file:
-            json.dump(data, data_file, indent=4)
-        viesti = discord.Embed(title="Objekti lisätty", description="Itemname: {}\nItem id: {}".format(itemname,
-                                                                                                       item_id))
-        await client.send_message(message.channel, embed=viesti)
-
-
-async def delete_object(message, hakusanat, client):
-    file = "Data files/Tradeables.json"
-    itemname = " ".join(hakusanat).capitalize()
-    with open(file) as data_file:
-        data = json.load(data_file)
-    try:
-        item_id = data[itemname]["id"]
-        data.pop(itemname.capitalize())
-    except KeyError:
-        await client.send_message(message.channel, "Antamaasi tavaraa ei ole listalla.")
-        return
-    with open(file, "w") as data_file:
-        json.dump(data, data_file, indent=4)
-    viesti = discord.Embed(title="Objekti poistettu", description="Itemname: {}\nItem id: {}".format(itemname,
-                                                                                                      item_id))
-    await client.send_message(message.channel, embed=viesti)
+    await client.send_message(message.channel, f"Item name: `{default_itemname}`\nId: `{item_id}`")
 
 
 async def dev_commands(message, client):
-    sysadmin_commands = ["§id", "§addobject", "§delobject", "§times used", "§addalch", "§addstream",
-                         "§delstream", "§addlim", "§dellim", "§addobjects", "§check", "§get"]
+    sysadmin_commands = ["§id", "§times used", "§addstream", "§delstream", "§addlim", "§dellim", "§addobjects",
+                         "§check", "§get"]
     viesti = discord.Embed(title="Developer commands", description="\n".join(sysadmin_commands))\
         .set_footer(text="These commands are only for the developer's use")
     await client.send_message(message.channel, embed=viesti)
@@ -117,35 +72,6 @@ async def get_times_used(message, client):
         commands_list.append([f"{command[0]}: {command[1]}", f"[{rpercentage}%]"])
     table = "{}\n\n{}\n\nTotal: {}".format(dates, tabulate(commands_list, tablefmt="plain"), all_uses)
     await client.send_message(message.channel, f"```{table}```")
-
-
-async def add_halch(message, keywords, client):
-    keywords = " ".join(keywords).split(", ")
-    item_info = static_functions.get_iteminfo(keywords[0], default_names=True)
-    try:
-        itemname, itemid = item_info[0], item_info[1]
-    except TypeError:
-        await client.send_message(message.channel, "Anna sekä itemin nimi että high alch arvo, pilkulla eroteltuna.")
-        return
-    if not itemname:
-        await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä.")
-        return
-    with open("Data files/Tradeables.json") as data_file:
-        data = json.load(data_file)
-    old_value = data[itemname]["high_alch"]
-    if old_value == "":
-        old_value = "None"
-    new_value = str(keywords[1]).replace(" ", "")
-    try:
-        data[itemname]["high_alch"] = int(new_value)
-    except ValueError:
-        await client.send_message(message.channel, "Anna high alch kokonaislukuna.")
-        return
-    with open("Data files/Tradeables.json", "w") as data_file:
-        json.dump(data, data_file, indent=4)
-    embed = discord.Embed(title="High alch value set", description=f"Name: {itemname}\nId: {itemid}\n"
-                                                                   f"High alch: {old_value} -> {new_value}")
-    await client.send_message(message.channel, embed=embed)
 
 
 async def add_stream(message, keywords, client):
@@ -288,45 +214,43 @@ async def add_objects(message, itemlist, client):
 
 
 async def check_new_items(message, client):
-    import requests
-    if len(message.attachments) == 0:
-        await client.send_message(message.channel, "Please send the `names.json` too.")
+    tradeables_file = "Data files/Tradeables.json"
+    url = "https://rsbuddy.com/exchange/summary.json"
+
+    try:
+        resp = await static_functions.make_request(client.aiohttp_session, url)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "RsBuddy answered too slowly.")
         return
+
+    resp_data = json.loads(resp)
+    new_items = []
+
+    with open(tradeables_file, "r") as data_file:
+        saved_data = json.load(data_file)
+
+    for item in resp_data.values():
+        item_id = item["id"]
+        item_name = item["name"]
+        members = item["members"]
+        store_price = item["sp"]
+
+        if item_name not in saved_data.keys():
+            saved_data[item_name] = dict(id=item_id, members=members, store_price=store_price)
+            new_items.append(item_name)
+
+    if len(new_items) > 0:
+        with open(tradeables_file, "w") as data_file:
+            json.dump(saved_data, data_file, indent=4)
+
+        finish_message = "Added {} new items:\n\n{}".format(len(new_items), "\n".join(new_items))
+        if len(finish_message) > 2000:
+            finish_message = f"Added {len(new_items)} new items but they can't fit into one Discord message."
+
     else:
-        filename = message.attachments[0]["filename"]
-        fileurl = message.attachments[0]["url"]
-        if filename.lower() == "names.json":
-            # noinspection PyBroadException
-            try:
-                itemdict = json.loads(requests.get(fileurl).text)
-            except Exception:
-                import traceback
-                traceback_ = traceback.format_exc()
-                await client.send_message(message.channel, f"```py\n{traceback_}```")
-                return
+        finish_message = "No new items to add."
 
-            with open("Data files/Tradeables.json") as tradeables_file:
-                tradeables = json.load(tradeables_file)
-
-            new_items = []
-            for id_ in itemdict:
-                itemname = itemdict[id_]["name"]
-                if itemname not in tradeables:
-                    tradeables[itemname] = {"high_alch": "", "id": int(id_)}
-                    new_items.append(f"{itemname}, {id_}")
-            if len(new_items) == 0:
-                await client.send_message(message.channel, "No new items to add.")
-                return
-            else:
-                with open("Data files/Tradeables.json", "w") as tradeables_file:
-                    json.dump(tradeables, tradeables_file, indent=4)
-                new_items_joined = "\n".join(new_items)
-                if len(new_items_joined) > 2000:
-                    await client.send_message(message.channel, f"Added {len(new_items)} new items. Their total length "
-                                                               f"was over 2000 characters.")
-                else:
-                    await client.send_message(message.channel, f"Added {len(new_items)} new items:\n\n"
-                                                               f"{new_items_joined}")
+    await client.send_message(message.channel, finish_message)
 
 
 async def get_file(message, keywords, client):

@@ -1,3 +1,5 @@
-- Lisättiin komentoon !gains argumentti -noupdate
-- Komento !gains näyttää nyt myös cluet (vaatii jo seuratuilla käyttäjillä yhden ylimääräisen välipäivityksen)
-- Päivitettiin komento !track
+- Lisättiin komento !roll joka simuloi nopanheittoja
+- Vaihdettiin komento !price käyttämään Rsbuddyn hintoja. Tämän pitäisi säätää hinnat lähemmäs niiden todellista vaihtoarvoa
+- Komento !price näyttää nyt myös tavaroiden high alchemy arvon
+- Uudelleenkirjoitettiin komennot addkey, delkey, addcom, editcom ja delcom
+- Uudelleenkirjoitettiin admin-komento check siten, että se ei tarvitse enää tiedostoliitteitä

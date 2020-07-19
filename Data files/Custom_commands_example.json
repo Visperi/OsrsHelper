@@ -1,0 +1,11 @@
+{
+    "server_id": {
+        "!command": {
+            "message": "This is an example command",
+            "author": "Id of Discord user who made this command",
+            "date": 1588931446,
+            "edited": null,
+            "edit_date": null
+        }
+    }
+}

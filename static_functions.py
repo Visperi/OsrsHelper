@@ -29,6 +29,7 @@ import json
 import datetime
 from tabulate import tabulate
 from dateutil.relativedelta import relativedelta
+from typing import Union
 
 
 def to_utf8(string):
@@ -57,33 +58,28 @@ async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 
         return response
 
 
-def get_iteminfo(itemname: str, default_names=False):
-    """
-    Searches for item name and id from local files.
+async def get_item_data(itemname: str) -> Union[None, dict]:
+    item_data = None
 
-    :param itemname: The name of the item in string format
-    :param default_names: If set true, only default item names are accepted as itemname input
-    :return: Original item name (str) and its id (int), None if not found
-    """
+    with open("Data files/Tradeables.json", "r") as tradeables_file:
+        tradeable_data = json.load(tradeables_file)
 
-    itemname = itemname.capitalize()
-    with open("Data files/Tradeables.json") as data_file:
-        data = json.load(data_file)
-    if itemname in list(data.keys()):
-        item_id = data[itemname]["id"]
-        return itemname, item_id
-    elif default_names:
-        return
-    else:
-        itemname = to_ascii(itemname.lower())
-        with open("Data files/Item_keywords.json") as data_file:
-            keywords = json.load(data_file)
-        if itemname in keywords["all nicks"]:
-            for item in keywords:
-                if itemname in keywords[item] and item != "all nicks":
-                    itemname = to_utf8(item.capitalize())
-                    item_id = data[itemname]["id"]
-                    return itemname, item_id
+    try:
+        item_data = tradeable_data[itemname.capitalize()]
+        item_data["name"] = itemname.capitalize()
+    except KeyError:
+        with open("Data files/Item_keywords.json", "r", encoding="utf-8") as keywords_file:
+            keywords_data = json.load(keywords_file)
+
+        for key, keywords in keywords_data.items():
+            if key == "All keywords":
+                continue
+            if itemname in keywords:
+                item_data = tradeable_data[key]
+                item_data["name"] = key
+                break
+
+    return item_data
 
 
 def string_to_timedelta(time_string: str) -> relativedelta:
@@ -227,6 +223,7 @@ async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession
 
     url = f"http://services.runescape.com/m={header}/index_lite.ws?player={username}"
     user_stats = await make_request(aiohttp_session, url)
+
     if "404 - Page not found" in user_stats:
         raise TypeError(f"Username {username} does not exist.")
 

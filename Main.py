@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v7.5.1
+# OsrsHelper v8.0
 # coding=utf-8
 
 import discord
 import datetime
 import configparser
-import Komennot as komennot
-import Settings as settings
-import Komennot_en as komennot_en
+import Commands
+import Settings
+import Commands_en
 import dev_commands
 import json
 import asyncio
@@ -66,14 +66,14 @@ async def on_message(message):
                  msg_lower.startswith("!seasonstats ") or msg_lower.startswith("!hcstats ") or \
                  msg_lower.startswith("!tournamentstats ")
     time = datetime.datetime.now()
-    moduuli = komennot
+    moduuli = Commands
 
     async def get_language():
         # Get user specific language. Make a new entry if it doesnt exist
         try:
             language = config["LANGUAGE"][str(message.author.id)]
         except KeyError:
-            language = await settings.get_settings(message, client, get_servlang=True)
+            language = await Settings.get_settings(message, client, get_servlang=True)
             try:
                 config["LANGUAGE"][str(message.author.id)] = language
             except TypeError:
@@ -82,7 +82,7 @@ async def on_message(message):
                 config.write(configfile)
             language = config["LANGUAGE"][str(message.author.id)]
         # Check if server has a forced language on
-        force_lang = await settings.get_settings(message, client, get_forcelang=True)
+        force_lang = await Settings.get_settings(message, client, get_forcelang=True)
         if force_lang != "false" and force_lang is not None:
             language = force_lang
         return language
@@ -93,7 +93,7 @@ async def on_message(message):
             print("No user language defined! User: {} Time: {}".format(str(message.author), time))
             return
         if user_lang == "english":
-            moduuli = komennot_en
+            moduuli = Commands_en
         if msg_lower.startswith("!price "):
             await moduuli.item_price(message, keywords_lower, client)
         elif msg_lower == "!commands":
@@ -113,7 +113,7 @@ async def on_message(message):
         elif msg_lower.startswith("!anagram "):
             await moduuli.search_anagram(message, keywords_lower, client)
         elif msg_lower.startswith("!keys ") or msg_lower.startswith("!keywords "):
-            await moduuli.get_keys(message, keywords_lower, client)
+            await moduuli.get_item_keywords(message, keywords_lower, client)
         elif msg_lower == "!howlong" or msg_lower == "!me":
             await moduuli.kayttajan_tiedot(message, client)
         elif msg_lower.startswith("!xp ") or msg_lower.startswith("!exp ") or msg_lower.startswith("!lvl ") or \
@@ -155,13 +155,11 @@ async def on_message(message):
         elif msg_lower.startswith("!drop ") or msg_lower.startswith("!loot ") or msg_lower.startswith("!kill "):
             await moduuli.loot_chance(message, keywords_lower, client)
         elif msg_lower.startswith("!satokausi"):
-            await komennot.satokausi(message, keywords_lower, client)
+            await Commands.satokausi(message, keywords_lower, client)
         elif msg_lower.startswith("!satokaudet "):
-            await komennot.satokaudet(message, keywords_lower, client)
-        elif msg_lower.startswith("!info ") or msg_lower.startswith("!iteminfo "):
-            await moduuli.itemspecs(message, keywords_lower, client)
+            await Commands.satokaudet(message, keywords_lower, client)
         elif msg_lower == "!korona" or msg_lower == "!corona":
-            await komennot.korona_stats(message, client)
+            await Commands.korona_stats(message, client)
         elif msg_lower in ["!beer", "!olut", "!drink"]:
             await moduuli.add_drinks(message, client)
         elif msg_lower in ["!beerscores", "!beers", "!drinks"]:
@@ -170,20 +168,22 @@ async def on_message(message):
             await moduuli.remove_drinks(message, client)
         elif msg_lower.startswith("!remindme ") or msg_lower.startswith("!reminder "):
             await moduuli.add_reminder(message, client, keywords_lower)
+        elif msg_lower.startswith("!roll"):
+            await moduuli.roll_die(message, keywords_lower, client)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)
             if permissions:
-                await moduuli.addkey(message, keywords_lower, client)
+                await moduuli.add_item_keywords(message, keywords_lower, client)
         elif msg_lower.startswith("%delkey "):
             permissions = await high_permissions(message, user_lang)
             if permissions:
-                await moduuli.delkey(message, keywords_lower, client)
+                await moduuli.delete_item_keywords(message, keywords_lower, client)
         elif msg_lower.startswith("%addcom"):
             permissions = await high_permissions(message, user_lang)
             if not permissions:
                 return
-            add_commands = await settings.get_settings(message, user_lang, client, get_addcom=True)
+            add_commands = await Settings.get_settings(message, user_lang, client, get_addcom=True)
             if not add_commands:
                 if user_lang == "finnish":
                     await client.send_message(message.channel,
@@ -193,15 +193,15 @@ async def on_message(message):
                     await client.send_message(message.channel,
                                               "Adding commands has been set off by the server owner.")
             elif permissions and add_commands:
-                await moduuli.addcom(message, keywords_raw, client)
+                await moduuli.add_custom_command(message, keywords_raw, client)
         elif msg_lower.startswith("%editcom"):
             permissions = await high_permissions(message, user_lang)
             if permissions:
-                await moduuli.editcom(message, keywords_raw, client)
+                await moduuli.edit_custom_command(message, keywords_raw, client)
         elif msg_lower.startswith("%delcom "):
             permissions = await high_permissions(message, user_lang)
             if permissions:
-                await moduuli.delcom(message, keywords_raw, client)
+                await moduuli.delete_custom_command(message, keywords_raw, client)
         elif msg_lower.startswith("%addloot ") or msg_lower.startswith("%adddrop"):
             permissions = await high_permissions(message, user_lang)
             if permissions:
@@ -212,43 +212,35 @@ async def on_message(message):
                 await moduuli.delete_droprate(message, keywords_lower, client)
 
         elif msg_lower.startswith("&language ") or msg_lower.startswith("&lang "):
-            await settings.change_language(message, keywords_lower, user_lang, client)
+            await Settings.change_language(message, keywords_lower, user_lang, client)
             config.read("Data files/settings.ini")
         elif msg_lower == "&settings":
-            await settings.get_settings(message, client)
+            await Settings.get_settings(message, client)
         elif msg_lower.startswith("&permit "):
             permissions = await high_permissions(message, user_lang, server_owner=True)
             if permissions:
-                await settings.add_permissions(message, keywords_raw, user_lang, client)
+                await Settings.add_permissions(message, keywords_raw, user_lang, client)
         elif msg_lower.startswith("&unpermit "):
             permissions = await high_permissions(message, user_lang, server_owner=True)
             if permissions:
-                await settings.remove_permissions(message, keywords_raw, user_lang, client)
+                await Settings.remove_permissions(message, keywords_raw, user_lang, client)
         elif msg_lower.startswith("&add commands"):
             permissions = await high_permissions(message, user_lang, server_owner=True)
             if permissions:
-                await settings.set_addcom(message, keywords_lower[1:], user_lang, client)
+                await Settings.set_addcom(message, keywords_lower[1:], user_lang, client)
         elif msg_lower.startswith("&forcelang "):
             permissions = await  high_permissions(message, user_lang, server_owner=True)
             if permissions:
-                await settings.set_forcelanguage(message, keywords_lower, user_lang, client)
+                await Settings.set_forcelanguage(message, keywords_lower, user_lang, client)
         elif msg_lower.startswith("&defaultlang ") or msg_lower.startswith("&defaultlanguage"):
             permissions = await high_permissions(message, user_lang, server_owner=True)
             if permissions:
-                await settings.set_default_language(message, keywords_lower, user_lang, client)
+                await Settings.set_default_language(message, keywords_lower, user_lang, client)
 
         elif msg_lower.startswith("§id "):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
                 await dev_commands.get_item_id(message, keywords_lower, client)
-        elif msg_lower.startswith("§addobject "):
-            permissions = await high_permissions(message, user_lang, sysadmin=True)
-            if permissions:
-                await dev_commands.add_object(message, keywords_lower, client)
-        elif msg_lower.startswith("§delobject "):
-            permissions = await high_permissions(message, user_lang, sysadmin=True)
-            if permissions:
-                await dev_commands.delete_object(message, keywords_lower, client)
         elif msg_lower == "§commands":
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
@@ -257,10 +249,6 @@ async def on_message(message):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
                 await dev_commands.get_times_used(message, client)
-        elif msg_lower.startswith("§add alch") or msg_lower.startswith("§addalch"):
-            permissions = await high_permissions(message, user_lang, sysadmin=True)
-            if permissions:
-                await dev_commands.add_halch(message, keywords_lower, client)
         elif msg_lower.startswith("§addstream "):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
@@ -295,7 +283,7 @@ async def on_message(message):
                 await dev_commands.manage_drinks(message, keywords_lower, client)
         else:
             if msg_lower.startswith("!") and msg_lower != "!":
-                await moduuli.execute_custom_commands(message, msg_raw, client)
+                await moduuli.execute_custom_command(message, msg_raw, client)
 
 
 async def high_permissions(message, user_lang, sysadmin=False, server_owner=False):
@@ -328,7 +316,7 @@ async def high_permissions(message, user_lang, sysadmin=False, server_owner=Fals
                                                                "command.")
                 return
 
-        permitted_roles = await settings.get_settings(message, client, get_roles=True)
+        permitted_roles = await Settings.get_settings(message, client, get_roles=True)
         member_top_role = str(message.author.top_role)
         if (message.author == bot_owner) or (member_top_role in permitted_roles) or (message.author == guild_owner):
             return True
@@ -350,7 +338,7 @@ async def high_permissions(message, user_lang, sysadmin=False, server_owner=Fals
 
 @client.event
 async def on_member_remove(member):
-    settings.clear_user_ini(member.id)
+    Settings.clear_user_ini(member.id)
     with open("Data files/streamers.json") as data_file:
         data = json.load(data_file)
     if member.id in data[member.server.id]:
@@ -363,8 +351,8 @@ async def on_member_remove(member):
 
 @client.event
 async def on_member_join(member):
-    mestarit_id = settings.get_credential("server_id", "mestarit")
-    test_server_id = settings.get_credential("server_id", "test_server_id")
+    mestarit_id = Settings.get_credential("server_id", "mestarit")
+    test_server_id = Settings.get_credential("server_id", "test_server_id")
     server_id = str(member.server.id)
     if server_id == mestarit_id or server_id == test_server_id:
         await client.send_message(member.server,
@@ -446,7 +434,7 @@ async def start_reminder_loop():
 
 
 if __name__ == "__main__":
-    token = settings.get_credential("tokens", "osrshelper")
+    token = Settings.get_credential("tokens", "osrshelper")
     client.aiohttp_session = aiohttp.ClientSession(loop=client.loop)
     client.reminder_loop_running = False
     client.run(token)
