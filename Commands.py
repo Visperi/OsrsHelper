@@ -1769,7 +1769,7 @@ async def roll_die(message: discord.Message, keywords: str, client: discord.Clie
             dice_info = keywords[0].split("d")
             sides = int(dice_info[1])
             rolls = int(dice_info[0])
-        except ValueError:
+        except (ValueError, IndexError):
             await client.send_message(message.channel, "Nopan tiedot annettiin virheellisessä muodossa.")
             return
 
