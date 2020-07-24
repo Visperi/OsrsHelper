@@ -499,7 +499,8 @@ async def change_name(message, hakusanat, client):
         await client.send_message(message.channel, "Käyttäjän uusi nimi on jo listalla.")
     elif old_name in list(data):
         try:
-            url = f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={new_name}"
+            _tmp = new_name.replace(" ", "_")
+            url = f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={_tmp}"
             check_name = await static_functions.make_request(client.aiohttp_session, url)
         except asyncio.TimeoutError:
             await client.send_message(message.channel, "Osrs:n API vastasi liian hitaasti. Kokeile myöhemmin "
@@ -1256,7 +1257,7 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
         return
 
     try:
-        user_stats = await static_functions.get_hiscore_data(username.replace(" ", "_"), client.aiohttp_session,
+        user_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session,
                                                              acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs:n API vastasi liian hitaasti. Yritä myöhemmin uudelleen.")
@@ -1313,7 +1314,7 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
     saved_ts = datetime.datetime.fromtimestamp(saved_data["saved"])
 
     try:
-        new_stats = await static_functions.get_hiscore_data(username.replace(" ", "_"), client.aiohttp_session,
+        new_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session,
                                                             acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs:n API vastasi liian hitaasti. Yritä myöhemmin uudelleen.")
@@ -1420,7 +1421,8 @@ async def track_username(message: discord.Message, keywords: list, client: disco
     try:
         getting_stats_embed = discord.Embed(title=f"Haetaan statseja käyttäjälle {username}...")
         await client.edit_message(acc_type_query, embed=getting_stats_embed)
-        initial_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, account_type)
+        initial_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session,
+                                                                account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs:n API vastasi liian hitaasti eikä käyttäjää voitu laittaa"
                                                    " seurantaan. Kokeile myöhemmin uudelleen.")

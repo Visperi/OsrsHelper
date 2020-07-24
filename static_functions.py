@@ -201,6 +201,7 @@ async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession
     :return: List of lists that has user current hiscores in format [[rank, xp, level], [rank, xp, level], ...]
     """
 
+    username = username.replace(" ", "_")
     if len(username) > 12:
         raise ValueError("Username can't be longer than 12 characters.")
 

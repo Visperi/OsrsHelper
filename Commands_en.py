@@ -523,7 +523,8 @@ async def change_name(message, hakusanat, client):
         await client.send_message(message.channel, "The new name is already in lists.")
     elif old_name in list(data):
         try:
-            url = f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={new_name}"
+            _tmp = new_name.replace(" ", "_")
+            url = f"http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player={_tmp}"
             check_name = await static_functions.make_request(client, url)
         except asyncio.TimeoutError:
             await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
@@ -1199,7 +1200,7 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
         return
 
     try:
-        user_stats = await static_functions.get_hiscore_data(username.replace(" ", "_"), client.aiohttp_session, acc_type=account_type)
+        user_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly. Try again later..")
         return
@@ -1255,7 +1256,7 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
     saved_ts = datetime.datetime.fromtimestamp(saved_data["saved"])
 
     try:
-        new_stats = await static_functions.get_hiscore_data(username.replace(" ", "_"), client.aiohttp_session, acc_type=account_type)
+        new_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
         return
