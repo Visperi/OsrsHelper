@@ -30,10 +30,14 @@ import datetime
 from tabulate import tabulate
 from dateutil.relativedelta import relativedelta
 from typing import Union
+import bs4
+from caching import Cache
+
+NUM_SEARCH_CANDIDATES = 5
 
 
 def to_utf8(string):
-    string = string.replace("Ã¤", "ä").replace("Ã¶", "ö").replace("/ae", "ä").replace("/oe", "ö").replace("Ã„", "Ä")\
+    string = string.replace("Ã¤", "ä").replace("Ã¶", "ö").replace("/ae", "ä").replace("/oe", "ö").replace("Ã„", "Ä") \
         .replace("Ã–", "Ö").replace("Â§", "§").replace("/ss", "§")
     return string
 
@@ -43,17 +47,20 @@ def to_ascii(string):
     return string
 
 
-async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 8) -> str:
+async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 8, raise_on_error: bool = False) -> str:
     """
     A non-command function for making an asynchronous request.
 
     :param session: aiohttp.ClientSession that is used to make request
     :param url: Target url of the request
     :param timeout: Integer telling how long should be waited before timeouting the request
+    :param raise_on_error: Raise an exception if response status code is not OK
     :return: String containing the response
     """
 
     async with session.get(url, timeout=timeout) as r:
+        if raise_on_error and r.status != 200:
+            raise ValueError("Request status was not OK.")
         response = await r.text()
         return response
 
@@ -147,22 +154,40 @@ async def make_scoretable(user_stats: list, username: str, account_type: str, ga
     """
 
     skillnames = ["Total", "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer", "Magic", "Cooking",
-                     "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining",
-                     "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter",
-                     "Construction"]
+                  "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining",
+                  "Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter",
+                  "Construction"]
     cluenames = ["All", "Beginner", "Easy", "Medium", "Hard", "Elite", "Master"]
+    seasonal_fields = ["League Points"]
 
     skills = user_stats[:24]
     clues = user_stats[27:34]
+    seasonal = [list(user_stats[24])]
+
+    if account_type == "seasonal":
+        account_type = "League"
+
+    # Start with length of the longest skill names
+    longest_skillname = max(skillnames, key=len)
+
+    # longest values for rank, level, experience. Defaults are header string lengths
+    longest_column_vals = [4, 5, 2]
 
     # Iterate through all hiscore data and separate thousands with comma, and add sign if gains
-    for index, list_ in enumerate(user_stats):
-        for index2, value in enumerate(list_):
+    for skill_idx, sublist in enumerate(user_stats):
+        for col_idx, value in enumerate(sublist):
             if gains:
                 separated = f"{value:+,}"
             else:
                 separated = f"{value:,}"
-            user_stats[index][index2] = separated
+            user_stats[skill_idx][col_idx] = separated
+
+            # Find the longest value length from each column for table header padding
+            if len(separated) > longest_column_vals[col_idx]:
+                longest_column_vals[col_idx] = len(separated)
+
+    for i, field in enumerate(seasonal):
+        field.insert(0, seasonal_fields[i])
 
     # Add skill and clue names
     for i, skill in enumerate(skills):
@@ -172,21 +197,34 @@ async def make_scoretable(user_stats: list, username: str, account_type: str, ga
 
     skilltable = tabulate(skills, tablefmt="orgtbl", headers=["Skill", "Rank", "Level", "Xp"])
     cluetable = tabulate(clues, tablefmt="orgtbl", headers=["Clue", "Rank", "Amount"])
+    seasonal_table = tabulate(seasonal, tablefmt="orgtbl", headers=["Seasonal", "Rank", "Points"])
+
+    skill_col_len = len(longest_skillname) + 2 + 1
+    rank_col_len = longest_column_vals[0] + 2 + 1
+    level_col_len = longest_column_vals[1] + 4 + 1
+    xp_col_len = longest_column_vals[2] + 2 + 2
+    table_width = skill_col_len + rank_col_len + level_col_len + xp_col_len
 
     if gains:
         utc_now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
         utc_now = utc_now.strftime("%Y-%m-%d %H:%M")
         saved_ts = saved_ts.strftime("%Y-%m-%d %H:%M")
-        table_header = "{:^50}\n{:^50}\n{}".format(f"Gains of {username.capitalize()}",
-                                                   f"Account type: {account_type.capitalize()}",
-                                                   f"Between {saved_ts} - {utc_now} UTC")
+        time_interval = f"Between {saved_ts} - {utc_now} UTC"
+        table_header = "{:^{x}}\n{:^{x}}\n{}".format(f"Gains of {username.capitalize()}",
+                                                     f"Account type: {account_type.capitalize()}",
+                                                     time_interval,
+                                                     x=len(time_interval))
     else:
         if account_type.lower() == "normal":
-            table_header = "{:^50}".format(f"Stats of {username.capitalize()}")
+            table_header = "{:^{x}}".format(f"Stats of {username.capitalize()}", x=table_width)
         else:
-            table_header = "{:^54}".format(f"{account_type.capitalize()} Stats of {username.capitalize()}")
+            table_header = "{:^{x}}".format(f"{account_type.capitalize()} Stats of {username.capitalize()}",
+                                            x=table_width)
 
-    scoretable = f"```{table_header}\n\n{skilltable}\n\n{cluetable}```"
+    if account_type == "League":
+        scoretable = f"```{table_header}\n\n{skilltable}\n\n{seasonal_table}\n\n{cluetable}```"
+    else:
+        scoretable = f"```{table_header}\n\n{skilltable}\n\n{cluetable}```"
     return scoretable
 
 
@@ -219,6 +257,8 @@ async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession
         header = "hiscore_oldschool_hardcore_ironman"
     elif acc_type == "tournament":
         header = "hiscore_oldschool_tournament"
+    elif acc_type == "seasonal":
+        header = "hiscore_oldschool_seasonal"
     else:
         raise ValueError(f"Unknown account type: {acc_type}")
 
@@ -240,3 +280,87 @@ async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession
                 skill[i] = int(value)
 
     return user_stats
+
+
+async def make_boss_scoretable(user_stats: list, username: str, account_type: str) -> str:
+
+    bosses = {'Abyssal Sire': 35, 'Alchemical Hydra': 36, 'Cerberus': 40, 'Chambers of Xeric': 41,
+              'Chambers of Xeric: Challenge Mode': 42, 'Commander Zilyana': 45, 'Corporeal Beast': 46,
+              'General Graardor': 52, 'Grotesque Guardians': 54, 'Hespori': 55, 'Kalphite Queen': 56, "Kree'Arra": 59,
+              "K'ril Tsutsaroth": 60, 'Mimic': 61, 'Nightmare': 62, 'Sarachnis': 64, 'The Gauntlet': 67,
+              'The Corrupted Gauntlet': 68, 'Theatre of Blood': 69, 'Thermonuclear Smoke Devil': 70, 'TzKal-Zuk': 71,
+              'TzKal-Jad': 72, 'Venenatis': 73, "Vet'ion": 74, 'Vorkath': 75, 'Zalcano': 77, 'Zulrah': 78}
+
+    if account_type == "seasonal":
+        account_type = "League"
+
+    boss_names = list(bosses.keys())
+    added_indexes = []
+    parsed_hiscores = []
+
+    for idx, hiscore_idx in enumerate(bosses.values()):
+        boss_data = user_stats[hiscore_idx]
+        # Add only bosses that have a rank to reduce table length
+        if boss_data[0] != 0:
+            parsed_hiscores.append(boss_data)
+            added_indexes.append(idx)
+
+    # longest values for rank, kc, boss name. Defaults are header string lengths
+    longest_column_vals = [4, 10, 9]
+
+    for boss_idx, sublist in enumerate(parsed_hiscores):
+        for col_idx, value in enumerate(sublist):
+            separated = f"{value:,}"
+            parsed_hiscores[boss_idx][col_idx] = separated
+
+            # Find the longest value length from each column for table header padding
+            if len(separated) > longest_column_vals[col_idx]:
+                longest_column_vals[col_idx] = len(separated)
+
+    for idx, boss_data in enumerate(parsed_hiscores):
+        name_idx = added_indexes[idx]
+        boss_name = boss_names[name_idx]
+        boss_data.insert(0, boss_name)
+
+        if len(boss_name) > longest_column_vals[2]:
+            longest_column_vals[2] = len(boss_name)
+
+    boss_table = tabulate(parsed_hiscores, tablefmt="orgtbl", headers=["Boss name", "Rank", "Kill count"])
+
+    name_col_len = longest_column_vals[2] + 2 + 1
+    rank_col_len = longest_column_vals[0] + 4 + 1
+    kc_col_len = longest_column_vals[1] + 4 + 2
+    table_width = name_col_len + rank_col_len + kc_col_len
+
+    table_header = "{:^{x}}\n{:^{x}}".format(f"Bossing scores of {username.capitalize()}",
+                                             f"Account type: {account_type}", x=table_width)
+
+    boss_kc_table = f"```{table_header}\n\n{boss_table}```"
+
+    return boss_kc_table
+
+
+def parse_search_candidates(search_result: str, base_url: str, cache: Cache) -> list:
+    hyperlinks_list = []
+
+    results_html = bs4.BeautifulSoup(search_result, "html.parser")
+    html_headings = results_html.findAll("div", class_="mw-search-result-heading")
+
+    for heading in html_headings[:NUM_SEARCH_CANDIDATES]:
+        heading_a = heading.find("a")
+        heading_link_end = heading_a["href"]
+        heading_title = heading_a["title"]
+        heading_link = f"{base_url}{heading_link_end}"
+
+        if heading_link not in cache:
+            cache.add(heading_link)
+
+        if heading_link[-1] == ")":
+            heading_link = list(heading_link)
+            heading_link[-1] = "\\)"
+            heading_link = "".join(heading_link)
+
+        hyperlink = f"[{heading_title}]({heading_link})"
+        hyperlinks_list.append(hyperlink)
+
+    return hyperlinks_list

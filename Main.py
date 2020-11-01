@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v8.0
+# OsrsHelper v8.4
 # coding=utf-8
 
 import discord
@@ -36,7 +36,7 @@ import json
 import asyncio
 import dateutil.parser
 import aiohttp
-
+from caching import Cache
 
 client = discord.Client()
 config = configparser.ConfigParser()
@@ -46,13 +46,18 @@ config.read("Data files/settings.ini")
 @client.event
 async def on_ready():
     await client.change_presence(game=discord.Game(name="Say !help"))
-    print("Logged in as:")
-    print(client.user.name)
-    print(client.user.id)
-    print("------")
-    # on_ready is not guaranteed to execute only once so a check is needed to guarantee only one reminder loop
-    if not client.reminder_loop_running:
-        await start_reminder_loop()
+
+    if not client.on_ready_called:
+        print("Logged in as:")
+        print(client.user.name)
+        print(client.user.id)
+        print("------")
+
+        # on_ready is not guaranteed to execute only once so a check is needed to guarantee only one reminder loop
+        if not client.reminder_loop_running:
+            await start_reminder_loop()
+
+        client.on_ready_called = True
 
 
 @client.event
@@ -64,7 +69,13 @@ async def on_message(message):
     highscoret = msg_lower.startswith("!stats ") or msg_lower.startswith("!ironstats ") or \
                  msg_lower.startswith("!uimstats ") or msg_lower.startswith("!dmmstats ") or \
                  msg_lower.startswith("!seasonstats ") or msg_lower.startswith("!hcstats ") or \
-                 msg_lower.startswith("!tournamentstats ")
+                 msg_lower.startswith("!tournamentstats ") or msg_lower.startswith("!lstats") or \
+                 msg_lower.startswith("!leaguestats ")
+    boss_hiscores = msg_lower.startswith("!kc ") or msg_lower.startswith("!ironkc ") or \
+                    msg_lower.startswith("!uimkc ") or msg_lower.startswith("!dmmkc ") or \
+                    msg_lower.startswith("!seasonkc ") or msg_lower.startswith("!hckc ") or \
+                    msg_lower.startswith("!tournamentkc ") or msg_lower.startswith("!lkc ") or \
+                    msg_lower.startswith("!leaguekc ")
     time = datetime.datetime.now()
     moduuli = Commands
 
@@ -102,8 +113,6 @@ async def on_message(message):
             await client.send_message(message.channel, "Paikalla ollaan.")
         elif msg_lower == "!patch":
             await moduuli.bot_info(message, client, release_notes=True)
-        elif msg_lower.startswith("!wiki "):
-            await moduuli.search_wiki(message, keywords_lower, client)
         elif msg_lower.startswith("!cipher "):
             await moduuli.search_cipher(message, keywords_lower, client)
         elif msg_lower.startswith("!puzzle "):
@@ -170,6 +179,12 @@ async def on_message(message):
             await moduuli.add_reminder(message, client, keywords_lower)
         elif msg_lower.startswith("!roll"):
             await moduuli.roll_die(message, keywords_lower, client)
+        elif msg_lower.startswith("!melvorwiki ") or msg_lower.startswith("!mwiki "):
+            await Commands.search_wiki(message, keywords_lower, client.mwiki_cache, client)
+        elif msg_lower.startswith("!wiki "):
+            await moduuli.search_wiki(message, keywords_lower, client.wiki_cache, client)
+        elif boss_hiscores:
+            await moduuli.get_boss_scores(message, msg_lower, client)
 
         elif msg_lower.startswith("%addkey "):
             permissions = await high_permissions(message, user_lang)
@@ -281,6 +296,10 @@ async def on_message(message):
             permissions = await high_permissions(message, user_lang, sysadmin=True)
             if permissions:
                 await dev_commands.manage_drinks(message, keywords_lower, client)
+        elif msg_lower.startswith("§clear "):
+            permissions = await high_permissions(message, user_lang, sysadmin=True)
+            if permissions:
+                await dev_commands.clear_cache(message, keywords_lower, client)
         else:
             if msg_lower.startswith("!") and msg_lower != "!":
                 await moduuli.execute_custom_command(message, msg_raw, client)
@@ -436,5 +455,8 @@ async def start_reminder_loop():
 if __name__ == "__main__":
     token = Settings.get_credential("tokens", "osrshelper")
     client.aiohttp_session = aiohttp.ClientSession(loop=client.loop)
+    client.on_ready_called = False
     client.reminder_loop_running = False
+    client.mwiki_cache = Cache("Melvoridle")
+    client.wiki_cache = Cache("Osrs")
     client.run(token)

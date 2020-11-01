@@ -43,7 +43,8 @@
             "dmmstats",
             "seasonstats",
             "hcstats",
-            "tournamentstats"
+            "tournamentstats",
+            "leaguestats"
         ],
         "name": "!stats",
         "description": "Hakee annetun käyttäjänimen highscoret Old school runescapen sivuilta.",
@@ -112,8 +113,8 @@
         ],
         "name": "!calc",
         "description": "Laskin, joka tukee summia, erotuksia, tuloja ja osamääriä.",
-        "additional": "Tukee myös useampia tekijöitä, sulkuja ja piitä käyttämällä avainsanaa `pi`. Potenssit tukevat merkintää `**` ja `*`.",
-        "example": "`!calc 5 * 8` tai `!calc (3 ^ 5) + 12`"
+        "additional": "Tukee myös useampia tekijöitä, sulkuja ja piitä käyttämällä avainsanaa `pi`. Potenssit tukevat merkintää `**` ja `^`.",
+        "example": "`!calc 5 * 8` tai `!calc (3 ^ 5) + 12` tai `!calc (3 ** 5) + 12`"
     },
     {
         "function": [
@@ -567,5 +568,31 @@
         "description": "Heittää annetun sivumäärän kokoista noppaa.",
         "additional": "Tukee myös RPG-merkintätapaa eli <heitot>d<sivumäärä>",
         "example": "`!roll`, `!roll 8`, `!roll 4d120`"
+    },
+    {
+        "function": [
+            "mwiki",
+            "melvorwiki"
+        ],
+        "name": "!mwiki",
+        "description": "Etsi sivua viralliselta Melvoridle wikisivustolta.",
+        "additional": "-",
+        "example": "`!mwiki ranged golbin`"
+    },
+    {
+        "function": [
+            "kc",
+            "ironkc",
+            "uimkc",
+            "dmmkc",
+            "seasonkc",
+            "hckc",
+            "tournamentkc",
+            "leaguekc"
+        ],
+        "name": "!kc",
+        "description": "Hae käyttäjän boss hiscoret.",
+        "additional": "Taulukossa näytetään vain osa koko pelin bosseista viestin pituuden lyhentämiseksi.",
+        "example": "`!kc visperi` tai `!lkc cannotlogin`"
     }
 ]

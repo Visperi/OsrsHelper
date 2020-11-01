@@ -332,5 +332,26 @@ async def manage_drinks(message, keywords, client):
 
     await client.send_message(message.channel, success_str)
 
+
+async def clear_cache(message, keywords, client):
+    cache_name = " ".join(keywords)
+
+    if cache_name == "melvoridle" or cache_name == "mwiki":
+        cache = client.mwiki_cache
+    elif cache_name == "osrs" or cache_name == "wiki":
+        cache = client.wiki_cache
+    else:
+        await client.send_message(message.channel, "Unknown cache name.")
+        return
+
+    cache_items = len(cache)
+    if cache_items == 0:
+        await client.send_message(message.channel, "The cache is already empty.")
+        return
+
+    cache.clear()
+    await client.send_message(message.channel, f"Cleared {cache.name} cache.\nCleared entries: {cache_items}")
+
+
 if __name__ == '__main__':
     print("Dont run this module as a independent process as it doesn't do anything. Run Main.py instead.")

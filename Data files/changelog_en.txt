@@ -1,6 +1,3 @@
-- Added command !roll to simulate rolling a die
-- Changed command !price to use Rsbuddy again. This should adjust the shown prices to be closer of their real trade values
-- Command !price now also shows item high alchemy values
-- Rewrote commands addkey, delkey, addcom, editcom and delcom
-- Rewrote admin command check so that it doesn't need any attachments anymore
-- Renamed command modules from Komennot.py to Commands.py
+- Added command !mwiki
+- Removed side restrictions from command !roll
+- Refined messages in error situations

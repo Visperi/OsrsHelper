@@ -38,6 +38,7 @@ import asyncio
 import numpy as np
 import static_functions
 import random
+from caching import Cache
 
 
 async def command_help(message, keywords, client):
@@ -88,9 +89,10 @@ async def kayttajan_tiedot(message, client):
 
 async def commands(message, client):
     commands_dict = {"Discord commands": ["!info", "!help", "!calc", "!me", "!namechange", "!server commands",
-                                          "!satokausi", "!beer", "!beerscores", "!korona", "!reminder", "!roll"],
+                                          "!satokausi", "!beer", "!beerscores", "!korona", "!reminder", "!roll",
+                                          "!mwiki"],
                      "Osrs commands": ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!kill",
-                                       "!update"],
+                                       "!update", "!kc"],
                      "Item commands": ["!keys", "!limit", "!price"],
                      "Clue commands": ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"],
                      "Mod commands": ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom"],
@@ -106,50 +108,6 @@ async def commands(message, client):
         embed.add_field(name=category, value="\n".join(category_commands))
 
     await client.send_message(message.channel, embed=embed)
-
-
-async def search_wiki(message, hakusanat: list, client):
-    baselink = "https://oldschool.runescape.wiki/w/"
-
-    search = "_".join(hakusanat)
-    search_link = baselink + search
-    try:
-        response = await static_functions.make_request(client.aiohttp_session, search_link)
-    except asyncio.TimeoutError:
-        await client.send_message(message.channel, "Wiki answered too slowly. Try again later.")
-        return
-
-    if f"This page doesn&#039;t exist on the wiki. Maybe it should?" in response:
-        hyperlinks = []
-        truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
-        try:
-            truesearch_resp = await static_functions.make_request(client.aiohttp_session, truesearch_link)
-        except asyncio.TimeoutError:
-            await client.send_message(message.channel, "Wiki answered too slowly. Try again later.")
-            return
-
-        # parse html
-        results_html = BeautifulSoup(truesearch_resp, "html.parser")
-        result_headings = results_html.findAll("div", class_="mw-search-result-heading")
-
-        if len(result_headings) == 0:
-            await client.send_message(message.channel, "Could not find any pages with your search.")
-            return
-
-        for result in result_headings[:5]:
-            link_end = result.find("a")["href"]
-            if link_end[-1] == ")":
-                link_end = list(link_end)
-                link_end[-1] = "\\)"
-                link_end = "".join(link_end)
-            link_title = result.find("a")["title"]
-            hyperlinks.append(f"[{link_title}](https://oldschool.runescape.wiki{link_end})")
-
-        embed = discord.Embed(title="Did you mean", description="\n".join(hyperlinks))
-        await client.send_message(message.channel, embed=embed)
-
-    else:
-        await client.send_message(message.channel, f"<{search_link}>")
 
 
 async def search_cipher(message, search, client):
@@ -616,7 +574,7 @@ async def get_old_nicks(message, hakusanat, client):
     try:
         old_nicks = data[search]["previous_names"]
     except KeyError:
-        await client.send_message(message.channel, "This user is not tracked.")
+        await client.send_message(message.channel, "This user is not tracked. Use command `!track` first.")
         return
     if len(old_nicks) == 0:
         await client.send_message(message.channel, "Could not find any old nicknames for this user.")
@@ -661,10 +619,11 @@ async def bot_info(message, client, release_notes=False) -> None:
                                                           f"([Source](https://github.com/Visperi/OsrsHelper))\n"
                                                           f"Created at: {created_at} UTC")
         embed.add_field(name="Credits",
-                        value="[discord.py](https://github.com/Rapptz/discord.py) (Source code)\n"
+                        value="[discord.py](https://github.com/Rapptz/discord.py) (Discord library used in bot)\n"
                               "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (EHP rates)\n"
-                              "[Old school runescape](http://oldschool.runescape.com/) (Highscores, G.E. prices, Game "
-                              "news)\n"
+                              "[Old school runescape](http://oldschool.runescape.com/) (Highscores, game news)\n"
+                              "[RSBuddy](https://rsbuddy.com/) (G.E. prices)\n"
+                              "[Melvoridle wiki](https://wiki.melvoridle.com/) (Melvoridle wiki)\n"
                               "[OSRS Wiki](https://oldschool.runescape.wiki) (Wiki)", inline=False)
         embed.add_field(name="Latest updates", value=changelog)
         embed.set_thumbnail(url=appinfo.icon_url)
@@ -1023,6 +982,7 @@ async def drink_highscores(message, client) -> None:
 
     sorted_scores = sorted(server_data, key=server_data.get, reverse=True)
     highscores = []
+    title = ""
 
     for pos, user_id in enumerate(sorted_scores):
         if pos > 9:
@@ -1032,6 +992,8 @@ async def drink_highscores(message, client) -> None:
             member = message.server.get_member(user_id)
             display_name = member.display_name
         except AttributeError:
+            title = "Due to an update in Discord bot systems, usernames cannot temporarily be fetched " \
+                    "<:danskisu:689928015341158469>"
             display_name = "Unknown"
 
         if pos == 0:
@@ -1045,9 +1007,11 @@ async def drink_highscores(message, client) -> None:
 
         highscores.append(f"{pos} {display_name} ({server_data[user_id]})")
 
-    embed = discord.Embed(title="Users with the most alcohol drinked in this server", description="\n".join(highscores))
+    embed = discord.Embed(title="Users with the most alcohol units drinked in this server",
+                          description="\n".join(highscores))
+    embed.set_footer(text="Counter started in 2020-03-20")
 
-    await client.send_message(message.channel, embed=embed)
+    await client.send_message(message.channel, title, embed=embed)
 
 
 async def remove_drinks(message, client) -> None:
@@ -1195,6 +1159,8 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
         account_type = "seasonal"
     elif invoked_with == "!hcstats":
         account_type = "hcim"
+    elif invoked_with == "!lstats" or invoked_with == "!leaguestats":
+        account_type = "seasonal"
     else:
         await client.send_message(message.channel, f"Unknown account type with invokation: {invoked_with}")
         return
@@ -1202,13 +1168,22 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
     try:
         user_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
-        await client.send_message(message.channel, "Osrs API answered too slowly. Try again later..")
+        await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
         return
     except TypeError:
         await client.send_message(message.channel, "Could not find hiscores for user with given account type.")
         return
-    except ValueError:
-        await client.send_message(message.channel, "Username can't be longer than 12 characters.")
+    except ValueError as e:
+        error_msg = e.args[0]
+
+        if error_msg == "Username can't be longer than 12 characters.":
+            await client.send_message(message.channel, "Usernames can't be longer than 12 characters.")
+        elif "Unknown account type:" in error_msg:
+            await client.send_message(message.channel, f"Unknow account type while requesting hiscore data: "
+                                                       f"{account_type}.")
+        else:
+            await client.send_message(message.channel, "Unknown error while requesting hiscore  data. Please check the "
+                                                       "official hiscores are working as normal.")
         return
 
     scoretable = await static_functions.make_scoretable(user_stats, username, account_type)
@@ -1248,7 +1223,9 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
         saved_data = data[username]
     except KeyError:
         # Username is not in tracked players
-        await client.send_message(message.channel, "This user is not tracked.")
+        # msg = "This user is not tracked. Use command `!track` first."
+        msg = "This user is not being tracked. Tracking new accounts is temporarily disabled."
+        await client.send_message(message.channel, msg)
         return
 
     account_type = saved_data["account_type"]
@@ -1259,6 +1236,9 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
         new_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs API answered too slowly. Try again later.")
+        return
+    except TypeError:
+        await client.send_message((message.channel, "There is no existing hiscore data for this username."))
         return
 
     len_diff = len(new_stats) - len(saved_stats)
@@ -1302,6 +1282,10 @@ async def track_username(message: discord.Message, keywords: list, client: disco
     :param client: Bot client which is responsible of all work between this code and Discord client
     :return:
     """
+
+    await client.send_message(message.channel, "This command is temporarily disabled due to an update that affects "
+                                               "into seeing members in Discord.")
+    return
 
     user_data = {"past_stats": [], "account_type": None, "saved": None}
     username = " ".join(keywords).replace("_", " ")
@@ -1370,14 +1354,19 @@ async def track_username(message: discord.Message, keywords: list, client: disco
                                                    "Try again later.")
         return
     except TypeError:
-        finish_embed.title = f"Could not fins hiscores for user {username} with account type {account_type_formal}."
+        finish_embed.title = f"Could not find hiscores for user {username} with account type {account_type_formal}."
         await client.edit_message(acc_type_query, embed=finish_embed)
         return
     except ValueError as e:
-        if e.args[0].startswith("Username"):
+        error_msg = e.args[0]
+
+        if error_msg == "Username can't be longer than 12 characters.":
             finish_embed.title = "Usernames can't be longer than 12 characters."
-        else:
+        elif "Unknown account type:" in error_msg:
             finish_embed.title = "ValueError: Unknown account type."
+        else:
+            finish_embed.title = "Unknown error while requesting hiscore  data. Please check the official hiscores " \
+                                 "are working as normal."
         await client.edit_message(acc_type_query, embed=finish_embed)
         return
 
@@ -1717,17 +1706,14 @@ async def roll_die(message: discord.Message, keywords: str, client: discord.Clie
             await client.send_message(message.channel, "Die info was given in invalid format.")
             return
 
-    if sides % 2 != 0:
-        await client.send_message(message.channel, "The die can only have even amount of sides.")
-        return
-    elif sides > 120:
+    if sides > 120:
         await client.send_message(message.channel, f"The die can only have maximum of {max_sides} sides.")
         return
     elif rolls > max_dices:
         await client.send_message(message.channel, f"You can throw at most {max_dices} dice at once.")
         return
     elif sides < 1:
-        await client.send_message(message.channel, "The die must have at least 2 sides.")
+        await client.send_message(message.channel, "The die must have at least 1 sides.")
         return
     elif rolls < 1:
         await client.send_message(message.channel, "The die must be thrown at least once.")
@@ -1745,6 +1731,105 @@ async def roll_die(message: discord.Message, keywords: str, client: discord.Clie
         msg = roll_results[0]
 
     await client.send_message(message.channel, msg)
+
+
+async def search_wiki(message: discord.message, keywords: list, cache: Cache, client: discord.client):
+    if cache.name == "Melvoridle":
+        base_url = "https://wiki.melvoridle.com"
+        search = " ".join(keywords).title().replace(" ", "_")
+        direct_search_url = f"{base_url}/index.php?title={search}"
+        full_search_url = f"{base_url}/index.php?search={search}"
+
+    elif cache.name == "Osrs":
+        base_url = "https://oldschool.runescape.wiki"
+        search = " ".join(keywords).capitalize().replace(" ", "_")
+        direct_search_url = f"{base_url}/w/{search}"
+        full_search_url = f"{base_url}/w/Special:Search?search={search}"
+
+    else:
+        raise ValueError(f"Unknown cache name: {cache.name}")
+
+    if direct_search_url in cache:
+        await client.send_message(message.channel, f"<{direct_search_url}>")
+        return
+
+    try:
+        await static_functions.make_request(client.aiohttp_session, direct_search_url, raise_on_error=True)
+        await client.send_message(message.channel, f"<{direct_search_url}>")
+        cache.add(direct_search_url)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Wiki answered too slowly. Try again later.")
+        return
+    except ValueError:
+        try:
+            full_search = await static_functions.make_request(client.aiohttp_session, full_search_url)
+        except asyncio.TimeoutError:
+            await client.send_message(message.channel, "Wiki answered too slowly. Try again later.")
+            return
+
+        hyperlinks = static_functions.parse_search_candidates(full_search, base_url, cache)
+        if len(hyperlinks) == 0:
+            await client.send_message(message.channel, "Could not find any pages.")
+            return
+
+        embed = discord.Embed(title="Did you mean", description="\n".join(hyperlinks))
+        await client.send_message(message.channel, embed=embed)
+
+
+async def get_boss_scores(message: discord.Message, keywords: str, client: discord.Client) -> None:
+
+    keywords = keywords.split()
+    invoked_with = keywords[0]
+    username = " ".join(keywords[1:])
+
+    if invoked_with == "!kc":
+        account_type = "normal"
+    elif invoked_with == "!ironkc":
+        account_type = "ironman"
+    elif invoked_with == "!uimkc":
+        account_type = "uim"
+    elif invoked_with == "!dmmkc":
+        account_type = "dmm"
+    elif invoked_with == "!seasonkc":
+        account_type = "seasonal"
+    elif invoked_with == "!hckc":
+        account_type = "hcim"
+    elif invoked_with == "!lkc" or invoked_with == "!leaguekc":
+        account_type = "seasonal"
+    else:
+        await client.send_message(message.channel, f"Unknown account type with invokation: {invoked_with}")
+        return
+
+    try:
+        user_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session,
+                                                             acc_type=account_type)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "OSRS API answered too slowly. Try again later.")
+        return
+    except TypeError:
+        await client.send_message(message.channel, "Could not find hiscores for user with given account type.")
+        return
+    except ValueError as e:
+        error_msg = e.args[0]
+
+        if error_msg == "Username can't be longer than 12 characters.":
+            await client.send_message(message.channel, "Usernames can't be longer than 12 characters.")
+        elif "Unknown account type:" in error_msg:
+            await client.send_message(message.channel, f"Unknow account type while requesting hiscore data: "
+                                                       f"{account_type}.")
+        else:
+            await client.send_message(message.channel, "Unknown error while requesting hiscore  data. Please check the "
+                                                       "official hiscores are working as normal.")
+        return
+
+    scoretable = await static_functions.make_boss_scoretable(user_stats, username, account_type)
+
+    try:
+        await client.send_message(message.channel, scoretable)
+    except discord.errors.HTTPException:
+        await client.send_message(message.channel, "Users bossing hiscores exceeds the Discord 2000 character limit. "
+                                                   "For now, too long scores are not available with this command.")
+        return
 
 
 if __name__ == "__main__":

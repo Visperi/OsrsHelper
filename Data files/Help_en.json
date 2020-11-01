@@ -113,7 +113,7 @@
         "name": "!calc",
         "description": "Calculator that supports sum, subtraction, product and division.",
         "additional": "Also supports more than two factors, using brackets and pi by using a keyword `pi`. Powers are supported by using `**` or `^`",
-        "example": "`!calc 5 * 8` or `!calc (3 ^ 5) + 12`"
+        "example": "`!calc 5 * 8` or `!calc (3 ^ 5) + 12` or `!calc (3 ** 5) + 12`"
     },
     {
         "function": [
@@ -550,5 +550,30 @@
         "description": "Throw a die with given number of sides.",
         "additional": "Also supports the RPG dice notation: <throws>d<sides>",
         "example": "`!roll`, `!roll 8`, `!roll 4d120`"
+    },
+    {
+        "function": [
+            "mwiki",
+            "melvorwiki"
+        ],
+        "name": "!mwiki",
+        "description": "Search a page from official Melvoridle wiki.",
+        "additional": "-",
+        "example": "`!mwiki ranged golbin`"
+    },    {
+        "function": [
+            "kc",
+            "ironkc",
+            "uimkc",
+            "dmmkc",
+            "seasonkc",
+            "hckc",
+            "tournamentkc",
+            "leaguekc"
+        ],
+        "name": "!kc",
+        "description": "Get users bossing hiscores.",
+        "additional": "To reduce the message length, only a portion of all bosses are shown in the table.",
+        "example": "`!kc visperi` or `!lkc cannotlogin`"
     }
 ]

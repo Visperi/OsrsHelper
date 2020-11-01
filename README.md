@@ -1,4 +1,4 @@
-# OsrsHelper v8.1
+# OsrsHelper v8.4
 
 Discord bot made mainly for Old school Runescape related commands, although nowadays it is pretty much an all-around 
 project for a few Discord servers. This allows me to make quick changes and updates to meet the user base needs. There 

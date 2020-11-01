@@ -40,6 +40,7 @@ import pytz
 import numpy as np
 import static_functions
 import random
+from caching import Cache
 
 
 async def command_help(message, keywords, client):
@@ -95,9 +96,10 @@ async def kayttajan_tiedot(message, client):
 
 async def commands(message, client):
     commands_dict = {"Discord commands": ["!info", "!help", "!calc", "!me", "!namechange", "!server commands",
-                                          "!satokausi", "!beer", "!beerscores", "!korona", "!reminder", "!roll"],
+                                          "!satokausi", "!beer", "!beerscores", "!korona", "!reminder", "!roll",
+                                          "!mwiki"],
                      "Osrs commands": ["!wiki", "!stats", "!gains", "!track", "!xp", "!ehp", "!nicks", "!kill",
-                                       "!update"],
+                                       "!update", "!kc"],
                      "Item commands": ["!keys", "!limit", "!price"],
                      "Clue commands": ["!cipher", "!anagram", "!puzzle", "!cryptic", "!maps"],
                      "Mod commands": ["%addkey", "%delkey", "%addcom", "%delcom", "%editcom"],
@@ -113,50 +115,6 @@ async def commands(message, client):
         embed.add_field(name=category, value="\n".join(category_commands))
 
     await client.send_message(message.channel, embed=embed)
-
-
-async def search_wiki(message, hakusanat: list, client):
-    baselink = "https://oldschool.runescape.wiki/w/"
-
-    search = "_".join(hakusanat)
-    search_link = baselink + search
-    try:
-        response = await static_functions.make_request(client.aiohttp_session, search_link)
-    except asyncio.TimeoutError:
-        await client.send_message(message.channel, "Wiki vastasi liian hitaasti. Kokeile myöhemmin uudelleen.")
-        return
-
-    if f"This page doesn&#039;t exist on the wiki. Maybe it should?" in response:
-        hyperlinks = []
-        truesearch_link = f"https://oldschool.runescape.wiki/w/Special:Search?search={search}"
-        try:
-            truesearch_resp = await static_functions.make_request(client.aiohttp_session, truesearch_link)
-        except asyncio.TimeoutError:
-            await client.send_message(message.channel, "Wiki vastasi liian hitaasti. Kokeile myöhemmin uudelleen.")
-            return
-
-        # parse html
-        results_html = BeautifulSoup(truesearch_resp, "html.parser")
-        result_headings = results_html.findAll("div", class_="mw-search-result-heading")
-
-        if len(result_headings) == 0:
-            await client.send_message(message.channel, "Haullasi ei löytynyt yhtään sivua.")
-            return
-
-        for result in result_headings[:5]:
-            link_end = result.find("a")["href"]
-            if link_end[-1] == ")":
-                link_end = list(link_end)
-                link_end[-1] = "\\)"
-                link_end = "".join(link_end)
-            link_title = result.find("a")["title"]
-            hyperlinks.append(f"[{link_title}](https://oldschool.runescape.wiki{link_end})")
-
-        embed = discord.Embed(title="Tarkoititko jotain näistä", description="\n".join(hyperlinks))
-        await client.send_message(message.channel, embed=embed)
-
-    else:
-        await client.send_message(message.channel, f"<{search_link}>")
 
 
 async def search_cipher(message, search, client):
@@ -570,7 +528,7 @@ async def get_old_nicks(message, hakusanat, client):
     try:
         old_nicks = data[search]["previous_names"]
     except KeyError:
-        await client.send_message(message.channel, "Käyttäjä ei ole seurannassa.")
+        await client.send_message(message.channel, "Käyttäjä ei ole seurannassa. Käytä ensin komentoa `!track`.")
         return
     if len(old_nicks) == 0:
         await client.send_message(message.channel, "Käyttäjälle ei löydy vanhoja nimiä.")
@@ -603,10 +561,11 @@ async def bot_info(message, client, release_notes=False):
                                                           f"([Source](https://github.com/Visperi/OsrsHelper))\n"
                                                           f"Luotu: {created_at} UTC")
         embed.add_field(name="Kolmannen osapuolen lähteet",
-                        value="[discord.py](https://github.com/Rapptz/discord.py) (Lähdekoodi)\n"
+                        value="[discord.py](https://github.com/Rapptz/discord.py) (Botin Discord-kirjasto)\n"
                               "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (EHP ratet)\n"
-                              "[Old school runescape](http://oldschool.runescape.com/) (Highscoret, G.E. hinnat, "
-                              "peliuutiset)\n"
+                              "[Old school runescape](http://oldschool.runescape.com/) (Highscoret, peliuutiset)\n"
+                              "[RSBuddy](https://rsbuddy.com/) (G.E. hinnat)\n"
+                              "[Melvoridle wiki](https://wiki.melvoridle.com/) (Melvoridle wiki)\n"
                               "[OSRS Wiki](https://oldschool.runescape.wiki) (Wiki)", inline=False)
         embed.add_field(name="Viimeisimmät päivitykset", value=changelog)
         embed.set_thumbnail(url=appinfo.icon_url)
@@ -965,7 +924,7 @@ async def korona_stats(message, client) -> None:
     :param client: Bot client responsible of all work in between code and Discord client
     """
 
-    cooldown = 3  # Data update cooldown in minutes
+    cooldown = 10  # Data update cooldown in minutes
     utc_now = datetime.datetime.utcnow()
     corona_file = "Data files/korona.json"
 
@@ -1098,6 +1057,7 @@ async def drink_highscores(message, client) -> None:
 
     sorted_scores = sorted(server_data, key=server_data.get, reverse=True)
     highscores = []
+    title = ""
 
     for pos, user_id in enumerate(sorted_scores):
         if pos > 9:
@@ -1107,6 +1067,8 @@ async def drink_highscores(message, client) -> None:
             member = message.server.get_member(user_id)
             display_name = member.display_name
         except AttributeError:
+            title = "Johtuen Discordin päivityksistä bottijärjestelmiin käyttäjänimiä ei voida väliaikaisesti hakea " \
+                    "<:danskisu:689928015341158469>"
             display_name = "Tuntematon"
 
         if pos == 0:
@@ -1121,8 +1083,9 @@ async def drink_highscores(message, client) -> None:
         highscores.append(f"{pos} {display_name} ({server_data[user_id]})")
 
     embed = discord.Embed(title="Serverin kovimmat kaljankittaajat", description="\n".join(highscores))
+    embed.set_footer(text="Laskuri aloitettu 2020-03-20")
 
-    await client.send_message(message.channel, embed=embed)
+    await client.send_message(message.channel, title, embed=embed)
 
 
 async def remove_drinks(message, client) -> None:
@@ -1252,6 +1215,8 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
         account_type = "seasonal"
     elif invoked_with == "!hcstats":
         account_type = "hcim"
+    elif invoked_with == "!lstats" or invoked_with == "!leaguestats":
+        account_type = "seasonal"
     else:
         await client.send_message(message.channel, f"Unknown account type with invokation: {invoked_with}")
         return
@@ -1265,8 +1230,16 @@ async def get_user_stats(message: discord.Message, keywords: str, client: discor
     except TypeError:
         await client.send_message(message.channel, "Annetulla käyttäjätyypillä ei löytynyt käyttäjänimelle dataa.")
         return
-    except ValueError:
-        await client.send_message(message.channel, "Käyttäjänimien maksimipituus on 12 merkkiä.")
+    except ValueError as e:
+        error_msg = e.args[0]
+
+        if error_msg == "Username can't be longer than 12 characters.":
+            await client.send_message(message.channel, "Käyttäjänimien maksimipituus on 12 merkkiä.")
+        elif "Unknown account type:" in error_msg:
+            await client.send_message(message.channel, f"Virhe haettaessa hiscoreja käyttäjätyypille: {account_type}.")
+        else:
+            await client.send_message(message.channel, "Tuntematon virhe haettaessa hiscore dataa. Tarkista ovatko "
+                                                       "viralliset hiscoret toiminnassa normaalisti.")
         return
 
     scoretable = await static_functions.make_scoretable(user_stats, username, account_type)
@@ -1306,7 +1279,10 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
         saved_data = data[username]
     except KeyError:
         # Username is not in tracked players
-        await client.send_message(message.channel, "Antamasi käyttäjä ei ole seurannassa.")
+        # msg = "Annettu käyttäjä ei ole seurannassa. Käytä ensin komentoa `!track`."
+        msg = "Annettu käyttäjä ei ole seurannassa. Uusia käyttäjiä ei voi väliaikaisesti laittaa seurantaan."
+        await client.send_message(message.channel, msg)
+
         return
 
     account_type = saved_data["account_type"]
@@ -1314,10 +1290,12 @@ async def get_user_gains(message: discord.Message, keywords: list, client: disco
     saved_ts = datetime.datetime.fromtimestamp(saved_data["saved"])
 
     try:
-        new_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session,
-                                                            acc_type=account_type)
+        new_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session, acc_type=account_type)
     except asyncio.TimeoutError:
         await client.send_message(message.channel, "Osrs:n API vastasi liian hitaasti. Yritä myöhemmin uudelleen.")
+        return
+    except TypeError:
+        await client.send_message((message.channel, "Käyttäjänimelle ei löydy olemassa olevaa hiscore dataa."))
         return
 
     len_diff = len(new_stats) - len(saved_stats)
@@ -1362,8 +1340,16 @@ async def track_username(message: discord.Message, keywords: list, client: disco
     :return:
     """
 
+    await client.send_message(message.channel, "Komento on väliaikaisesti pois käytöstä johtuen Discordin käyttäjien "
+                                               "näkemiseen liittyvästä päivityksestä.")
+    return
+
     user_data = {"past_stats": [], "account_type": None, "saved": None}
     username = " ".join(keywords).replace("_", " ")
+
+    if len(username) > 12:
+        await client.send_message(message.channel, "Käyttäjänimen maksimipituus on 12 merkkiä.")
+        return
 
     with open("Data files/statsdb.json", "r") as data_file:
         tracked_players_data = json.load(data_file)
@@ -1372,7 +1358,7 @@ async def track_username(message: discord.Message, keywords: list, client: disco
         await client.send_message(message.channel, "Käyttäjä on jo seurannassa.")
         return
 
-    account_types = ["Normal", "Ironman", "Ultimate Ironman", "Hardcore Ironman", "Deadman", "Peruuta"]
+    account_types = ["Normal", "Ironman", "Ultimate Ironman", "Hardcore Ironman", "Deadman", "League", "Peruuta"]
     reactions = []
     type_options = []
 
@@ -1415,6 +1401,8 @@ async def track_username(message: discord.Message, keywords: list, client: disco
         account_type = "hcim"
     elif account_type_formal == "Deadman":
         account_type = "dmm"
+    elif account_type_formal == "League":
+        account_type = "seasonal"
     else:
         account_type = account_type_formal.lower()
 
@@ -1432,10 +1420,15 @@ async def track_username(message: discord.Message, keywords: list, client: disco
         await client.edit_message(acc_type_query, embed=finish_embed)
         return
     except ValueError as e:
-        if e.args[0].startswith("Username"):
+        error_msg = e.args[0]
+
+        if error_msg == "Username can't be longer than 12 characters.":
             finish_embed.title = "Yli 12 merkkiä pitkiä käyttäjänimiä ei voi olla käytössä."
-        else:
+        elif "Unknown account type:" in error_msg:
             finish_embed.title = "ValueError: Unknown account type."
+        else:
+            finish_embed.title = "Tuntematon virhe haettaessa hiscore dataa käyttäjälle. Tarkista ovatko viralliset " \
+                                 "hiscoret toiminnassa normaalisti."
         await client.edit_message(acc_type_query, embed=finish_embed)
         return
 
@@ -1775,17 +1768,14 @@ async def roll_die(message: discord.Message, keywords: str, client: discord.Clie
             await client.send_message(message.channel, "Nopan tiedot annettiin virheellisessä muodossa.")
             return
 
-    if sides % 2 != 0:
-        await client.send_message(message.channel, "Nopassa voi olla vain parillinen määrä sivuja.")
-        return
-    elif sides > 120:
+    if sides > 120:
         await client.send_message(message.channel, f"Nopassa voi olla korkeintaan {max_sides} sivua.")
         return
     elif rolls > max_dices:
         await client.send_message(message.channel, f"Voit heittää enintään {max_dices} noppaa kerralla.")
         return
     elif sides < 1:
-        await client.send_message(message.channel, "Nopassa pitää olla vähintään 2 sivua.")
+        await client.send_message(message.channel, "Nopassa pitää olla vähintään 1 sivu.")
         return
     elif rolls < 1:
         await client.send_message(message.channel, "Noppaa pitää heittää vähintään kerran.")
@@ -1804,6 +1794,103 @@ async def roll_die(message: discord.Message, keywords: str, client: discord.Clie
 
     await client.send_message(message.channel, msg)
 
+
+async def search_wiki(message: discord.message, keywords: list, cache: Cache, client: discord.client):
+    if cache.name == "Melvoridle":
+        base_url = "https://wiki.melvoridle.com"
+        search = " ".join(keywords).title().replace(" ", "_")
+        direct_search_url = f"{base_url}/index.php?title={search}"
+        full_search_url = f"{base_url}/index.php?search={search}"
+
+    elif cache.name == "Osrs":
+        base_url = "https://oldschool.runescape.wiki"
+        search = " ".join(keywords).capitalize().replace(" ", "_")
+        direct_search_url = f"{base_url}/w/{search}"
+        full_search_url = f"{base_url}/w/Special:Search?search={search}"
+
+    else:
+        raise ValueError(f"Unknown cache name: {cache.name}")
+
+    if direct_search_url in cache:
+        await client.send_message(message.channel, f"<{direct_search_url}>")
+        return
+
+    try:
+        await static_functions.make_request(client.aiohttp_session, direct_search_url, raise_on_error=True)
+        await client.send_message(message.channel, f"<{direct_search_url}>")
+        cache.add(direct_search_url)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Wiki vastasi liian hitaasti. Yritä myöhemmin uudelleen.")
+        return
+    except ValueError:
+        try:
+            full_search = await static_functions.make_request(client.aiohttp_session, full_search_url)
+        except asyncio.TimeoutError:
+            await client.send_message(message.channel, "Wiki vastasi liian hitaasti. Yritä myöhemmin uudelleen.")
+            return
+
+        hyperlinks = static_functions.parse_search_candidates(full_search, base_url, cache)
+        if len(hyperlinks) == 0:
+            await client.send_message(message.channel, "Haulla ei löytynyt yhtään sivua.")
+            return
+
+        embed = discord.Embed(title="Tarkoititko jotain näistä", description="\n".join(hyperlinks))
+        await client.send_message(message.channel, embed=embed)
+
+
+async def get_boss_scores(message: discord.Message, keywords: str, client: discord.Client) -> None:
+
+    keywords = keywords.split()
+    invoked_with = keywords[0]
+    username = " ".join(keywords[1:])
+
+    if invoked_with == "!kc":
+        account_type = "normal"
+    elif invoked_with == "!ironkc":
+        account_type = "ironman"
+    elif invoked_with == "!uimkc":
+        account_type = "uim"
+    elif invoked_with == "!dmmkc":
+        account_type = "dmm"
+    elif invoked_with == "!seasonkc":
+        account_type = "seasonal"
+    elif invoked_with == "!hckc":
+        account_type = "hcim"
+    elif invoked_with == "!lkc" or invoked_with == "!leaguekc":
+        account_type = "seasonal"
+    else:
+        await client.send_message(message.channel, f"Unknown account type with invokation: {invoked_with}")
+        return
+
+    try:
+        user_stats = await static_functions.get_hiscore_data(username, client.aiohttp_session,
+                                                             acc_type=account_type)
+    except asyncio.TimeoutError:
+        await client.send_message(message.channel, "Osrs:n API vastasi liian hitaasti. Yritä myöhemmin uudelleen.")
+        return
+    except TypeError:
+        await client.send_message(message.channel, "Annetulla käyttäjätyypillä ei löytynyt käyttäjänimelle dataa.")
+        return
+    except ValueError as e:
+        error_msg = e.args[0]
+
+        if error_msg == "Username can't be longer than 12 characters.":
+            await client.send_message(message.channel, "Käyttäjänimien maksimipituus on 12 merkkiä.")
+        elif "Unknown account type:" in error_msg:
+            await client.send_message(message.channel, f"Virhe haettaessa hiscoreja käyttäjätyypille: {account_type}.")
+        else:
+            await client.send_message(message.channel, "Tuntematon virhe haettaessa hiscore dataa. Tarkista ovatko "
+                                                       "viralliset hiscoret toiminnassa normaalisti.")
+        return
+
+    scoretable = await static_functions.make_boss_scoretable(user_stats, username, account_type)
+
+    try:
+        await client.send_message(message.channel, scoretable)
+    except discord.errors.HTTPException:
+        await client.send_message(message.channel, "Käyttäjän boss scoret on liian pitkä yhteen discord viestiin. "
+                                                   "Niitä ei siis tällä hetkellä voida tarkastella tällä komennolla.")
+        return
 
 if __name__ == "__main__":
     print("Dont run this module as a independent process as it doesn't do anything. Run Main.py instead.")
