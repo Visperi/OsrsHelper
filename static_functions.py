@@ -70,6 +70,11 @@ async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 
 
 
 async def get_item_data(itemname: str) -> Union[None, dict]:
+    """
+
+    :param itemname: Original item name or a keyword defined via bot commands
+    :return: Dictionary containing keys name, id, members, store_price, examine and buy_limit
+    """
     item_data = None
 
     with open("Data files/Tradeables.json", "r") as tradeables_file:
