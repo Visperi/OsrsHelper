@@ -1,3 +1,1 @@
-- Added command !mwiki
-- Removed side restrictions from command !roll
-- Refined messages in error situations
+- Fixed and improved !price command

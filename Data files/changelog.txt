@@ -1,3 +1,1 @@
-- Lisättiin komento !mwiki
-- Poistettiin sivurajoitukset komennosta !roll
-- Paranneltiin viestejä virhetilanteissa
+- Korjattiin ja paranneltiin !price komentoa
