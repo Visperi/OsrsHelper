@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2018-2020 Visperi
+Copyright (c) 2018 Visperi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# OsrsHelper v8.4
+# OsrsHelper v8.5
 # coding=utf-8
 
 import discord
@@ -454,9 +454,12 @@ async def start_reminder_loop():
 
 if __name__ == "__main__":
     token = Settings.get_credential("tokens", "osrshelper")
-    client.aiohttp_session = aiohttp.ClientSession(loop=client.loop)
+    client.aiohttp_session = aiohttp.ClientSession(loop=client.loop, trust_env=True)
     client.on_ready_called = False
     client.reminder_loop_running = False
     client.mwiki_cache = Cache("Melvoridle")
     client.wiki_cache = Cache("Osrs")
     client.run(token)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(client.aiohttp_session.close())
+    loop.run_until_complete(client.close())
