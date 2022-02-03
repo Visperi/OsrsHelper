@@ -562,11 +562,10 @@ async def bot_info(message, client, release_notes=False):
                                                           f"Luotu: {created_at} UTC")
         embed.add_field(name="Kolmannen osapuolen lähteet",
                         value="[discord.py](https://github.com/Rapptz/discord.py) (Botin Discord-kirjasto)\n"
-                              "[Crystalmathlabs](http://www.crystalmathlabs.com/tracker/) (EHP ratet)\n"
-                              "[Old school runescape](http://oldschool.runescape.com/) (Highscoret, peliuutiset)\n"
-                              "[RSBuddy](https://rsbuddy.com/) (G.E. hinnat)\n"
+                              "[Old school runescape](https://oldschool.runescape.com/) (Highscoret, peliuutiset)\n"
                               "[Melvoridle wiki](https://wiki.melvoridle.com/) (Melvoridle wiki)\n"
-                              "[OSRS Wiki](https://oldschool.runescape.wiki) (Wiki)", inline=False)
+                              "[OSRS Wiki](https://oldschool.runescape.wiki) (Wiki, itemlistat, itemien hinnat)",
+                        inline=False)
         embed.add_field(name="Viimeisimmät päivitykset", value=changelog)
         embed.set_thumbnail(url=appinfo.icon_url)
     await client.send_message(message.channel, embed=embed)
@@ -846,6 +845,9 @@ async def satokaudet(message, hakusanat, client):
 
 
 async def item_price(message, hakusanat, client):
+    def average_price(avg_high: str, avg_low: str) -> int:
+        return round((avg_high + avg_low) / 2)
+
     search = " ".join(hakusanat).replace(" * ", "*").split("*")
     item_data = await static_functions.get_item_data(search[0])
     if not item_data:
@@ -855,8 +857,7 @@ async def item_price(message, hakusanat, client):
     item_id = item_data["id"]
     default_itemname = item_data["name"]
     high_alch_value = int(0.6 * item_data["store_price"])
-    # api_link = f"http://services.runescape.com/m=itemdb_oldschool/api/graph/{item_id}.json"
-    api_link = f"https://rsbuddy.com/exchange/graphs/1440/{item_id}.json"
+    api_link = f"https://prices.runescape.wiki/api/v1/osrs/timeseries?timestep=6h&id={item_id}"
 
     try:
         multiplier = search[1]
@@ -875,16 +876,36 @@ async def item_price(message, hakusanat, client):
     try:
         resp = await static_functions.make_request(client.aiohttp_session, api_link)
     except asyncio.TimeoutError:
-        await client.send_message(message.channel, "Old School Runescapen API vastasi liian hitaasti. Kokeile "
+        await client.send_message(message.channel, "Old School Runescape wikin API vastasi liian hitaasti. Kokeile "
                                                    "myöhemmin uudelleen.")
         return
 
     price_data = json.loads(resp)
-    latest_ts = price_data[-1]["ts"]
-    latest_price = price_data[-1]["overallPrice"]
-    day_price = price_data[-2]["overallPrice"]
-    week_price = price_data[-7]["overallPrice"]
-    month_price = price_data[-31]["overallPrice"]
+    latest_data = price_data["data"][-1]
+    latest_date = datetime.datetime.fromtimestamp(latest_data["timestamp"])
+    date_month_past = latest_date - datetime.timedelta(days=30)
+    date_week_past = latest_date - datetime.timedelta(days=7)
+    date_day_past = latest_date - datetime.timedelta(hours=24)
+
+    pc_month = "Dataa ei löytynyt"
+    pc_week = "Dataa ei löytynyt"
+    pc_day = "Dataa ei löytynyt"
+    latest_price = average_price(latest_data["avgHighPrice"], latest_data["avgLowPrice"])
+
+    for snapshot in price_data["data"]:
+        ts = snapshot["timestamp"]
+        price_high = snapshot["avgHighPrice"]
+        price_low = snapshot["avgLowPrice"]
+        date = datetime.datetime.fromtimestamp(ts)
+        price = average_price(price_high, price_low)
+
+        # Calculate and format the price changes if dates match
+        if date == date_month_past:
+            pc_month = "{:+,}".format(latest_price - price).replace(",", " ")
+        elif date == date_week_past:
+            pc_week = "{:+,}".format(latest_price - price).replace(",", " ")
+        elif date == date_day_past:
+            pc_day = "{:+,}".format(latest_price - price).replace(",", " ")
 
     # Format and calculate the latest piece values and total values
     latest_price_formal = f"{latest_price:,}".replace(",", " ")
@@ -892,15 +913,13 @@ async def item_price(message, hakusanat, client):
     price_total = f"{latest_price * multiplier:,}".replace(",", " ")
     high_alch_total = f"{high_alch_value * multiplier:,}".replace(",", " ")
 
-    # Calculate and format the price changes
-    pc_month = "{:+,}".format(latest_price - month_price).replace(",", " ")
-    pc_week = "{:+,}".format(latest_price - week_price).replace(",", " ")
-    pc_day = "{:+,}".format(latest_price - day_price).replace(",", " ")
-
     title = default_itemname
     latest_price_str = f"{price_total} gp"
     high_alch_value_str = f"{high_alch_total} gp"
-    price_changes_str = f"Kuukaudessa: {pc_month} gp\nViikossa: {pc_week} gp\nPäivässä: {pc_day} gp"
+    for data in [pc_month, pc_week, pc_day]:
+        if data != "Dataa ei löytynyt":
+            data += " gp"
+    price_changes_str = f"Kuukaudessa: {pc_month}\nViikossa: {pc_week}\nPäivässä: {pc_day}"
 
     if multiplier != 1:
         latest_price_str = f"{latest_price_str} ({latest_price_formal} ea)"
@@ -911,7 +930,7 @@ async def item_price(message, hakusanat, client):
     embed.add_field(name="Viimeisin hinta", value=latest_price_str, inline=False)
     embed.add_field(name="High alch value", value=high_alch_value_str, inline=False)
     embed.add_field(name="Hinnanmuutokset", value=price_changes_str, inline=False)
-    embed.set_footer(text=f"Viimeisin hinta ajalta {datetime.datetime.utcfromtimestamp(int(latest_ts) / 1e3)} UTC")
+    embed.set_footer(text=f"Viimeisin hinta ajalta {latest_date} UTC")
     await client.send_message(message.channel, embed=embed)
 
 
@@ -923,7 +942,8 @@ async def korona_stats(message, client) -> None:
     :param message: Message that invoked this command
     :param client: Bot client responsible of all work in between code and Discord client
     """
-
+    await client.send_message(message.channel, "Komento on väliaikaisesti pois käytöstä.")
+    return
     cooldown = 10  # Data update cooldown in minutes
     utc_now = datetime.datetime.utcnow()
     corona_file = "Data files/korona.json"
@@ -1798,7 +1818,7 @@ async def roll_die(message: discord.Message, keywords: str, client: discord.Clie
 async def search_wiki(message: discord.message, keywords: list, cache: Cache, client: discord.client):
     if cache.name == "Melvoridle":
         base_url = "https://wiki.melvoridle.com"
-        search = " ".join(keywords).title().replace(" ", "_")
+        search = static_functions.titlecase(" ".join(keywords)).replace(" ", "_")
         direct_search_url = f"{base_url}/index.php?title={search}"
         full_search_url = f"{base_url}/index.php?search={search}"
 
