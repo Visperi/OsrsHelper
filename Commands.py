@@ -844,6 +844,12 @@ async def satokaudet(message, hakusanat, client):
 
 async def item_price(message, hakusanat, client):
     def average_price(avg_high: str, avg_low: str) -> int:
+        if not avg_high and not avg_low:
+            raise ValueError("One or both values must have a valid value")
+        if not avg_high:
+            return avg_low
+        elif not avg_low:
+            return avg_high
         return round((avg_high + avg_low) / 2)
 
     search = " ".join(hakusanat).replace(" * ", "*").split("*")
@@ -888,22 +894,31 @@ async def item_price(message, hakusanat, client):
     pc_month = "Dataa ei löytynyt"
     pc_week = "Dataa ei löytynyt"
     pc_day = "Dataa ei löytynyt"
-    latest_price = average_price(latest_data["avgHighPrice"], latest_data["avgLowPrice"])
+    try:
+        latest_price = average_price(latest_data["avgHighPrice"], latest_data["avgLowPrice"])
+    except ValueError:
+        await client.send_message(message.channel, "Ei tarpeeksi dataa itemille. Itemiä ei ole ostossa tai myynnissä.")
+        return
 
     for snapshot in price_data["data"]:
         ts = snapshot["timestamp"]
         price_high = snapshot["avgHighPrice"]
         price_low = snapshot["avgLowPrice"]
         date = datetime.datetime.fromtimestamp(ts)
-        price = average_price(price_high, price_low)
+        try:
+            price = average_price(price_high, price_low)
+        except ValueError:
+            price = "Ei tarpeeksi dataa"
 
         # Calculate and format the price changes if dates match
         if date == date_month_past:
-            pc_month = "{:+,}".format(latest_price - price).replace(",", " ")
+            pc_month = price if price == "Ei tarpeeksi dataa" else \
+                "{:+,}".format(latest_price - price).replace(",", " ")
         elif date == date_week_past:
-            pc_week = "{:+,}".format(latest_price - price).replace(",", " ")
+            pc_week = price if price == "Ei tarpeeksi dataa" else \
+                "{:+,}".format(latest_price - price).replace(",", " ")
         elif date == date_day_past:
-            pc_day = "{:+,}".format(latest_price - price).replace(",", " ")
+            pc_day = price if price == "Ei tarpeeksi dataa" else "{:+,}".format(latest_price - price).replace(",", " ")
 
     # Format and calculate the latest piece values and total values
     latest_price_formal = f"{latest_price:,}".replace(",", " ")
