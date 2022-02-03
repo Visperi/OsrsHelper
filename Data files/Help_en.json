@@ -102,7 +102,7 @@
         ],
         "name": "!xp",
         "description": "Shows how much you need xp for given level. Also supports level gaps.",
-        "additional": "Maximum level can be given as `max` instead of 120.",
+        "additional": "Maximum level can be given as `max` instead of 127.",
         "example": "`!xp 90` or `!xp 90-max`"
     },
     {
