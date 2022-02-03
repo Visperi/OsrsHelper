@@ -418,19 +418,17 @@ async def get_buylimit(message, keywords, client):
     keyword = " ".join(keywords)
     item_data = await static_functions.get_item_data(keyword)
     if not item_data:
-        await client.send_message(message.channel, "Haullasi ei löytynyt yhtään itemiä.")
+        await client.send_message(message.channel, "Could not find any items with your search.")
         return
     else:
         default_itemname = item_data["name"]
-    with open("Data files/Buy_limits.json") as data_file:
-        data = json.load(data_file)
-    try:
-        buy_limit = data[default_itemname]
-    except KeyError:
-        await client.send_message(message.channel, "Itemille ei löytynyt ostorajaa. Ilmoitathan, jos huomaat virheen, "
-                                                   "niin korjataan tilanne.")
+
+    if "buy_limit" not in item_data.keys():
+        await client.send_message(message.channel, "No buy limits for this item.")
         return
-    await client.send_message(message.channel, f"Four hours buy limit for {default_itemname}: {buy_limit} pcs.")
+    else:
+        buy_limit = item_data["buy_limit"]
+        await client.send_message(message.channel, f"Four hours buy limit for {default_itemname}: {buy_limit} pcs.")
 
 
 def kayttokerrat(function_used):
