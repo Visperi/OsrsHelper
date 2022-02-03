@@ -215,7 +215,7 @@ async def add_objects(message, itemlist, client):
 
 async def check_new_items(message, client):
     tradeables_file = "Data files/Tradeables.json"
-    url = "https://rsbuddy.com/exchange/summary.json"
+    url = "https://prices.runescape.wiki/api/v1/osrs/mapping"
 
     try:
         resp = await static_functions.make_request(client.aiohttp_session, url)
@@ -225,30 +225,38 @@ async def check_new_items(message, client):
 
     resp_data = json.loads(resp)
     new_items = []
+    examines_updated = 0
 
     with open(tradeables_file, "r") as data_file:
         saved_data = json.load(data_file)
 
-    for item in resp_data.values():
+    for item in resp_data:
         item_id = item["id"]
         item_name = item["name"]
         members = item["members"]
-        store_price = item["sp"]
+        store_price = item["value"]
+        examine = item["examine"]
 
         if item_name not in saved_data.keys():
-            saved_data[item_name] = dict(id=item_id, members=members, store_price=store_price)
+            saved_data[item_name] = dict(id=item_id, members=members, store_price=store_price, examine=examine)
             new_items.append(item_name)
+        elif "examine" not in saved_data[item_name].keys() or examine != saved_data[item_name]["examine"]:
+            saved_data[item_name]["examine"] = examine
+            examines_updated += 1
 
+    finish_message = f"Updated examine data for {examines_updated} items."
     if len(new_items) > 0:
         with open(tradeables_file, "w") as data_file:
             json.dump(saved_data, data_file, indent=4)
 
-        finish_message = "Added {} new items:\n\n{}".format(len(new_items), "\n".join(new_items))
-        if len(finish_message) > 2000:
-            finish_message = f"Added {len(new_items)} new items but they can't fit into one Discord message."
+        added_items_msg = "\nAdded {} new items:\n\n{}".format(len(new_items), "\n".join(new_items))
+        if len(finish_message + added_items_msg) <= 2000:
+            finish_message += added_items_msg
+        else:
+            finish_message += f"\nAdded {len(new_items)} new items but they can't fit into one Discord message."
 
     else:
-        finish_message = "No new items to add."
+        finish_message += "\nNo new items to add."
 
     await client.send_message(message.channel, finish_message)
 
