@@ -139,80 +139,6 @@ async def remove_stream(message, keywords, client):
                                                f"streamers list.")
 
 
-async def add_limit(message, keywords, client):
-    limit_file = "Data files/Buy_limits.json"
-    keywords = " ".join(keywords).replace(", ", ",").split(",")
-    itemname = keywords[0].capitalize()
-
-    try:
-        amount = int(keywords[1])
-    except IndexError:
-        await client.send_message(message.channel, "Erota itemin nimi ja limitraja toisistaan pilkulla.")
-        return
-    except ValueError:
-        await client.send_message(message.channel, "Limitrajassa oli merkkejä joiden takia siitä ei voitu muuttaa "
-                                                   "luvuksi. Älä anna mitään muuta kuin itemin nimi ja sen limit.")
-        return
-
-    with open(limit_file) as data_file:
-        data = json.load(data_file)
-    if itemname in data:
-        await client.send_message(message.channel, f"Itemille on jo asetettu limit ({data[itemname]} kpl).")
-        return
-    else:
-        data[itemname] = str(amount)
-        with open(limit_file, "w") as data_file:
-            json.dump(data, data_file, indent=4)
-        await client.send_message(message.channel, f"Lisättiin limit {itemname}: {str(amount)} kpl.")
-
-
-async def delete_limit(message, keywords, client):
-    limit_file = "Data files/Buy_limits.json"
-    itemname = " ".join(keywords).capitalize()
-
-    with open(limit_file) as data_file:
-        data = json.load(data_file)
-    try:
-        data.pop(itemname)
-    except KeyError:
-        await client.send_message(message.channel, "Itemiä ei löytynyt listalta. Älä anna viestissäsi mitään muuta "
-                                                   "kuin itemin nimi.")
-        return
-    with open(limit_file, "w") as data_file:
-        json.dump(data, data_file, indent=4)
-    await client.send_message(message.channel, f"Poistettiin listalta ostoraja itemille {itemname}.")
-
-
-async def add_objects(message, itemlist, client):
-    added_items = 0
-    itemlist = itemlist.replace("§addobjects ", "")
-    with open("Data files/Tradeables.json") as data_file:
-        data = json.load(data_file)
-
-    itemlist = json.loads(itemlist)
-    new_items = ""
-    for item in itemlist:
-        item = item.split(", ")
-        itemname = item[0].capitalize()
-        if itemname in data:
-            continue
-        data[itemname] = {"high_alch": "", "id": int(item[1])}
-        new_items += f"Name: {itemname}, Id: {item[1]}\n"
-        added_items += 1
-
-    if added_items == 0:
-        await client.send_message(message.channel, "All the items are already in Tradeables.json.")
-        return
-
-    with open("Data files/Tradeables.json", "w") as data_file:
-        json.dump(data, data_file, indent=4)
-    msg = f"Added {added_items} new items to Tradeables.json:\n\n{new_items}"
-    if len(msg) >= 2000:
-        msg = f"Added {added_items} new items to Tradeables.json but the total length of them would be over 2000 and " \
-              f"thus can't be expressed here."
-    await client.send_message(message.channel, msg)
-
-
 async def check_new_items(message, client):
     tradeables_file = "Data files/Tradeables.json"
     url = "https://prices.runescape.wiki/api/v1/osrs/mapping"
@@ -225,7 +151,6 @@ async def check_new_items(message, client):
 
     resp_data = json.loads(resp)
     new_items = []
-    examines_updated = 0
 
     with open(tradeables_file, "r") as data_file:
         saved_data = json.load(data_file)
@@ -238,27 +163,24 @@ async def check_new_items(message, client):
         examine = item["examine"]
 
         if item_name not in saved_data.keys():
-            saved_data[item_name] = dict(id=item_id, members=members, store_price=store_price, examine=examine)
+            try:
+                limit = item["limit"]
+                saved_data[item_name] = dict(id=item_id, members=members, store_price=store_price, buy_limit=limit,
+                                             examine=examine)
+            except KeyError:
+                saved_data[item_name] = dict(id=item_id, members=members, store_price=store_price, examine=examine)
             new_items.append(item_name)
-        elif "examine" not in saved_data[item_name].keys() or examine != saved_data[item_name]["examine"]:
-            saved_data[item_name]["examine"] = examine
-            examines_updated += 1
 
-    finish_message = f"Updated examine data for {examines_updated} items."
+    added_items_msg = "No new items to add."
     if len(new_items) > 0:
         with open(tradeables_file, "w") as data_file:
             json.dump(saved_data, data_file, indent=4)
 
-        added_items_msg = "\nAdded {} new items:\n\n{}".format(len(new_items), "\n".join(new_items))
-        if len(finish_message + added_items_msg) <= 2000:
-            finish_message += added_items_msg
-        else:
-            finish_message += f"\nAdded {len(new_items)} new items but they can't fit into one Discord message."
+        added_items_msg = "Added {} new items:\n\n{}".format(len(new_items), "\n".join(new_items))
+        if len(added_items_msg) > 2000:
+            added_items_msg += f"Added {len(new_items)} new items but they can't fit into one Discord message."
 
-    else:
-        finish_message += "\nNo new items to add."
-
-    await client.send_message(message.channel, finish_message)
+    await client.send_message(message.channel, added_items_msg)
 
 
 async def get_file(message, keywords, client):
