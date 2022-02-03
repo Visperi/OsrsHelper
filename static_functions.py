@@ -32,8 +32,11 @@ from dateutil.relativedelta import relativedelta
 from typing import Union
 import bs4
 from caching import Cache
+import pytz
+import dateutil
 
 NUM_SEARCH_CANDIDATES = 5
+tz_fi = pytz.timezone("Europe/Helsinki")
 
 
 def to_utf8(string):
@@ -58,7 +61,8 @@ async def make_request(session: aiohttp.ClientSession, url: str, timeout: int = 
     :return: String containing the response
     """
 
-    async with session.get(url, timeout=timeout) as r:
+    headers = {"User-Agent": "OsrsHelper - Visperi"}
+    async with session.get(url, headers=headers, timeout=timeout) as r:
         if raise_on_error and r.status != 200:
             raise ValueError("Request status was not OK.")
         response = await r.text()
@@ -283,13 +287,62 @@ async def get_hiscore_data(username: str, aiohttp_session: aiohttp.ClientSession
 
 
 async def make_boss_scoretable(user_stats: list, username: str, account_type: str) -> str:
-
-    bosses = {'Abyssal Sire': 35, 'Alchemical Hydra': 36, 'Cerberus': 40, 'Chambers of Xeric': 41,
-              'Chambers of Xeric: Challenge Mode': 42, 'Commander Zilyana': 45, 'Corporeal Beast': 46,
-              'General Graardor': 52, 'Grotesque Guardians': 54, 'Hespori': 55, 'Kalphite Queen': 56, "Kree'Arra": 59,
-              "K'ril Tsutsaroth": 60, 'Mimic': 61, 'Nightmare': 62, 'Sarachnis': 64, 'The Gauntlet': 67,
-              'The Corrupted Gauntlet': 68, 'Theatre of Blood': 69, 'Thermonuclear Smoke Devil': 70, 'TzKal-Zuk': 71,
-              'TzKal-Jad': 72, 'Venenatis': 73, "Vet'ion": 74, 'Vorkath': 75, 'Zalcano': 77, 'Zulrah': 78}
+    """
+    Abyssal Sire, 36
+    Alchemical Hydra, 37
+    Barrows Chests, 38
+    Bryophyta, 39
+    Callisto, 40
+    Cerberus, 41
+    CoX, 42
+    CoX challenge, 43
+    Chaos Elemental, 44
+    Chaos Fanatic, 45
+    Commander Zilyana, 46
+    Corporeal Beast, 47
+    Crazy Archaeologist, 48
+    Dagannoth Prime, 49
+    Dagannoth Rex, 50
+    Dagannoth Supreme, 51
+    Deranged Archaeologist, 52
+    General Graardor, 53
+    Giant Mole, 54
+    Grotesque Guardians, 55
+    Hespori, 56
+    Kalphite Queen, 57
+    King Black dragon, 58
+    Kraken, 59
+    Kree'Arra, 60
+    K'ril Tsutsaroth, 61
+    Mimic, 62
+    Nightmare, 63
+    Phosani's Nightmare, 64
+    Obor, 65
+    Sarachnis, 66
+    Scorpia, 67
+    Skotizo, 68
+    Tempoross, 69
+    The Gauntlet, 70
+    The Corrupted Gauntlet, 71
+    Theatre of Blood, 72
+    Theatre of Blood: Hard Mode, 73
+    Thermonuclear Smoke Devil, 74
+    TzKal-Zuk, 75
+    TzTok-Jad, 76
+    Venenatis, 77
+    Vet'ion, 78
+    Vorkath, 79
+    Wintertodt, 80
+    Zalcano, 81
+    Zulrah, 82
+    """
+    bosses = {'Abyssal Sire': 36, 'Alchemical Hydra': 37, 'Cerberus': 41, 'Chambers of Xeric': 42,
+              'Chambers of Xeric: Challenge Mode': 43, 'Commander Zilyana': 46, 'Corporeal Beast': 47,
+              'General Graardor': 53, 'Grotesque Guardians': 55, 'Hespori': 56, 'Kalphite Queen': 57, "Kree'Arra": 60,
+              "K'ril Tsutsaroth": 61, 'Mimic': 62, 'Nightmare': 63, 'Phosani\'s Nightmare': 64, 'Sarachnis': 66,
+              'The Gauntlet': 70, 'The Corrupted Gauntlet': 71, 'Theatre of Blood': 72,
+              'Theatre of Blood: Hard Mode': 73, 'Thermonuclear Smoke Devil': 74, 'TzKal-Zuk': 75, 'TzKal-Jad': 76,
+              'Venenatis': 77, "Vet'ion": 78, 'Vorkath': 79, 'Zalcano': 81, 'Zulrah': 82}
 
     if account_type == "seasonal":
         account_type = "League"
@@ -364,3 +417,37 @@ def parse_search_candidates(search_result: str, base_url: str, cache: Cache) -> 
         hyperlinks_list.append(hyperlink)
 
     return hyperlinks_list
+
+
+def localize_timestamp(original_ts: Union[str, datetime.datetime], fmt: str = "%Y-%m-%d %H:%M") -> str:
+
+    dt = dateutil.parser.parse(str(original_ts)).replace(microsecond=0, tzinfo=None)
+    localized = pytz.utc.localize(dt).astimezone(tz_fi).strftime(fmt)
+    return localized
+
+
+def titlecase(original: str, delimiter: str = " ", small_words: list = None) -> str:
+    """
+    Convert a string into titlecase format, because the builtin title-method capitalizes all words and letters
+    after apostrophe characters.
+
+    :param original: Original string that is titlecased.
+    :param delimiter: Word delimiter in string. Result is joined with same delimiter. Default is space.
+    :param small_words: Words skipped for capitalization. If given, collisions with default ones are eliminated.
+    :return:
+    """
+    _small_words = ["of", "in", "at", "to", "the", "on", "an", "a"]
+    if small_words:
+        _small_words = list(set(_small_words + small_words))
+
+    original_splitted = original.split(delimiter)
+    result = []
+
+    for word in original_splitted:
+        word = word.lower()
+        if word in _small_words:
+            result.append(word)
+        else:
+            result.append(word.capitalize())
+
+    return delimiter.join(result)
