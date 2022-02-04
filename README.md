@@ -5,10 +5,9 @@ project for a few Discord servers. This allows me to make quick changes and upda
 is a newer version of this bot, [OsrsHelper-lite](https://github.com/Visperi/OsrsHelper-lite), which has a goal 
 of doing everything better from the beginning.
 
-There is **Very ugly code** at some places since this was my very first project in coding. Newer code, which is usually 
-closer to the end of files, should be more pleasant to read. I'm not planning to fully translate this project 
-into English since the codebase is so enormous. However, I may sometimes rewrite some old functions for 
-the sake of efficiency or my own sanity.
+There is **Very ugly code** at some places since this was my very first project in programming. I've maintained this 
+project from 2016 and the codebase is very huge and messy, so I'm not planning to fully translate this project fully
+into English. However, I may sometimes rewrite some old functions for the sake of efficiency or readability.
 
 ### Main features
 - Over 40 hard coded commands
